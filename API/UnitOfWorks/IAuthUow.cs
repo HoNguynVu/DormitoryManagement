@@ -7,5 +7,7 @@ namespace API.UnitOfWorks
     {
         IAccountRepository Accounts { get; }
         IRefreshTokenRepository RefreshTokens { get; }
+        IOtpRepository OtpCodes { get; }
+        IStudentRepository Students { get; }
     }
 }

@@ -21,7 +21,7 @@ namespace DataAccess.Repository
         {
             return await _context.Accounts.ToListAsync();
         }
-        public async Task<Account?> GetAccountById(int accountId)
+        public async Task<Account?> GetAccountById(string accountId)
         {
             return await _context.Accounts.FindAsync(accountId);
         }
@@ -29,6 +29,13 @@ namespace DataAccess.Repository
         {
             return await _context.Accounts
                 .FirstOrDefaultAsync(a => a.Username == username);
+        }
+        public async Task<Account?> GetAccountByOtp(string otp)
+        {
+            return await _context.OtpCodes
+                .Where(o => o.Code == otp)
+                .Select(o => o.User)
+                .FirstOrDefaultAsync();
         }
         public void AddAccount(Account account)
         {

@@ -54,5 +54,15 @@ namespace API.Services.Implements
              ); // Tạo token
             return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor); // Trả về token dưới dạng chuỗi
         }
+
+        private string GenerateOTP()
+        {
+            var randomNumber = new byte[6];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomNumber);
+            int otpValue = BitConverter.ToInt32(randomNumber, 0) % 1000000;
+            otpValue = Math.Abs(otpValue);
+            return otpValue.ToString("D6");
+        }
     }
 }
