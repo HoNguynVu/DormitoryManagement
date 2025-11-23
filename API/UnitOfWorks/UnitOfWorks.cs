@@ -27,6 +27,9 @@ namespace API.UnitOfWorks
             Accounts = new AccountRepository(_context);
             Violations = new ViolationRepository(_context);
             Contracts = new ContractRepository(_context);
+            Students = new StudentRepository(_context);
+            OtpCodes = new OtpRepository(_context);
+            RefreshTokens = new RefreshTokenRepository(_context);
 
         }
 
