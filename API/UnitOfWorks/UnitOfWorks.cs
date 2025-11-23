@@ -24,7 +24,10 @@ namespace API.UnitOfWorks
 
             
             Accounts = new AccountRepository(_context);
-            
+            Students = new StudentRepository(_context);
+            OtpCodes = new OtpRepository(_context);
+            RefreshTokens = new RefreshTokenRepository(_context);
+
         }
 
         // Triển khai các hàm Transaction
@@ -38,46 +41,28 @@ namespace API.UnitOfWorks
 
         public async Task CommitAsync()
         {
+            if (_transaction == null)
+                throw new InvalidOperationException("Transaction not started");
+
             try
             {
                 await _context.SaveChangesAsync();
-                if (_transaction != null)
-                {
-                    await _transaction.CommitAsync();
-                }
-            }
-            catch
-            {
-                if (_transaction != null)
-                    await _transaction.RollbackAsync();
-                throw;
+                await _transaction.CommitAsync();
             }
             finally
             {
-                if (_transaction != null)
-                    await _transaction.DisposeAsync();
+                await _transaction.DisposeAsync();
+                _transaction = null;
             }
         }
 
         public async Task RollbackAsync()
         {
-            try
+            if (_transaction != null)
             {
-                // 1. Chỉ Hủy nếu giao dịch đang tồn tại
-                if (_transaction != null)
-                {
-                    await _transaction.RollbackAsync();
-                }
-            }
-            finally
-            {
-                // 2. Luôn luôn dọn dẹp và giải phóng tài nguyên
-                // (Kể cả khi RollbackAsync() thất bại)
-                if (_transaction != null)
-                {
-                    await _transaction.DisposeAsync();
-                    _transaction = null;
-                }
+                await _transaction.RollbackAsync();
+                await _transaction.DisposeAsync();
+                _transaction = null;
             }
         }
     }

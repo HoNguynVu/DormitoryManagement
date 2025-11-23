@@ -9,11 +9,12 @@ namespace DataAccess.Interfaces
 {
     public interface IRefreshTokenRepository
     {
-        public void AddRefreshToken(RefreshToken refreshToken);
-        public Task<RefreshToken?> GetRefreshToken(string token);
-        public void DeleteRefreshToken(RefreshToken refreshToken);
+        void AddRefreshToken(RefreshToken refreshToken);
+        Task<RefreshToken?> GetRefreshToken(string token);
+        void RevokeRefreshToken(string userId);
+        void DeleteRefreshToken(RefreshToken refreshToken);
 
-        public void UpdateRefreshToken(RefreshToken refreshToken);
-        public bool IsValid(string token);
+        void UpdateRefreshToken(RefreshToken refreshToken);
+        bool IsValid(string token);
     }
 }

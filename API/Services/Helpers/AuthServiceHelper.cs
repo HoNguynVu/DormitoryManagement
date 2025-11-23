@@ -32,7 +32,7 @@ namespace API.Services.Implements
             };
         }
 
-
+         
         private string GenerateJwtToken(Account user)
         {
             var claims = new List<Claim>

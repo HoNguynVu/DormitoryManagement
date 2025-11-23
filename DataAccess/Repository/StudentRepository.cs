@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using BusinessObject.Entities;
 using DataAccess.Interfaces;
 using DataAccess.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace DataAccess.Repository
 {
@@ -15,6 +16,18 @@ namespace DataAccess.Repository
         public StudentRepository(DormitoryDbContext context)
         {
             _context = context;
+        }
+        public async Task<IEnumerable<Student>> GetAllStudentsAsync()
+        {
+            return await _context.Students.ToListAsync();
+        }
+        public async Task<Student?> GetStudentByIdAsync(string studentId)
+        {
+            return await _context.Students.FindAsync(studentId);
+        }
+        public async Task<Student?> GetStudentByEmailAsync(string Email)
+        {
+            return await _context.Students.FirstOrDefaultAsync(s => s.Email == Email);
         }
         public void AddStudent(Student student)
         {
