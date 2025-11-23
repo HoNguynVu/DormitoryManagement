@@ -9,8 +9,8 @@ namespace DataAccess.Interfaces
 {
     public interface IOtpRepository
     {
-        Task<OtpCode?> GetOtpById(int otpId);
-        Task<OtpCode?> GetOtpByCode(string code);
+        Task<OtpCode?> GetOtpByEmail(string email);
+        Task<OtpCode?> GetActiveOtp(string userId, string purpose);
         void AddOtp(OtpCode otpCode);
         void UpdateOtp(OtpCode otpCode);
         void DeleteOtp(OtpCode otpCode);

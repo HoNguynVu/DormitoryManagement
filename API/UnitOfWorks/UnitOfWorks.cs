@@ -13,6 +13,8 @@ namespace API.UnitOfWorks
 
         public IAccountRepository Accounts { get; }
         public IRefreshTokenRepository RefreshTokens { get; }
+        public IOtpRepository OtpCodes { get; }
+        public IStudentRepository Students { get; }
 
 
         public UnitOfWork(DormitoryDbContext context, IDbContextTransaction? dbContextTransaction)

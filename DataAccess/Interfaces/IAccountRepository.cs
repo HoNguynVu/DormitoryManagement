@@ -10,8 +10,9 @@ namespace DataAccess.Interfaces
     public interface IAccountRepository
     {
         Task<IEnumerable<Account>> GetAllAccounts();
-        Task<Account?> GetAccountById(int accountId);
+        Task<Account?> GetAccountById(string accountId);
         Task<Account?> GetAccountByUsername(string username);
+        Task<Account?> GetAccountByOtp(string otp);
         void AddAccount(Account account);
         void UpdateAccount(Account account);
         void DeleteAccount(Account account);
