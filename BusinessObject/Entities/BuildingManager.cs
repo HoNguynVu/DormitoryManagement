@@ -6,8 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BusinessObject.Entities;
 
-[Index("CitizenId", Name = "UQ__Building__6E49FBED4E75F710", IsUnique = true)]
-[Index("Email", Name = "UQ__Building__A9D10534DC9D3876", IsUnique = true)]
+[Index("CitizenId", IsUnique = true)]
+[Index("Email", IsUnique = true)]
 public partial class BuildingManager
 {
     [Key]
@@ -41,7 +41,7 @@ public partial class BuildingManager
     public virtual ICollection<Building> Buildings { get; set; } = new List<Building>();
 
     [ForeignKey("UserId")]
-    [InverseProperty("BuildingManager")]
+    [InverseProperty("BuildingManagers")]
     public virtual Account User { get; set; } = null!;
 
     [InverseProperty("ReportingManager")]

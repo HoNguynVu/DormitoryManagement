@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BusinessObject.Entities;
 
-[Index("BuildingName", Name = "UQ__Building__2D13A8E244D7DF37", IsUnique = true)]
+[Index("BuildingName", IsUnique = true)]
 public partial class Building
 {
     [Key]

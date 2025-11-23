@@ -21,6 +21,6 @@ public partial class HealthInsurance
     public string? InitialHospital { get; set; }
 
     [ForeignKey("StudentId")]
-    [InverseProperty("HealthInsurance")]
+    [InverseProperty("HealthInsurances")]
     public virtual Student Student { get; set; } = null!;
 }

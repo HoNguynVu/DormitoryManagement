@@ -6,8 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BusinessObject.Entities;
 
-[Index("CitizenId", Name = "UQ__Students__6E49FBED66CD71C2", IsUnique = true)]
-[Index("Email", Name = "UQ__Students__A9D10534DB159DC2", IsUnique = true)]
+[Index("CitizenId", IsUnique = true)]
+[Index("Email", IsUnique = true)]
 public partial class Student
 {
     [Key]
@@ -51,7 +51,7 @@ public partial class Student
     public virtual ICollection<Contract> Contracts { get; set; } = new List<Contract>();
 
     [InverseProperty("Student")]
-    public virtual HealthInsurance? HealthInsurance { get; set; }
+    public virtual ICollection<HealthInsurance> HealthInsurances { get; set; } = new List<HealthInsurance>();
 
     [ForeignKey("PriorityId")]
     [InverseProperty("Students")]
@@ -71,7 +71,7 @@ public partial class Student
     public virtual School? School { get; set; }
 
     [ForeignKey("UserId")]
-    [InverseProperty("Student")]
+    [InverseProperty("Students")]
     public virtual Account? User { get; set; }
 
     [InverseProperty("Student")]
