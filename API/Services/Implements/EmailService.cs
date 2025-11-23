@@ -25,6 +25,19 @@ namespace API.Services.Implements
             await SendEmailAsync(emailMessage);
         }
 
+        public async Task SendResetPasswordEmail(string toEmail, string Otp)
+        {
+            var emailMessage = new MimeMessage();
+            emailMessage.From.Add(new MailboxAddress("NoReply", _config["Email:From"]));
+            emailMessage.To.Add(MailboxAddress.Parse(toEmail));
+            emailMessage.Subject = "Reset Password Otp";
+            emailMessage.Body = new TextPart("plain")
+            {
+                Text = $"Your verification OTP is: {Otp}"
+            };
+            await SendEmailAsync(emailMessage);
+        }
+
         private async Task SendEmailAsync(MimeMessage emailMessage)
         {
             var credential = GoogleCredential
