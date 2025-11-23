@@ -1,4 +1,9 @@
-﻿using DataAccess.Models;
+﻿using API.Services.Implements;
+using API.Services.Interfaces;
+using API.UnitOfWorks;
+using DataAccess.Interfaces;
+using DataAccess.Models;
+using DataAccess.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -27,6 +32,21 @@ builder.Services.AddDbContext<DormitoryDbContext>(options =>
 // Add services to the container.
 
 builder.Services.AddControllers();
+
+//Unit of Work
+builder.Services.AddScoped<UnitOfWork>(sp => new UnitOfWork(sp.GetRequiredService<DormitoryDbContext>(), null));
+builder.Services.AddScoped<IAuthUow>(sp => sp.GetRequiredService<UnitOfWork>());
+builder.Services.AddScoped<IViolationUow>(sp => sp.GetRequiredService<UnitOfWork>());
+
+// Services (interfaces + concrete where other services request the concrete type)
+builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IViolationService, ViolationService>();
+
+//Repositories
+builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<IViolationRepository, ViolationRepository>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

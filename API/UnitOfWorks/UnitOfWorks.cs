@@ -6,7 +6,7 @@ using DataAccess.Repository;
 
 namespace API.UnitOfWorks
 {
-    public class UnitOfWork : IAuthUow
+    public class UnitOfWork : IAuthUow, IViolationUow
     {
         private readonly DormitoryDbContext _context;
         private IDbContextTransaction? _transaction;
@@ -16,15 +16,18 @@ namespace API.UnitOfWorks
         public IOtpRepository OtpCodes { get; }
         public IStudentRepository Students { get; }
 
-
+        public IViolationRepository Violations { get; }
+        public IContractRepository Contracts { get; }
         public UnitOfWork(DormitoryDbContext context, IDbContextTransaction? dbContextTransaction)
         {
             _context = context;
             _transaction = dbContextTransaction;
 
-            
+
             Accounts = new AccountRepository(_context);
-            
+            Violations = new ViolationRepository(_context);
+            Contracts = new ContractRepository(_context);
+
         }
 
         // Triển khai các hàm Transaction
@@ -35,49 +38,30 @@ namespace API.UnitOfWorks
                 _transaction = await _context.Database.BeginTransactionAsync();
             }
         }
-
         public async Task CommitAsync()
         {
+            if (_transaction == null)
+                throw new InvalidOperationException("Transaction not started");
+
             try
             {
                 await _context.SaveChangesAsync();
-                if (_transaction != null)
-                {
-                    await _transaction.CommitAsync();
-                }
-            }
-            catch
-            {
-                if (_transaction != null)
-                    await _transaction.RollbackAsync();
-                throw;
+                await _transaction.CommitAsync();
             }
             finally
             {
-                if (_transaction != null)
-                    await _transaction.DisposeAsync();
+                await _transaction.DisposeAsync();
+                _transaction = null;
             }
         }
 
         public async Task RollbackAsync()
         {
-            try
+            if (_transaction != null)
             {
-                // 1. Chỉ Hủy nếu giao dịch đang tồn tại
-                if (_transaction != null)
-                {
-                    await _transaction.RollbackAsync();
-                }
-            }
-            finally
-            {
-                // 2. Luôn luôn dọn dẹp và giải phóng tài nguyên
-                // (Kể cả khi RollbackAsync() thất bại)
-                if (_transaction != null)
-                {
-                    await _transaction.DisposeAsync();
-                    _transaction = null;
-                }
+                await _transaction.RollbackAsync();
+                await _transaction.DisposeAsync();
+                _transaction = null;
             }
         }
     }
