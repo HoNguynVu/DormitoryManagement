@@ -36,11 +36,13 @@ builder.Services.AddControllers();
 //Unit of Work
 builder.Services.AddScoped<UnitOfWork>(sp => new UnitOfWork(sp.GetRequiredService<DormitoryDbContext>(), null));
 builder.Services.AddScoped<IAuthUow>(sp => sp.GetRequiredService<UnitOfWork>());
+builder.Services.AddScoped<IRegistrationUow>(sp => sp.GetRequiredService<UnitOfWork>());
 
 // Services (interfaces + concrete where other services request the concrete type)
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IRegistrationService, RegistrationService>();
 
 //Repositories
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();

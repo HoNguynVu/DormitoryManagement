@@ -6,7 +6,7 @@ using DataAccess.Repository;
 
 namespace API.UnitOfWorks
 {
-    public class UnitOfWork : IAuthUow
+    public class UnitOfWork : IAuthUow, IRegistrationUow
     {
         private readonly DormitoryDbContext _context;
         private IDbContextTransaction? _transaction;
@@ -15,6 +15,8 @@ namespace API.UnitOfWorks
         public IRefreshTokenRepository RefreshTokens { get; }
         public IOtpRepository OtpCodes { get; }
         public IStudentRepository Students { get; }
+        public IRegistrationFormRepository RegistrationForms { get; }
+        public IContractRepository Contracts { get; }
 
 
         public UnitOfWork(DormitoryDbContext context, IDbContextTransaction? dbContextTransaction)
@@ -27,6 +29,8 @@ namespace API.UnitOfWorks
             Students = new StudentRepository(_context);
             OtpCodes = new OtpRepository(_context);
             RefreshTokens = new RefreshTokenRepository(_context);
+            RegistrationForms = new RegistrationFormRepository(_context);
+            Contracts = new ContractRepository(_context);
 
         }
 
