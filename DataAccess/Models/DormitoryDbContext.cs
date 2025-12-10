@@ -118,7 +118,7 @@ public partial class DormitoryDbContext : DbContext
             entity.HasKey(e => e.OtpId).HasName("PK__OtpCodes__3143C483D6F517EB");
 
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
-            entity.Property(e => e.IsActive).HasComputedColumnSql("(CONVERT([bit],case when getdate()<[ExpiresAt] then (1) else (0) end))", false);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
 
             entity.HasOne(d => d.User).WithMany(p => p.OtpCodes).HasConstraintName("FK_OtpCodes_Accounts");
         });

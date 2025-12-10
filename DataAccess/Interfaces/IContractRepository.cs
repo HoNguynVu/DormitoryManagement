@@ -13,6 +13,7 @@ namespace DataAccess.Interfaces
         Task<Contract?> GetContractById(string contractId);
         Task<IEnumerable<Contract>> GetContractsByStudentId(string studentId);
         Task<Contract?> GetActiveContractByStudentId(string studentId);
+        Task<int> CountContractsByRoomIdAndStatus(string roomId, string status);
         void AddContract(Contract contract);
         void UpdateContract(Contract contract);
         void DeleteContract(Contract contract);

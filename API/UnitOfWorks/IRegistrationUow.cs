@@ -6,5 +6,6 @@ namespace API.UnitOfWorks
     {
         IRegistrationFormRepository RegistrationForms { get; }
         IContractRepository Contracts { get; }
+        IRoomRepository Rooms { get; }
     }
 }

@@ -37,5 +37,14 @@ namespace DataAccess.Repository
         {
             _context.RegistrationForms.Remove(registrationForm);
         }
+        public async Task<int> CountRegistrationFormsByRoomId(string roomId)
+        {
+            var threshold = DateTime.UtcNow.AddMinutes(-10);
+
+            return await _context.RegistrationForms
+                .CountAsync(f => f.RoomId == roomId
+                                 && f.Status == "Pending"
+                                 && f.RegistrationTime >= threshold);
+        }
     }
 }

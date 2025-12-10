@@ -48,5 +48,12 @@ namespace DataAccess.Repository
         {
             _context.Contracts.Remove(contract);
         }
+
+        public async Task<int> CountContractsByRoomIdAndStatus(string roomId, string status)
+        {
+            return await _context.Contracts
+                .Where(c => c.RoomId == roomId && c.ContractStatus == status)
+                .CountAsync();
+        }
     }
 }

@@ -38,6 +38,7 @@ builder.Services.AddScoped<UnitOfWork>(sp => new UnitOfWork(sp.GetRequiredServic
 builder.Services.AddScoped<IAuthUow>(sp => sp.GetRequiredService<UnitOfWork>());
 builder.Services.AddScoped<IRegistrationUow>(sp => sp.GetRequiredService<UnitOfWork>());
 
+
 // Services (interfaces + concrete where other services request the concrete type)
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<IEmailService, EmailService>();

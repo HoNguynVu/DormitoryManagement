@@ -27,7 +27,7 @@ public partial class OtpCode
 
     public DateTime CreatedAt { get; set; }
 
-    public bool? IsActive { get; set; }
+    public bool IsActive { get; set; }
 
     [ForeignKey("UserId")]
     [InverseProperty("OtpCodes")]

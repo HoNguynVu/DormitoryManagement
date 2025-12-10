@@ -11,6 +11,7 @@ namespace DataAccess.Interfaces
     {
         Task<IEnumerable<RegistrationForm>> GetAllForms();
         Task<RegistrationForm?> GetByIdAsync(string formId);
+        Task<int> CountRegistrationFormsByRoomId(string roomId);
         void Add(RegistrationForm registrationForm);
         void Update(RegistrationForm registrationForm);
         void Delete(RegistrationForm registrationForm);

@@ -20,20 +20,39 @@ namespace API.Services.Implements
             {
                 return (false, "Student already has an active contract.", 400);
             }
-            var form = new RegistrationForm
-            {
-                FormId = "RF-" + IdGenerator.GenerateUniqueSuffix(),
-                StudentId = registrationForm.StudentId,
-                RoomId = registrationForm.RoomId,
-                RegistrationTime = DateTime.UtcNow,
-                Status = "Pending"
-            };
-            await _registrationUow.BeginTransactionAsync();
+            await _registrationUow.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
             try
             {
+                int studentsInRoom = await _registrationUow.Contracts.CountContractsByRoomIdAndStatus(registrationForm.RoomId, "Active");
+                int pendingForms = await _registrationUow.RegistrationForms.CountRegistrationFormsByRoomId(registrationForm.RoomId);
+                int occupancy = studentsInRoom + pendingForms;
+
+                var room = await _registrationUow.Rooms.GetRoomById(registrationForm.RoomId);
+                if (room == null)
+                {
+                    await _registrationUow.RollbackAsync(); 
+                    return (false, "Room not found.", 404);
+                }
+                int capacity = room.Capacity;
+
+                if (occupancy >= capacity)
+                {
+                    await _registrationUow.RollbackAsync();
+                    return (false, "Room is already full.", 409);
+                }
+
+                var form = new RegistrationForm
+                {
+                    FormId = "RF-" + IdGenerator.GenerateUniqueSuffix(),
+                    StudentId = registrationForm.StudentId,
+                    RoomId = registrationForm.RoomId,
+                    RegistrationTime = DateTime.UtcNow,
+                    Status = "Pending"
+                };
+
                 _registrationUow.RegistrationForms.Add(form);
                 await _registrationUow.CommitAsync();
-                return (true, "Registration form created successfully.", 201);
+                return (true, "Registration form created successfully, you have 10 mins to confirms payment.", 201);
             }
             catch (Exception ex)
             {
