@@ -25,6 +25,13 @@ namespace DataAccess.Repository
         {
             return await _context.Rooms.FindAsync(roomId);
         }
+       
+        public async Task<IEnumerable<Room>> GetAllRoomsWithTypesAsync()
+        {
+            return await _context.Rooms
+                                 .Include(r => r.RoomType)
+                                 .ToListAsync();
+        }
         public void AddRoom(Room room)
         {
             _context.Rooms.Add(room);
