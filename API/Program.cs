@@ -37,7 +37,8 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<UnitOfWork>(sp => new UnitOfWork(sp.GetRequiredService<DormitoryDbContext>(), null));
 builder.Services.AddScoped<IAuthUow>(sp => sp.GetRequiredService<UnitOfWork>());
 builder.Services.AddScoped<IRegistrationUow>(sp => sp.GetRequiredService<UnitOfWork>());
-
+builder.Services.AddScoped<IContractUow>(sp => sp.GetRequiredService<UnitOfWork>());
+builder.Services.AddScoped<IRoomUow>(sp => sp.GetRequiredService<UnitOfWork>());
 builder.Services.AddScoped<IViolationUow>(sp => sp.GetRequiredService<UnitOfWork>());
 
 // Services (interfaces + concrete where other services request the concrete type)
@@ -46,6 +47,8 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IRegistrationService, RegistrationService>();
 builder.Services.AddScoped<IViolationService, ViolationService>();
+builder.Services.AddScoped<IContractService, ContractService>();
+builder.Services.AddScoped<IRoomService, RoomService>();
 
 //Repositories
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();

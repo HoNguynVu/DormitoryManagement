@@ -1,4 +1,5 @@
 ﻿using BusinessObject.Entities;
+using DataAccess.Interfaces;
 using DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -54,6 +55,10 @@ namespace DataAccess.Repository
         public void UpdateContract(Contract contract)
         {
             _context.Contracts.Update(contract);
+        }
+        public void AddRenewalReceipt(Receipt receipt)
+        {
+            _context.Receipts.AddAsync(receipt);
         }
     }
 }

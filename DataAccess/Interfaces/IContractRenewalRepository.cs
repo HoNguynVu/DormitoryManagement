@@ -1,11 +1,12 @@
 ﻿using BusinessObject.Entities;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataAccess.Repository
+namespace DataAccess.Interfaces
 {
     public interface IContractRenewalRepository
     {
@@ -23,5 +24,8 @@ namespace DataAccess.Repository
 
         // 5. Kiểm tra xem sinh viên đã có yêu cầu gia hạn (Invoice pending) nào chưa.
         Task<bool> HasPendingRenewalRequestAsync(string studentId);
+
+        void AddRenewalReceipt(Receipt receipt);
+
     }
 }
