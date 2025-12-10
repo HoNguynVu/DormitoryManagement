@@ -31,11 +31,6 @@ namespace DataAccess.Repository
                 .Where(c => c.StudentId == studentId)
                 .ToListAsync();
         }
-        public async Task<Contract?> GetActiveContractByStudentId(string studentId)
-        {
-            return await _context.Contracts
-                .FirstOrDefaultAsync(c => c.StudentId == studentId && c.ContractStatus == "Active");
-        }
         public void AddContract(Contract contract)
         {
             _context.Contracts.Add(contract);

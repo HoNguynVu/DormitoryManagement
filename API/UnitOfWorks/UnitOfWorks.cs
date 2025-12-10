@@ -22,7 +22,6 @@ namespace API.UnitOfWorks
         public IRoomRepository Rooms { get; }
 
         public IViolationRepository Violations { get; }
-        public IContractRepository Contracts { get; }
         public UnitOfWork(DormitoryDbContext context, IDbContextTransaction? dbContextTransaction)
         {
             _context = context;
