@@ -38,15 +38,18 @@ builder.Services.AddScoped<UnitOfWork>(sp => new UnitOfWork(sp.GetRequiredServic
 builder.Services.AddScoped<IAuthUow>(sp => sp.GetRequiredService<UnitOfWork>());
 builder.Services.AddScoped<IRegistrationUow>(sp => sp.GetRequiredService<UnitOfWork>());
 
+builder.Services.AddScoped<IViolationUow>(sp => sp.GetRequiredService<UnitOfWork>());
 
 // Services (interfaces + concrete where other services request the concrete type)
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IRegistrationService, RegistrationService>();
+builder.Services.AddScoped<IViolationService, ViolationService>();
 
 //Repositories
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<IViolationRepository, ViolationRepository>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BusinessObject.Entities;
 
-[Index("Token", Name = "UQ__RefreshT__1EB4F817B9CC7893", IsUnique = true)]
+[Index("Token", IsUnique = true)]
 public partial class RefreshToken
 {
     [Key]

@@ -17,5 +17,6 @@ namespace DataAccess.Interfaces
         void AddContract(Contract contract);
         void UpdateContract(Contract contract);
         void DeleteContract(Contract contract);
+        Task<Contract?> GetActiveContractByStudentId(string studentId);
     }
 }

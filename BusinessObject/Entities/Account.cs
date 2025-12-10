@@ -6,8 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BusinessObject.Entities;
 
-[Index("Username", Name = "UQ__Accounts__536C85E45C63AD51", IsUnique = true)]
-[Index("Email", Name = "UQ__Accounts__A9D105342D5B7769", IsUnique = true)]
+[Index("Username", IsUnique = true)]
+[Index("Email", IsUnique = true)]
 public partial class Account
 {
     [Key]
@@ -33,7 +33,7 @@ public partial class Account
     public DateTime CreatedAt { get; set; }
 
     [InverseProperty("User")]
-    public virtual BuildingManager? BuildingManager { get; set; }
+    public virtual ICollection<BuildingManager> BuildingManagers { get; set; } = new List<BuildingManager>();
 
     [InverseProperty("User")]
     public virtual ICollection<OtpCode> OtpCodes { get; set; } = new List<OtpCode>();
@@ -42,5 +42,5 @@ public partial class Account
     public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 
     [InverseProperty("User")]
-    public virtual Student? Student { get; set; }
+    public virtual ICollection<Student> Students { get; set; } = new List<Student>();
 }

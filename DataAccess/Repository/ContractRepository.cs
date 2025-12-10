@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -54,6 +54,15 @@ namespace DataAccess.Repository
             return await _context.Contracts
                 .Where(c => c.RoomId == roomId && c.ContractStatus == status)
                 .CountAsync();
+        }
+        public async Task<Contract?> GetActiveContractByStudentId(string studentId)
+        {
+            return await _context.Contracts
+                .Include(c => c.Student)
+                .Include(c => c.Room)
+                .Where(c => c.StudentId == studentId && (c.ContractStatus == "Active" || c.ContractStatus == "Pending"))
+                .OrderByDescending(c => c.StartDate)
+                .FirstOrDefaultAsync();
         }
     }
 }
