@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.UnitOfWorks
 {
-    public class UnitOfWork : IAuthUow, IRegistrationUow, IViolationUow, IRoomUow
+    public class UnitOfWork : IAuthUow, IRegistrationUow, IViolationUow, IRoomUow , IContractUow
     {
         private readonly DormitoryDbContext _context;
         private IDbContextTransaction? _transaction;
@@ -22,6 +22,8 @@ namespace API.UnitOfWorks
         public IRoomRepository Rooms { get; }
         public IRoomTypeRepository RoomTypes { get; }
         public IViolationRepository Violations { get; }
+
+        public IContractRenewalRepository ContractRenewals { get; }
         public UnitOfWork(DormitoryDbContext context, IDbContextTransaction? dbContextTransaction)
         {
             _context = context;
@@ -38,6 +40,7 @@ namespace API.UnitOfWorks
             Contracts = new ContractRepository(_context);
             Rooms = new RoomRepository(_context);
             RoomTypes = new RoomTypeRepository(_context);
+            ContractRenewals = new ContractRenewalRepository(_context);
         }
 
         public async Task BeginTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)

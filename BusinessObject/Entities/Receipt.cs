@@ -19,6 +19,10 @@ public partial class Receipt
 
     public DateTime PrintTime { get; set; }
 
+    [Column("ContractID")]
+    [StringLength(128)]
+    public string ContractId { get; set; } = null!;
+
     [StringLength(1000)]
     public string? Content { get; set; }
 
@@ -34,6 +38,10 @@ public partial class Receipt
     [Column("RelatedObjectID")]
     [StringLength(128)]
     public string? RelatedObjectId { get; set; }
+
+    [ForeignKey("ContractId")]
+    [InverseProperty("Receipts")]
+    public virtual Contract Contract { get; set; } = null!;
 
     [ForeignKey("StudentId")]
     [InverseProperty("Receipts")]
