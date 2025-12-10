@@ -46,5 +46,20 @@ namespace DataAccess.Repository
                                  && f.Status == "Pending"
                                  && f.RegistrationTime >= threshold);
         }
+        public async Task<Dictionary<string, int>> CountPendingFormsByRoomAsync()
+        {
+            // Chỉ đếm các đơn Pending còn hạn (ví dụ trong 10-15p gần nhất)
+            // Nếu không cần lọc thời gian thì bỏ dòng RegistrationTime
+            var threshold = DateTime.UtcNow.AddMinutes(-15);
+
+            var query = await _context.RegistrationForms
+                .Where(f => f.Status == "Pending" && f.RegistrationTime >= threshold)
+                .GroupBy(f => f.RoomId)
+                .Select(g => new { RoomId = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            // Chuyển về Dictionary để tra cứu cực nhanh: Key = RoomId, Value = Count
+            return query.ToDictionary(x => x.RoomId, x => x.Count);
+        }
     }
 }
