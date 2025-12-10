@@ -3,10 +3,12 @@ using DataAccess.Interfaces;
 using DataAccess.Models;
 using Microsoft.EntityFrameworkCore.Storage;
 using DataAccess.Repository;
+using System.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.UnitOfWorks
 {
-    public class UnitOfWork : IAuthUow, IViolationUow
+    public class UnitOfWork : IAuthUow, IRegistrationUow, IViolationUow
     {
         private readonly DormitoryDbContext _context;
         private IDbContextTransaction? _transaction;
@@ -15,6 +17,9 @@ namespace API.UnitOfWorks
         public IRefreshTokenRepository RefreshTokens { get; }
         public IOtpRepository OtpCodes { get; }
         public IStudentRepository Students { get; }
+        public IRegistrationFormRepository RegistrationForms { get; }
+        public IContractRepository Contracts { get; }
+        public IRoomRepository Rooms { get; }
 
         public IViolationRepository Violations { get; }
         public IContractRepository Contracts { get; }
@@ -30,7 +35,18 @@ namespace API.UnitOfWorks
             Students = new StudentRepository(_context);
             OtpCodes = new OtpRepository(_context);
             RefreshTokens = new RefreshTokenRepository(_context);
+            RegistrationForms = new RegistrationFormRepository(_context);
+            Contracts = new ContractRepository(_context);
+            Rooms = new RoomRepository(_context);
+        }
 
+        public async Task BeginTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
+        {
+            if (_transaction == null)
+            {
+                // Truyền isolationLevel vào hàm của EF Core
+                _transaction = await _context.Database.BeginTransactionAsync(isolationLevel);
+            }
         }
 
         // Triển khai các hàm Transaction
