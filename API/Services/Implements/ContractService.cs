@@ -38,7 +38,7 @@ namespace API.Services.Implements
             {
                 ReceiptId = IdGenerator.GenerateUniqueSuffix(),
                 StudentId = studentId,
-                // ContractId = activeContract.Id, // theem sau
+                ContractId = activeContract.ContractId, 
                 Amount = totalAmount,
                 PaymentType = "Renewal",
                 Status = "Pending",
