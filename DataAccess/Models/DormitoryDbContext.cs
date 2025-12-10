@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using BusinessObject.Entities;
+
 namespace DataAccess.Models;
 
 public partial class DormitoryDbContext : DbContext
@@ -43,6 +44,8 @@ public partial class DormitoryDbContext : DbContext
 
     public virtual DbSet<Room> Rooms { get; set; }
 
+    public virtual DbSet<RoomType> RoomTypes { get; set; }
+
     public virtual DbSet<School> Schools { get; set; }
 
     public virtual DbSet<Student> Students { get; set; }
@@ -53,155 +56,169 @@ public partial class DormitoryDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=QUANGVINH\\MSSQL;Database=DormitoryDB;User Id=sa;Password=123;TrustServerCertificate=True;");
+        => optionsBuilder.UseSqlServer("Server=localhost\\SQLEXPRESS,1433;Database=DormitoryDB;User Id=Admin1;Password=vudz1234;TrustServerCertificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Account>(entity =>
         {
-            entity.HasKey(e => e.UserId);
-                                            
+            entity.HasKey(e => e.UserId).HasName("PK__Accounts__1788CCAC16EB91DC");
+
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
         });
 
         modelBuilder.Entity<Building>(entity =>
         {
-            entity.HasKey(e => e.BuildingId);
+            entity.HasKey(e => e.BuildingId).HasName("PK__Building__5463CDE409EA8DCB");
 
             entity.HasOne(d => d.Manager).WithMany(p => p.Buildings)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_Buildings_BuildingManagers");
         });
 
         modelBuilder.Entity<BuildingManager>(entity =>
         {
-            entity.HasKey(e => e.ManagerId);
+            entity.HasKey(e => e.ManagerId).HasName("PK__Building__3BA2AA815C9937F7");
 
-            entity.HasOne(d => d.User).WithMany(p => p.BuildingManagers);
+            entity.HasOne(d => d.User).WithMany(p => p.BuildingManagers).HasConstraintName("FK_BuildingManagers_Accounts");
         });
 
         modelBuilder.Entity<Contract>(entity =>
         {
-            entity.HasKey(e => e.ContractId);
+            entity.HasKey(e => e.ContractId).HasName("PK__Contract__C90D34095DBB4C7D");
 
-            entity.HasOne(d => d.Room).WithMany(p => p.Contracts);
+            entity.HasOne(d => d.Room).WithMany(p => p.Contracts).HasConstraintName("FK_Contracts_Rooms");
 
-            entity.HasOne(d => d.Student).WithMany(p => p.Contracts);
+            entity.HasOne(d => d.Student).WithMany(p => p.Contracts).HasConstraintName("FK_Contracts_Students");
         });
 
         modelBuilder.Entity<Equipment>(entity =>
         {
-            entity.HasKey(e => e.EquipmentId);
+            entity.HasKey(e => e.EquipmentId).HasName("PK__Equipmen__34474599DB3ACF4F");
 
-            entity.HasOne(d => d.Room).WithMany(p => p.Equipment);
+            entity.HasOne(d => d.Room).WithMany(p => p.Equipment).HasConstraintName("FK_Equipment_Rooms");
         });
 
         modelBuilder.Entity<HealthInsurance>(entity =>
         {
-            entity.HasKey(e => e.InsuranceId);
+            entity.HasKey(e => e.InsuranceId).HasName("PK__HealthIn__74231BC495664531");
 
-            entity.HasOne(d => d.Student).WithMany(p => p.HealthInsurances);
+            entity.HasOne(d => d.Student).WithMany(p => p.HealthInsurances).HasConstraintName("FK_HealthInsurances_Students");
         });
 
         modelBuilder.Entity<OtpCode>(entity =>
         {
-            entity.HasKey(e => e.OtpId);
+            entity.HasKey(e => e.OtpId).HasName("PK__OtpCodes__3143C4839B0134C2");
 
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
 
-            entity.HasOne(d => d.User).WithMany(p => p.OtpCodes);
+            entity.HasOne(d => d.User).WithMany(p => p.OtpCodes).HasConstraintName("FK_OtpCodes_Accounts");
         });
 
         modelBuilder.Entity<Parameter>(entity =>
         {
-            entity.HasKey(e => e.ParameterId);
+            entity.HasKey(e => e.ParameterId).HasName("PK__Paramete__F80C6297281B0D1D");
         });
 
         modelBuilder.Entity<Priority>(entity =>
         {
-            entity.HasKey(e => e.PriorityId);
+            entity.HasKey(e => e.PriorityId).HasName("PK__Prioriti__D0A3D0DE05A9DAF6");
         });
 
         modelBuilder.Entity<Receipt>(entity =>
         {
-            entity.HasKey(e => e.ReceiptId);
+            entity.HasKey(e => e.ReceiptId).HasName("PK__Receipts__CC08C40069DC1D4E");
 
             entity.Property(e => e.PrintTime).HasDefaultValueSql("(getdate())");
 
-            entity.HasOne(d => d.Student).WithMany(p => p.Receipts);
+            entity.HasOne(d => d.Student).WithMany(p => p.Receipts).HasConstraintName("FK_Receipts_Students");
         });
 
         modelBuilder.Entity<RefreshToken>(entity =>
         {
-            entity.HasKey(e => e.TokenId);
+            entity.HasKey(e => e.TokenId).HasName("PK__RefreshT__658FEE8A46B1F826");
 
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
 
-            entity.HasOne(d => d.User).WithMany(p => p.RefreshTokens);
+            entity.HasOne(d => d.User).WithMany(p => p.RefreshTokens).HasConstraintName("FK_RefreshTokens_Accounts");
         });
 
         modelBuilder.Entity<RegistrationForm>(entity =>
         {
-            entity.HasKey(e => e.FormId);
+            entity.HasKey(e => e.FormId).HasName("PK__Registra__FB05B7BD84603F22");
 
             entity.Property(e => e.RegistrationTime).HasDefaultValueSql("(getdate())");
 
-            entity.HasOne(d => d.Room).WithMany(p => p.RegistrationForms);
+            entity.HasOne(d => d.Room).WithMany(p => p.RegistrationForms).HasConstraintName("FK_RegistrationForms_Rooms");
 
-            entity.HasOne(d => d.Student).WithMany(p => p.RegistrationForms);
+            entity.HasOne(d => d.Student).WithMany(p => p.RegistrationForms).HasConstraintName("FK_RegistrationForms_Students");
         });
 
         modelBuilder.Entity<Relative>(entity =>
         {
-            entity.HasKey(e => e.RelativeId);
+            entity.HasKey(e => e.RelativeId).HasName("PK__Relative__951FE701BA7793F5");
 
-            entity.HasOne(d => d.Student).WithMany(p => p.Relatives);
+            entity.HasOne(d => d.Student).WithMany(p => p.Relatives).HasConstraintName("FK_Relatives_Students");
         });
 
         modelBuilder.Entity<Room>(entity =>
         {
-            entity.HasKey(e => e.RoomId);
+            entity.HasKey(e => e.RoomId).HasName("PK__Rooms__328639199FF7B410");
 
-            entity.HasOne(d => d.Building).WithMany(p => p.Rooms);
+            entity.HasOne(d => d.Building).WithMany(p => p.Rooms).HasConstraintName("FK_Rooms_Buildings");
+
+            entity.HasOne(d => d.RoomType).WithMany(p => p.Rooms)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_Rooms_RoomTypes");
+        });
+
+        modelBuilder.Entity<RoomType>(entity =>
+        {
+            entity.HasKey(e => e.RoomTypeId).HasName("PK__RoomType__BCC8961174B1E444");
         });
 
         modelBuilder.Entity<School>(entity =>
         {
-            entity.HasKey(e => e.SchoolId);
+            entity.HasKey(e => e.SchoolId).HasName("PK__Schools__3DA4677BA9E5FA04");
         });
 
         modelBuilder.Entity<Student>(entity =>
         {
-            entity.HasKey(e => e.StudentId);
+            entity.HasKey(e => e.StudentId).HasName("PK__Students__32C52A798C8E0FFB");
 
             entity.HasOne(d => d.Priority).WithMany(p => p.Students)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_Students_Priorities");
 
             entity.HasOne(d => d.School).WithMany(p => p.Students)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_Students_Schools");
 
             entity.HasOne(d => d.User).WithMany(p => p.Students)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_Students_Accounts");
         });
 
         modelBuilder.Entity<UtilityBill>(entity =>
         {
-            entity.HasKey(e => e.BillId);
+            entity.HasKey(e => e.BillId).HasName("PK__UtilityB__11F2FC4AAEF45AF5");
 
-            entity.HasOne(d => d.Room).WithMany(p => p.UtilityBills);
+            entity.HasOne(d => d.Room).WithMany(p => p.UtilityBills).HasConstraintName("FK_UtilityBills_Rooms");
         });
 
         modelBuilder.Entity<Violation>(entity =>
         {
-            entity.HasKey(e => e.ViolationId);
+            entity.HasKey(e => e.ViolationId).HasName("PK__Violatio__18B6DC28FB14D104");
 
             entity.Property(e => e.ViolationTime).HasDefaultValueSql("(getdate())");
 
             entity.HasOne(d => d.ReportingManager).WithMany(p => p.Violations)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_Violations_BuildingManagers");
 
-            entity.HasOne(d => d.Student).WithMany(p => p.Violations);
+            entity.HasOne(d => d.Student).WithMany(p => p.Violations).HasConstraintName("FK_Violations_Students");
         });
 
         OnModelCreatingPartial(modelBuilder);

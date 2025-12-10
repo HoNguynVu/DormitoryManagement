@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BusinessObject.Entities;
 
-[Index("RoomName", IsUnique = true)]
+[Index("RoomName", Name = "UQ__Rooms__6B500B559934EDDC", IsUnique = true)]
 public partial class Room
 {
     [Key]
@@ -18,11 +18,12 @@ public partial class Room
     [StringLength(128)]
     public string BuildingId { get; set; } = null!;
 
-    [StringLength(100)]
-    public string RoomName { get; set; } = null!;
+    [Column("RoomTypeID")]
+    [StringLength(128)]
+    public string? RoomTypeId { get; set; }
 
     [StringLength(100)]
-    public string? RoomType { get; set; }
+    public string RoomName { get; set; } = null!;
 
     public int Capacity { get; set; }
 
@@ -47,6 +48,10 @@ public partial class Room
 
     [InverseProperty("Room")]
     public virtual ICollection<RegistrationForm> RegistrationForms { get; set; } = new List<RegistrationForm>();
+
+    [ForeignKey("RoomTypeId")]
+    [InverseProperty("Rooms")]
+    public virtual RoomType? RoomType { get; set; }
 
     [InverseProperty("Room")]
     public virtual ICollection<UtilityBill> UtilityBills { get; set; } = new List<UtilityBill>();
