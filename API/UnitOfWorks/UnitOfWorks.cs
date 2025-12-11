@@ -89,5 +89,16 @@ namespace API.UnitOfWorks
                 _transaction = null;
             }
         }
+
+        // Persist non-transactional changes
+        public async Task<int> SaveChangesAsync()
+        {
+            return await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> BuildingExistsAsync(string buildingId)
+        {
+            return await _context.Buildings.AnyAsync(b => b.BuildingID == buildingId);
+        }
     }
 }
