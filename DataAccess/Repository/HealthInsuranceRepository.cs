@@ -23,7 +23,7 @@ namespace DataAccess.Repository
         {
             return await _context.HealthInsurances
                 .Include(h => h.Student)
-                .Where(h => h.StudentId == studentId && h.Status == "Active")
+                .Where(h => h.StudentID == studentId && h.Status == "Active")
                 .OrderByDescending(h => h.EndDate)
                 .FirstOrDefaultAsync();
         }
@@ -31,7 +31,7 @@ namespace DataAccess.Repository
         public async Task<bool> HasPendingInsuranceRequestAsync(string studentId)
         {
             return await _context.Receipts
-                .AnyAsync(i => i.StudentId == studentId
+                .AnyAsync(i => i.StudentID == studentId
                                && i.PaymentType == "HealthInsurance" 
                                && i.Status == "Pending");
         }
@@ -39,7 +39,7 @@ namespace DataAccess.Repository
         public async Task<HealthInsurance?> GetLatestInsuranceByStudentIdAsync(string studentId)
         {
             return await _context.HealthInsurances
-                .Where(h => h.StudentId == studentId)
+                .Where(h => h.StudentID == studentId)
                 //.OrderByDescending(h => h.CreatedAt) // Lấy đơn mới tạo gần đây nhất
                 .FirstOrDefaultAsync();
         }

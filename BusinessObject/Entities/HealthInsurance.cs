@@ -21,5 +21,24 @@ namespace BusinessObject.Entities
 
         [StringLength(255)]
         public string InitialHospital { get; set; }
+
+        [StringLength(50)]
+        public string? CardNumber { get; set; } 
+
+        [Required]
+        public DateOnly StartDate { get; set; }
+
+        [Required]
+        public DateOnly EndDate { get; set; }
+
+        [Required]
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal Cost { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        public string Status { get; set; } = "Pending"; // Mặc định là Pending
+
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
 }
