@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace BusinessObject.Entities
+namespace BusinessObject.Base
 {
     // Abstract để EF Core không tạo bảng Persons
     public abstract class Person
