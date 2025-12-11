@@ -54,18 +54,18 @@ namespace API.Services.Implements
                 // Add receipt
                 var newReceipt = new Receipt
                 {
-                    ReceiptId = IdGenerator.GenerateUniqueSuffix(),
-                    StudentId = studentId,
-                    ContractId = activeContract.ContractId,
+                    ReceiptID = IdGenerator.GenerateUniqueSuffix(),
+                    StudentID = studentId,
+                    RelatedObjectID = activeContract.ContractID,
                     Amount = totalAmount,
                     PaymentType = "Renewal",
                     Status = "Pending",
                     PrintTime = DateTime.Now,
-                    Content = $"Renewal fee for {monthsToExtend} months for contract {activeContract.ContractId}"
+                    Content = $"Renewal fee for {monthsToExtend} months for contract {activeContract.ContractID}"
                 };
                 _uow.ContractRenewals.AddRenewalReceipt(newReceipt);
                 await _uow.CommitAsync();
-                return (true, newReceipt.ReceiptId, 201);
+                return (true, newReceipt.ReceiptID, 201);
             }
             catch (Exception ex)
             {

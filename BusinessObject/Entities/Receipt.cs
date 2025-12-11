@@ -1,41 +1,38 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
-namespace BusinessObject.Entities;
-
-public partial class Receipt
+namespace BusinessObject.Entities
 {
-    [Key]
-    [Column("ReceiptID")]
-    [StringLength(128)]
-    public string ReceiptId { get; set; } = null!;
+    [Table("Receipts")]
+    public class Receipt
+    {
+        [Key]
+        [StringLength(128)]
+        public string ReceiptID { get; set; }
 
-    [Column("StudentID")]
-    [StringLength(128)]
-    public string StudentId { get; set; } = null!;
+        [Required]
+        [StringLength(128)]
+        public string StudentID { get; set; }
+        [ForeignKey("StudentID")]
+        public Student Student { get; set; }
 
-    public DateTime PrintTime { get; set; }
+        public DateTime PrintTime { get; set; } = DateTime.Now;
 
-    [StringLength(1000)]
-    public string? Content { get; set; }
+        [StringLength(1000)]
+        public string Content { get; set; }
 
-    [Column(TypeName = "decimal(18, 2)")]
-    public decimal Amount { get; set; }
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal Amount { get; set; }
 
-    [StringLength(20)]
-    public string Status { get; set; } = null!;
+        [Required]
+        [StringLength(20)]
+        public string Status { get; set; }
 
-    [StringLength(100)]
-    public string PaymentType { get; set; } = null!;
+        [StringLength(100)]
+        public string PaymentType { get; set; }
 
-    [Column("RelatedObjectID")]
-    [StringLength(128)]
-    public string RelatedObjectId { get; set; } = null!;
-
-    [ForeignKey("StudentId")]
-    [InverseProperty("Receipts")]
-    public virtual Student Student { get; set; } = null!;
+        [StringLength(128)]
+        public string RelatedObjectID { get; set; }
+    }
 }

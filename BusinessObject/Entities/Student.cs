@@ -1,79 +1,53 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
+using BusinessObject.Base;
 
-namespace BusinessObject.Entities;
-
-[Index("CitizenId", Name = "UQ__Students__6E49FBEDEAF5A095", IsUnique = true)]
-[Index("Email", Name = "UQ__Students__A9D105344847E788", IsUnique = true)]
-public partial class Student
+namespace BusinessObject.Entities
 {
-    [Key]
-    [Column("StudentID")]
-    [StringLength(128)]
-    public string StudentId { get; set; } = null!;
+    [Table("Students")]
+    public class Student : Person
+    {
+        [Key]
+        [StringLength(128)]
+        public string StudentID { get; set; }
 
-    [Column("UserID")]
-    [StringLength(128)]
-    public string? UserId { get; set; }
+        [StringLength(128)]
+        public string AccountID { get; set; }
+        [ForeignKey("AccountID")]
+        public Account Account { get; set; }
 
-    [StringLength(100)]
-    public string FullName { get; set; } = null!;
+        [Required]
+        [StringLength(20)]
+        public string CitizenID { get; set; }
 
-    [Column("CitizenID")]
-    [StringLength(20)]
-    public string CitizenId { get; set; } = null!;
+        [StringLength(255)]
+        public string CitizenIDIssuePlace { get; set; }
 
-    [Column("CitizenIDIssuePlace")]
-    [StringLength(255)]
-    public string? CitizenIdissuePlace { get; set; }
+        // Override để map vào cột CurrentAddress trong SQL
+        [Column("CurrentAddress")]
+        public override string Address { get; set; }
 
-    [StringLength(500)]
-    public string? CurrentAddress { get; set; }
+        [Required]
+        [StringLength(100)]
+        public string Email { get; set; }
 
-    [StringLength(20)]
-    public string? PhoneNumber { get; set; }
+        [StringLength(128)]
+        public string SchoolID { get; set; }
+        [ForeignKey("SchoolID")]
+        public School School { get; set; }
 
-    [StringLength(100)]
-    public string Email { get; set; } = null!;
+        [StringLength(128)]
+        public string PriorityID { get; set; }
+        [ForeignKey("PriorityID")]
+        public Priority Priority { get; set; }
 
-    [Column("SchoolID")]
-    [StringLength(128)]
-    public string? SchoolId { get; set; }
-
-    [Column("PriorityID")]
-    [StringLength(128)]
-    public string? PriorityId { get; set; }
-
-    [InverseProperty("Student")]
-    public virtual ICollection<Contract> Contracts { get; set; } = new List<Contract>();
-
-    [InverseProperty("Student")]
-    public virtual ICollection<HealthInsurance> HealthInsurances { get; set; } = new List<HealthInsurance>();
-
-    [ForeignKey("PriorityId")]
-    [InverseProperty("Students")]
-    public virtual Priority? Priority { get; set; }
-
-    [InverseProperty("Student")]
-    public virtual ICollection<Receipt> Receipts { get; set; } = new List<Receipt>();
-
-    [InverseProperty("Student")]
-    public virtual ICollection<RegistrationForm> RegistrationForms { get; set; } = new List<RegistrationForm>();
-
-    [InverseProperty("Student")]
-    public virtual ICollection<Relative> Relatives { get; set; } = new List<Relative>();
-
-    [ForeignKey("SchoolId")]
-    [InverseProperty("Students")]
-    public virtual School? School { get; set; }
-
-    [ForeignKey("UserId")]
-    [InverseProperty("Students")]
-    public virtual Account? User { get; set; }
-
-    [InverseProperty("Student")]
-    public virtual ICollection<Violation> Violations { get; set; } = new List<Violation>();
+        // Navigation Properties
+        public ICollection<Relative> Relatives { get; set; }
+        public ICollection<Contract> Contracts { get; set; }
+        public ICollection<RegistrationForm> RegistrationForms { get; set; }
+        public ICollection<Violation> Violations { get; set; }
+        public ICollection<Receipt> Receipts { get; set; }
+        public ICollection<HealthInsurance> HealthInsurances { get; set; }
+    }
 }

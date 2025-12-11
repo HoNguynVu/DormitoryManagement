@@ -1,42 +1,37 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
-namespace BusinessObject.Entities;
-
-public partial class Violation
+namespace BusinessObject.Entities
 {
-    [Key]
-    [Column("ViolationID")]
-    [StringLength(128)]
-    public string ViolationId { get; set; } = null!;
+    [Table("Violations")]
+    public class Violation
+    {
+        [Key]
+        [StringLength(128)]
+        public string ViolationID { get; set; }
 
-    [Column("StudentID")]
-    [StringLength(128)]
-    public string StudentId { get; set; } = null!;
+        [Required]
+        [StringLength(128)]
+        public string StudentID { get; set; }
+        [ForeignKey("StudentID")]
+        public Student Student { get; set; }
 
-    [Column("ReportingManagerID")]
-    [StringLength(128)]
-    public string? ReportingManagerId { get; set; }
+        [StringLength(128)]
+        public string ReportingManagerID { get; set; }
+        [ForeignKey("ReportingManagerID")]
+        public BuildingManager ReportingManager { get; set; }
 
-    [StringLength(255)]
-    public string ViolationAct { get; set; } = null!;
+        [Required]
+        [StringLength(255)]
+        public string ViolationAct { get; set; }
 
-    public DateTime ViolationTime { get; set; }
+        public DateTime ViolationTime { get; set; } = DateTime.Now;
 
-    [StringLength(1000)]
-    public string? Description { get; set; }
+        [StringLength(1000)]
+        public string Description { get; set; }
 
-    [StringLength(255)]
-    public string? Resolution { get; set; }
-
-    [ForeignKey("ReportingManagerId")]
-    [InverseProperty("Violations")]
-    public virtual BuildingManager? ReportingManager { get; set; }
-
-    [ForeignKey("StudentId")]
-    [InverseProperty("Violations")]
-    public virtual Student Student { get; set; } = null!;
+        [StringLength(255)]
+        public string Resolution { get; set; }
+    }
 }

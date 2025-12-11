@@ -4,36 +4,22 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace BusinessObject.Entities;
-
-public partial class HealthInsurance
+namespace BusinessObject.Entities
 {
-    [Key]
-    [Column("InsuranceID")]
-    [StringLength(128)]
-    public string InsuranceId { get; set; } = null!;
+    [Table("HealthInsurances")]
+    public class HealthInsurance
+    {
+        [Key]
+        [StringLength(128)]
+        public string InsuranceID { get; set; }
 
-    [Column("StudentID")]
-    [StringLength(128)]
-    public string StudentId { get; set; } = null!;
+        [Required]
+        [StringLength(128)]
+        public string StudentID { get; set; }
+        [ForeignKey("StudentID")]
+        public Student Student { get; set; }
 
-    [StringLength(50)]
-    public string? CardNumber { get; set; }
-
-    [StringLength(255)]
-    public string InitialHospital { get; set; } = null!;
-
-    public DateOnly StartDate { get; set; }
-
-    public DateOnly EndDate { get; set; }
-
-    [Column(TypeName = "decimal(18, 2)")]
-    public decimal Cost { get; set; }
-
-    [StringLength(50)]
-    public string Status { get; set; } = null!;
-
-    [ForeignKey("StudentId")]
-    [InverseProperty("HealthInsurances")]
-    public virtual Student Student { get; set; } = null!;
+        [StringLength(255)]
+        public string InitialHospital { get; set; }
+    }
 }

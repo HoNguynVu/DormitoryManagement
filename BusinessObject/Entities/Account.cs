@@ -6,8 +6,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BusinessObject.Entities;
 
-[Index("Username", Name = "UQ__Accounts__536C85E46D0DB406", IsUnique = true)]
-[Index("Email", Name = "UQ__Accounts__A9D10534AFC1C152", IsUnique = true)]
+[Table("Accounts")]
+[Index("Username", Name = "UQ__Accounts__536C85E491C65809", IsUnique = true)]
+[Index("Email", Name = "UQ__Accounts__A9D10534E8EB8D7E", IsUnique = true)]
 public partial class Account
 {
     [Key]
@@ -15,32 +16,35 @@ public partial class Account
     [StringLength(128)]
     public string UserId { get; set; } = null!;
 
+    [Required]
     [StringLength(100)]
     public string Username { get; set; } = null!;
 
+    [Required]
     [StringLength(255)]
     public string Email { get; set; } = null!;
 
-    public string? PasswordHash { get; set; }
+    public string PasswordHash { get; set; } = null!;
 
+    [Required]
     [StringLength(20)]
     public string Role { get; set; } = null!;
 
-    public bool IsActive { get; set; }
+    public bool IsActive { get; set; } = true;
 
-    public bool IsEmailVerified { get; set; }
+    public bool IsEmailVerified { get; set; } = false;
 
-    public DateTime CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-    [InverseProperty("User")]
+    [InverseProperty("Account")]
     public virtual ICollection<BuildingManager> BuildingManagers { get; set; } = new List<BuildingManager>();
 
-    [InverseProperty("User")]
+    [InverseProperty("Account")]
     public virtual ICollection<OtpCode> OtpCodes { get; set; } = new List<OtpCode>();
 
-    [InverseProperty("User")]
+    [InverseProperty("Account")]
     public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 
-    [InverseProperty("User")]
+    [InverseProperty("Account")]
     public virtual ICollection<Student> Students { get; set; } = new List<Student>();
 }

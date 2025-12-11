@@ -34,7 +34,7 @@ namespace DataAccess.Repository
         {
             return await _context.OtpCodes
                 .Where(o => o.Code == otp)
-                .Select(o => o.User)
+                .Select(o => o.Account)
                 .FirstOrDefaultAsync();
         }
         public void AddAccount(Account account)

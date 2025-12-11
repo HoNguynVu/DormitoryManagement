@@ -2,20 +2,19 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
-namespace BusinessObject.Entities;
-
-public partial class Priority
+namespace BusinessObject.Entities
 {
-    [Key]
-    [Column("PriorityID")]
-    [StringLength(128)]
-    public string PriorityId { get; set; } = null!;
+    [Table("Priorities")]
+    public class Priority
+    {
+        [Key]
+        [StringLength(128)]
+        public string PriorityID { get; set; }
 
-    [StringLength(255)]
-    public string? PriorityDescription { get; set; }
+        [StringLength(255)]
+        public string PriorityDescription { get; set; }
 
-    [InverseProperty("Priority")]
-    public virtual ICollection<Student> Students { get; set; } = new List<Student>();
+        public ICollection<Student> Students { get; set; }
+    }
 }

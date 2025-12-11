@@ -41,8 +41,8 @@ namespace API.Services.Implements
                     // 📌 Tạo OTP mới
                     var otp = new OtpCode
                     {
-                        OtpId = "OTP-" + IdGenerator.GenerateUniqueSuffix(),
-                        UserId = existingAccount.UserId,
+                        OtpID = "OTP-" + IdGenerator.GenerateUniqueSuffix(),
+                        AccountID = existingAccount.UserId,
                         Code = GenerateOTP(),     // ví dụ 6 số
                         Purpose = "EmailVerify",
                         CreatedAt = DateTime.UtcNow,
@@ -92,21 +92,21 @@ namespace API.Services.Implements
 
             var newStudent = new Student
             {
-                StudentId = registerRequest.StudentId,
-                UserId = newAccount.UserId,
+                StudentID = registerRequest.StudentId,
+                AccountID = newAccount.UserId,
                 FullName = registerRequest.FullName,
-                CitizenId = registerRequest.CitizenId,
+                CitizenID = registerRequest.CitizenId,
                 PhoneNumber = registerRequest.PhoneNumber,
-                SchoolId = registerRequest.SchoolId,
-                PriorityId = registerRequest.PriorityId,
+                SchoolID = registerRequest.SchoolId,
+                PriorityID = registerRequest.PriorityId,
                 Email = registerRequest.Email
             };
 
             // 📌 Tạo OTP verify email
             var newOtp = new OtpCode
             {
-                OtpId = "OTP-" + IdGenerator.GenerateUniqueSuffix(),
-                UserId = newAccount.UserId,
+                OtpID = "OTP-" + IdGenerator.GenerateUniqueSuffix(),
+                AccountID = newAccount.UserId,
                 Code = GenerateOTP(),
                 Purpose = "EmailVerify",
                 CreatedAt = DateTime.UtcNow,
@@ -235,8 +235,8 @@ namespace API.Services.Implements
             }
             var otp = new OtpCode
             {
-                OtpId = "OTP-" + IdGenerator.GenerateUniqueSuffix(),
-                UserId = user.UserId,
+                OtpID = "OTP-" + IdGenerator.GenerateUniqueSuffix(),
+                AccountID = user.UserId,
                 Code = GenerateOTP(),
                 Purpose = "PasswordReset",
                 CreatedAt = DateTime.UtcNow,

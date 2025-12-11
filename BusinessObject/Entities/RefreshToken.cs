@@ -1,32 +1,28 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
-namespace BusinessObject.Entities;
-
-[Index("Token", Name = "UQ__RefreshT__1EB4F8170357A272", IsUnique = true)]
-public partial class RefreshToken
+namespace BusinessObject.Entities
 {
-    [Key]
-    [Column("TokenID")]
-    [StringLength(128)]
-    public string TokenId { get; set; } = null!;
+    [Table("RefreshTokens")]
+    public class RefreshToken
+    {
+        [Key]
+        [StringLength(128)]
+        public string TokenID { get; set; }
 
-    [Column("UserID")]
-    [StringLength(128)]
-    public string UserId { get; set; } = null!;
+        [Required]
+        [StringLength(128)]
+        public string AccountID { get; set; }
+        [ForeignKey("AccountID")]
+        public Account Account { get; set; }
 
-    public string Token { get; set; } = null!;
+        [Required]
+        [StringLength(450)]
+        public string Token { get; set; }
 
-    public DateTime ExpiresAt { get; set; }
-
-    public DateTime CreatedAt { get; set; }
-
-    public DateTime? RevokedAt { get; set; }
-
-    [ForeignKey("UserId")]
-    [InverseProperty("RefreshTokens")]
-    public virtual Account User { get; set; } = null!;
+        public DateTime ExpiresAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime? RevokedAt { get; set; }
+    }
 }

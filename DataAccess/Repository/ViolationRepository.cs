@@ -19,7 +19,7 @@ namespace DataAccess.Repository
             return await _context.Violations
                 .Include(v => v.Student)
                 .Include(v => v.ReportingManager)
-                .FirstOrDefaultAsync(v => v.ViolationId == violationId);
+                .FirstOrDefaultAsync(v => v.ViolationID == violationId);
         }
 
         public async Task<IEnumerable<Violation>> GetViolationsByStudentId(string studentId)
@@ -27,7 +27,7 @@ namespace DataAccess.Repository
             return await _context.Violations
                 .Include(v => v.Student)
                 .Include(v => v.ReportingManager)
-                .Where(v => v.StudentId == studentId)
+                .Where(v => v.StudentID == studentId)
                 .OrderByDescending(v => v.ViolationTime)
                 .ToListAsync();
         }
@@ -54,7 +54,7 @@ namespace DataAccess.Repository
         public async Task<int> CountViolationsByStudentId(string studentId)
         {
             return await _context.Violations
-                .Where(v => v.StudentId == studentId)
+                .Where(v => v.StudentID == studentId)
                 .CountAsync();
         }
 

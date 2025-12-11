@@ -42,7 +42,7 @@ namespace DataAccess.Repository
             var threshold = DateTime.UtcNow.AddMinutes(-10);
 
             return await _context.RegistrationForms
-                .CountAsync(f => f.RoomId == roomId
+                .CountAsync(f => f.RoomID == roomId
                                  && f.Status == "Pending"
                                  && f.RegistrationTime >= threshold);
         }
@@ -54,7 +54,7 @@ namespace DataAccess.Repository
 
             var query = await _context.RegistrationForms
                 .Where(f => f.Status == "Pending" && f.RegistrationTime >= threshold)
-                .GroupBy(f => f.RoomId)
+                .GroupBy(f => f.RoomID)
                 .Select(g => new { RoomId = g.Key, Count = g.Count() })
                 .ToListAsync();
 

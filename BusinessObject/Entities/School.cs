@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BusinessObject.Entities;
 
-[Index("SchoolName", Name = "UQ__Schools__E3D5B6A54B65F3C0", IsUnique = true)]
+[Table("Schools")]
 public partial class School
 {
     [Key]
@@ -14,11 +14,12 @@ public partial class School
     [StringLength(128)]
     public string SchoolId { get; set; } = null!;
 
+    [Required]
     [StringLength(255)]
     public string SchoolName { get; set; } = null!;
 
     [StringLength(500)]
-    public string? Address { get; set; }
+    public string Address { get; set; } = null!;
 
     [InverseProperty("School")]
     public virtual ICollection<Student> Students { get; set; } = new List<Student>();
