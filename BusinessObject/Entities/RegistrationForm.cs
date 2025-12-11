@@ -1,36 +1,32 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
-namespace BusinessObject.Entities;
-
-public partial class RegistrationForm
+namespace BusinessObject.Entities
 {
-    [Key]
-    [Column("FormID")]
-    [StringLength(128)]
-    public string FormId { get; set; } = null!;
+    [Table("RegistrationForms")]
+    public class RegistrationForm
+    {
+        [Key]
+        [StringLength(128)]
+        public string FormID { get; set; }
 
-    [Column("StudentID")]
-    [StringLength(128)]
-    public string StudentId { get; set; } = null!;
+        [Required]
+        [StringLength(128)]
+        public string StudentID { get; set; }
+        [ForeignKey("StudentID")]
+        public Student Student { get; set; }
 
-    [Column("RoomID")]
-    [StringLength(128)]
-    public string RoomId { get; set; } = null!;
+        [Required]
+        [StringLength(128)]
+        public string RoomID { get; set; }
+        [ForeignKey("RoomID")]
+        public Room Room { get; set; }
 
-    public DateTime RegistrationTime { get; set; }
+        public DateTime RegistrationTime { get; set; } = DateTime.Now;
 
-    [StringLength(30)]
-    public string Status { get; set; } = null!;
-
-    [ForeignKey("RoomId")]
-    [InverseProperty("RegistrationForms")]
-    public virtual Room Room { get; set; } = null!;
-
-    [ForeignKey("StudentId")]
-    [InverseProperty("RegistrationForms")]
-    public virtual Student Student { get; set; } = null!;
+        [Required]
+        [StringLength(30)]
+        public string Status { get; set; }
+    }
 }

@@ -4,27 +4,26 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace BusinessObject.Entities;
-
-[Index("BuildingName", Name = "UQ__Building__2D13A8E2E1DB22B0", IsUnique = true)]
-public partial class Building
+namespace BusinessObject.Entities
 {
-    [Key]
-    [Column("BuildingID")]
-    [StringLength(128)]
-    public string BuildingId { get; set; } = null!;
+    [Table("Buildings")]
+    public class Building
+    {
+        [Key]
+        [Column("BuildingID")]
+        [StringLength(128)]
+        public string BuildingID { get; set; } = null!;
 
-    [StringLength(100)]
-    public string BuildingName { get; set; } = null!;
+        [Required]
+        [StringLength(100)]
+        public string BuildingName { get; set; } = null!;
 
-    [Column("ManagerID")]
-    [StringLength(128)]
-    public string? ManagerId { get; set; }
+        [Column("ManagerID")]
+        [StringLength(128)]
+        public string ManagerID { get; set; } = null!;
+        [ForeignKey("ManagerID")]
+        public BuildingManager Manager { get; set; } = null!;
 
-    [ForeignKey("ManagerId")]
-    [InverseProperty("Buildings")]
-    public virtual BuildingManager? Manager { get; set; }
-
-    [InverseProperty("Building")]
-    public virtual ICollection<Room> Rooms { get; set; } = new List<Room>();
+        public ICollection<Room> Rooms { get; set; } = new List<Room>();
+    }
 }

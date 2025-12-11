@@ -4,27 +4,27 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace BusinessObject.Entities;
-
-[Index("TypeName", Name = "UQ__RoomType__D4E7DFA8D49A0413", IsUnique = true)]
-public partial class RoomType
+namespace BusinessObject.Entities
 {
-    [Key]
-    [Column("RoomTypeID")]
-    [StringLength(128)]
-    public string RoomTypeId { get; set; } = null!;
+    [Table("RoomTypes")]
+    public class RoomType
+    {
+        [Key]
+        [StringLength(128)]
+        public string RoomTypeID { get; set; }
 
-    [StringLength(100)]
-    public string TypeName { get; set; } = null!;
+        [Required]
+        [StringLength(100)]
+        public string TypeName { get; set; }
 
-    public int Capacity { get; set; }
+        public int Capacity { get; set; }
 
-    [Column(TypeName = "decimal(18, 2)")]
-    public decimal Price { get; set; }
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal Price { get; set; }
 
-    [StringLength(500)]
-    public string? Description { get; set; }
+        [StringLength(500)]
+        public string Description { get; set; }
 
-    [InverseProperty("RoomType")]
-    public virtual ICollection<Room> Rooms { get; set; } = new List<Room>();
+        public ICollection<Room> Rooms { get; set; }
+    }
 }

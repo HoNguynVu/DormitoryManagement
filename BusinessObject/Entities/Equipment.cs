@@ -4,26 +4,26 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace BusinessObject.Entities;
-
-public partial class Equipment
+namespace BusinessObject.Entities
 {
-    [Key]
-    [Column("EquipmentID")]
-    [StringLength(128)]
-    public string EquipmentId { get; set; } = null!;
+    [Table("Equipment")] // Lưu ý: Tên bảng trong SQL là số ít
+    public class Equipment
+    {
+        [Key]
+        [StringLength(128)]
+        public string EquipmentID { get; set; }
 
-    [Column("RoomID")]
-    [StringLength(128)]
-    public string RoomId { get; set; } = null!;
+        [Required]
+        [StringLength(128)]
+        public string RoomID { get; set; }
+        [ForeignKey("RoomID")]
+        public Room Room { get; set; }
 
-    [StringLength(100)]
-    public string EquipmentName { get; set; } = null!;
+        [Required]
+        [StringLength(100)]
+        public string EquipmentName { get; set; }
 
-    [StringLength(100)]
-    public string? Status { get; set; }
-
-    [ForeignKey("RoomId")]
-    [InverseProperty("Equipment")]
-    public virtual Room Room { get; set; } = null!;
+        [StringLength(100)]
+        public string Status { get; set; }
+    }
 }

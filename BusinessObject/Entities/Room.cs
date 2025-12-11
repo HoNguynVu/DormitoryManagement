@@ -6,21 +6,21 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BusinessObject.Entities;
 
-[Index("RoomName", Name = "UQ__Rooms__6B500B559934EDDC", IsUnique = true)]
+[Table("Rooms")]
 public partial class Room
 {
     [Key]
     [Column("RoomID")]
     [StringLength(128)]
-    public string RoomId { get; set; } = null!;
+    public string RoomID { get; set; } = null!;
 
     [Column("BuildingID")]
     [StringLength(128)]
-    public string BuildingId { get; set; } = null!;
+    public string BuildingID { get; set; } = null!;
 
     [Column("RoomTypeID")]
     [StringLength(128)]
-    public string? RoomTypeId { get; set; }
+    public string? RoomTypeID { get; set; }
 
     [StringLength(100)]
     public string RoomName { get; set; } = null!;
@@ -36,7 +36,7 @@ public partial class Room
 
     public bool IsBeingCleaned { get; set; }
 
-    [ForeignKey("BuildingId")]
+    [ForeignKey("BuildingID")]
     [InverseProperty("Rooms")]
     public virtual Building Building { get; set; } = null!;
 
@@ -49,7 +49,7 @@ public partial class Room
     [InverseProperty("Room")]
     public virtual ICollection<RegistrationForm> RegistrationForms { get; set; } = new List<RegistrationForm>();
 
-    [ForeignKey("RoomTypeId")]
+    [ForeignKey("RoomTypeID")]
     [InverseProperty("Rooms")]
     public virtual RoomType? RoomType { get; set; }
 

@@ -28,7 +28,7 @@ namespace DataAccess.Repository
         public async Task<RoomType?> GetRoomTypeByRoomId(string roomId)
         {
             return await _context.Rooms
-        .Where(r => r.RoomId == roomId)
+        .Where(r => r.RoomID == roomId)
         .Select(r => r.RoomType)
         .FirstOrDefaultAsync();
         }

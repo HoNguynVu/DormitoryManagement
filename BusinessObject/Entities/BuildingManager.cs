@@ -3,47 +3,45 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using BusinessObject.Base;
 
 namespace BusinessObject.Entities;
 
-[Index("CitizenId", Name = "UQ__Building__6E49FBEDCDD69881", IsUnique = true)]
-[Index("Email", Name = "UQ__Building__A9D10534B383D2ED", IsUnique = true)]
-public partial class BuildingManager
+[Table("BuildingManagers")]
+public partial class BuildingManager : Person
 {
     [Key]
     [Column("ManagerID")]
     [StringLength(128)]
-    public string ManagerId { get; set; } = null!;
+    public string ManagerID { get; set; } = null!;
 
-    [Column("UserID")]
+    [Required]
+    [Column("AccountID")]
     [StringLength(128)]
-    public string UserId { get; set; } = null!;
+    public string AccountID { get; set; } = null!;
 
-    [StringLength(100)]
-    public string FullName { get; set; } = null!;
+    [ForeignKey("AccountID")]
+    public Account Account { get; set; } = null!;
 
+    [Required]
     [Column("CitizenID")]
     [StringLength(20)]
     public string CitizenId { get; set; } = null!;
 
-    public DateOnly? DateOfBirth { get; set; }
+    [Column(TypeName = "date")]
+    public DateTime? DateOfBirth { get; set; }
 
-    [StringLength(20)]
-    public string? PhoneNumber { get; set; }
-
+    [Required]
     [StringLength(100)]
     public string Email { get; set; } = null!;
 
     [StringLength(500)]
     public string? Address { get; set; }
 
+    // Navigation Properties
     [InverseProperty("Manager")]
     public virtual ICollection<Building> Buildings { get; set; } = new List<Building>();
 
-    [ForeignKey("UserId")]
-    [InverseProperty("BuildingManagers")]
-    public virtual Account User { get; set; } = null!;
-
     [InverseProperty("ReportingManager")]
-    public virtual ICollection<Violation> Violations { get; set; } = new List<Violation>();
+    public virtual ICollection<Violation> ReportedViolations { get; set; } = new List<Violation>();
 }

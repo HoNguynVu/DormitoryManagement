@@ -1,6 +1,7 @@
 ﻿using API.Services.Implements;
 using API.Services.Interfaces;
 using API.UnitOfWorks;
+using BusinessObject.Config;
 using DataAccess.Interfaces;
 using DataAccess.Models;
 using DataAccess.Repository;
@@ -41,6 +42,7 @@ builder.Services.AddScoped<IContractUow>(sp => sp.GetRequiredService<UnitOfWork>
 builder.Services.AddScoped<IRoomUow>(sp => sp.GetRequiredService<UnitOfWork>());
 builder.Services.AddScoped<IViolationUow>(sp => sp.GetRequiredService<UnitOfWork>());
 builder.Services.AddScoped<IPaymentUow>(sp => sp.GetRequiredService<UnitOfWork>());
+builder.Services.AddScoped<IHealthInsuranceUow>(sp => sp.GetRequiredService<UnitOfWork>());
 
 // Services (interfaces + concrete where other services request the concrete type)
 builder.Services.AddScoped<EmailService>();
@@ -51,6 +53,12 @@ builder.Services.AddScoped<IViolationService, ViolationService>();
 builder.Services.AddScoped<IContractService, ContractService>();
 builder.Services.AddScoped<IRoomService, RoomService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IHealthInsuranceService, HealthInsuranceService>();
+
+// Đọc config từ appsettings.json
+builder.Services.Configure<ZaloPaySettings>(builder.Configuration.GetSection("ZaloPay"));
+
+builder.Services.AddHttpClient();
 
 //Repositories
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();

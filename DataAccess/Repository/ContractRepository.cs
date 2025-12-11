@@ -28,7 +28,7 @@ namespace DataAccess.Repository
         public async Task<IEnumerable<Contract>> GetContractsByStudentId(string studentId)
         {
             return await _context.Contracts
-                .Where(c => c.StudentId == studentId)
+                .Where(c => c.StudentID == studentId)
                 .ToListAsync();
         }
         public void AddContract(Contract contract)
@@ -47,7 +47,7 @@ namespace DataAccess.Repository
         public async Task<int> CountContractsByRoomIdAndStatus(string roomId, string status)
         {
             return await _context.Contracts
-                .Where(c => c.RoomId == roomId && c.ContractStatus == status)
+                .Where(c => c.RoomID == roomId && c.ContractStatus == status)
                 .CountAsync();
         }
         public async Task<Contract?> GetActiveContractByStudentId(string studentId)
@@ -55,7 +55,7 @@ namespace DataAccess.Repository
             return await _context.Contracts
                 .Include(c => c.Student)
                 .Include(c => c.Room)
-                .Where(c => c.StudentId == studentId && (c.ContractStatus == "Active" || c.ContractStatus == "Pending"))
+                .Where(c => c.StudentID == studentId && (c.ContractStatus == "Active" || c.ContractStatus == "Pending"))
                 .OrderByDescending(c => c.StartDate)
                 .FirstOrDefaultAsync();
         }
