@@ -14,6 +14,7 @@ namespace DataAccess.Interfaces
         Task<IEnumerable<Contract>> GetContractsByStudentId(string studentId);
         Task<Contract?> GetActiveContractByStudentId(string studentId);
         Task<int> CountContractsByRoomIdAndStatus(string roomId, string status);
+        Task<bool> HasPendingRenewalRequestAsync(string studentId);
         void AddContract(Contract contract);
         void UpdateContract(Contract contract);
         void DeleteContract(Contract contract);

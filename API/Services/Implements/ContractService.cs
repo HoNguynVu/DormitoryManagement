@@ -56,21 +56,21 @@ namespace API.Services.Implements
                     return (false, "Student not found.", 404);
                 }
                 // Check hợp đồng active
-                var activeContract = await _uow.ContractRenewals.GetActiveContractByStudentIdAsync(studentId);
+                var activeContract = await _uow.Contracts.GetActiveContractByStudentId(studentId);
                 if (activeContract == null)
                 {
                     return (false, "No active contract found for this student.", 404);
                 }
 
                 // Check pending request
-                bool hasPending = await _uow.ContractRenewals.HasPendingRenewalRequestAsync(studentId);
+                bool hasPending = await _uow.Contracts.HasPendingRenewalRequestAsync(studentId);
                 if (hasPending)
                 {
                     return (false, "A pending renewal request already exists. Please check your invoices.", 409);
                 }
 
                 // Check violations
-                int violations = await _uow.ContractRenewals.CountViolationsByStudentAsync(studentId);
+                int violations = await _uow.Violations.CountViolationsByStudentId(studentId);
                 if (violations >= 3) 
                     return (false, $"Cannot renew. Too many violations ({violations}). Contact manager.", 400);
 
@@ -87,7 +87,7 @@ namespace API.Services.Implements
                 // Add receipt
                 var newReceipt = new Receipt
                 {
-                    ReceiptID = IdGenerator.GenerateUniqueSuffix(),
+                    ReceiptID = "RE-"+IdGenerator.GenerateUniqueSuffix(),
                     StudentID = studentId,
                     RelatedObjectID = activeContract.ContractID,
                     Amount = totalAmount,
@@ -96,7 +96,7 @@ namespace API.Services.Implements
                     PrintTime = DateTime.Now,
                     Content = $"Renewal fee for {monthsToExtend} months for contract {activeContract.ContractID}"
                 };
-                _uow.ContractRenewals.AddRenewalReceipt(newReceipt);
+                _uow.Receipts.AddReceipt(newReceipt);
                 await _uow.CommitAsync();
                 return (true, newReceipt.ReceiptID, 201);
             }

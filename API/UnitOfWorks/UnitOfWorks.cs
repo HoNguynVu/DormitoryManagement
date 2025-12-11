@@ -23,7 +23,6 @@ namespace API.UnitOfWorks
         public IRoomTypeRepository RoomTypes { get; }
         public IViolationRepository Violations { get; }
         public IPaymentRepository Payments { get; }
-        public IContractRenewalRepository ContractRenewals { get; }
         public IReceiptRepository Receipts { get; }
         public IHealthInsuranceRepository HealthInsurances { get; }
         public UnitOfWork(DormitoryDbContext context, IDbContextTransaction? dbContextTransaction)
@@ -42,7 +41,6 @@ namespace API.UnitOfWorks
             Contracts = new ContractRepository(_context);
             Rooms = new RoomRepository(_context);
             RoomTypes = new RoomTypeRepository(_context);
-            ContractRenewals = new ContractRenewalRepository(_context);
             Payments = new PaymentRepository(_context);
             Receipts = new ReceiptRepository(_context);
             HealthInsurances = new HealthInsuranceRepository(_context);

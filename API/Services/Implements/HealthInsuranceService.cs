@@ -60,7 +60,7 @@ namespace API.Services.Implements
 
                 var receipt = new Receipt
                 {
-                    ReceiptID = IdGenerator.GenerateUniqueSuffix(),
+                    ReceiptID = "RE-" + IdGenerator.GenerateUniqueSuffix(),
                     StudentID = studentId,
                     Amount = Cost.INSURANCE_COST_PER_YEAR,
                     PaymentType = "HealthInsurance",
