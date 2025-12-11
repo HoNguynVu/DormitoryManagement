@@ -6,8 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BusinessObject.Entities;
 
-[Index("CitizenId", Name = "UQ__Students__6E49FBED9422B50D", IsUnique = true)]
-[Index("Email", Name = "UQ__Students__A9D10534C4C48D52", IsUnique = true)]
+[Index("CitizenId", Name = "UQ__Students__6E49FBEDC53C5F0F", IsUnique = true)]
+[Index("Email", Name = "UQ__Students__A9D10534B1FF373D", IsUnique = true)]
 public partial class Student
 {
     [Key]

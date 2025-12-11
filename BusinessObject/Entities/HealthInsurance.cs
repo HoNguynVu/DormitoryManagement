@@ -17,8 +17,21 @@ public partial class HealthInsurance
     [StringLength(128)]
     public string StudentId { get; set; } = null!;
 
+    [StringLength(50)]
+    public string? CardNumber { get; set; }
+
     [StringLength(255)]
     public string? InitialHospital { get; set; }
+
+    public DateOnly StartDate { get; set; }
+
+    public DateOnly EndDate { get; set; }
+
+    [Column(TypeName = "decimal(18, 2)")]
+    public decimal Cost { get; set; }
+
+    [StringLength(50)]
+    public string Status { get; set; } = null!;
 
     [ForeignKey("StudentId")]
     [InverseProperty("HealthInsurances")]
