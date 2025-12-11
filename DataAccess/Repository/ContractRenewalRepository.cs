@@ -21,7 +21,7 @@ namespace DataAccess.Repository
         public async Task<int> CountViolationsByStudentAsync(string studentId)
         {
             return await _context.Violations
-                            .CountAsync(v => v.StudentId == studentId);
+                            .CountAsync(v => v.StudentID == studentId);
         }
 
         // Lấy hợp đồng Active
@@ -30,7 +30,7 @@ namespace DataAccess.Repository
             return await _context.Contracts
                 .Include(c => c.Student)
                 .Include(c => c.Room)
-                .Where(c => c.StudentId == studentId && c.ContractStatus == "Active") 
+                .Where(c => c.StudentID == studentId && c.ContractStatus == "Active") 
                 .OrderByDescending(h => h.EndDate)
                 .FirstOrDefaultAsync();
         }
@@ -40,13 +40,13 @@ namespace DataAccess.Repository
         {
             return await _context.Contracts
                 .Include(c => c.Room) 
-                .FirstOrDefaultAsync(h => h.ContractId == contractId);
+                .FirstOrDefaultAsync(h => h.ContractID == contractId);
         }
 
         public async Task<bool> HasPendingRenewalRequestAsync(string studentId)
         {
             return await _context.Receipts
-                 .AnyAsync(i => i.StudentId == studentId
+                 .AnyAsync(i => i.StudentID == studentId
                                 && i.PaymentType == "Renewal"
                                 && i.Status == "Pending");
         }

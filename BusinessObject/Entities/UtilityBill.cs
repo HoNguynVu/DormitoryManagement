@@ -4,34 +4,32 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace BusinessObject.Entities;
-
-public partial class UtilityBill
+namespace BusinessObject.Entities
 {
-    [Key]
-    [Column("BillID")]
-    [StringLength(128)]
-    public string BillId { get; set; } = null!;
+    [Table("UtilityBills")]
+    public class UtilityBill
+    {
+        [Key]
+        [StringLength(128)]
+        public string BillID { get; set; }
 
-    [Column("RoomID")]
-    [StringLength(128)]
-    public string RoomId { get; set; } = null!;
+        [Required]
+        [StringLength(128)]
+        public string RoomID { get; set; }
+        [ForeignKey("RoomID")]
+        public Room Room { get; set; }
 
-    public int ElectricityUsage { get; set; }
+        public int ElectricityUsage { get; set; }
+        public int WaterUsage { get; set; }
 
-    public int WaterUsage { get; set; }
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal Amount { get; set; }
 
-    [Column(TypeName = "decimal(18, 2)")]
-    public decimal Amount { get; set; }
+        public int Month { get; set; }
+        public int Year { get; set; }
 
-    public int Month { get; set; }
-
-    public int Year { get; set; }
-
-    [StringLength(20)]
-    public string Status { get; set; } = null!;
-
-    [ForeignKey("RoomId")]
-    [InverseProperty("UtilityBills")]
-    public virtual Room Room { get; set; } = null!;
+        [Required]
+        [StringLength(20)]
+        public string Status { get; set; }
+    }
 }

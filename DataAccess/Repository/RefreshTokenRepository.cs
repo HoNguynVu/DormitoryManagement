@@ -30,7 +30,7 @@ namespace DataAccess.Repository
         {
            
             var tokens = _context.RefreshTokens
-               .Where(rt => rt.UserId == userId && rt.RevokedAt == null).ToList();
+               .Where(rt => rt.AccountID == userId && rt.RevokedAt == null).ToList();
             foreach (var token in tokens)
             {
                 token.RevokedAt = DateTime.UtcNow;

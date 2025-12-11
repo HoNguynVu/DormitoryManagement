@@ -25,9 +25,9 @@ namespace API.Services.Implements
                 
                 var newViolation = new Violation
                 {
-                    ViolationId = "VL-" + IdGenerator.GenerateUniqueSuffix(),
-                    StudentId = request.StudentId,
-                    ReportingManagerId = request.BuildingManagerId,
+                    ViolationID = "VL-" + IdGenerator.GenerateUniqueSuffix(),
+                    StudentID = request.StudentId,
+                    ReportingManagerID = request.BuildingManagerId,
                     ViolationAct = request.ViolationAct,
                     Description = request.Description,
                     ViolationTime = DateTime.UtcNow,
@@ -57,7 +57,7 @@ namespace API.Services.Implements
                 }
 
                 // ===== RETURN RESPONSE =====
-                var createdViolation = await _violationUow.Violations.GetViolationById(newViolation.ViolationId);
+                var createdViolation = await _violationUow.Violations.GetViolationById(newViolation.ViolationID);
                 if (createdViolation == null)
                 {
                     return (false, "Failed to retrieve created violation.", 500, null);
@@ -128,7 +128,7 @@ namespace API.Services.Implements
                 
                 var response = violations.Select(v => 
                 {
-                    var count = violations.Count(x => x.StudentId == v.StudentId);
+                    var count = violations.Count(x => x.StudentID == v.StudentID);
                     return MapToResponse(v, count);
                 });
 
@@ -148,7 +148,7 @@ namespace API.Services.Implements
                 
                 var response = violations.Select(v => 
                 {
-                    var count = violations.Count(x => x.StudentId == v.StudentId);
+                    var count = violations.Count(x => x.StudentID == v.StudentID);
                     return MapToResponse(v, count);
                 });
 
@@ -164,10 +164,10 @@ namespace API.Services.Implements
         {
             return new ViolationResponse
             {
-                ViolationId = violation.ViolationId,
-                StudentId = violation.StudentId,
+                ViolationId = violation.ViolationID,
+                StudentId = violation.StudentID,
                 StudentName = violation.Student?.FullName ?? "Unknown",
-                ReportingManagerId = violation.ReportingManagerId,
+                ReportingManagerId = violation.ReportingManagerID,
                 ReportingManagerName = violation.ReportingManager?.FullName,
                 ViolationAct = violation.ViolationAct,
                 ViolationTime = violation.ViolationTime,

@@ -24,11 +24,11 @@ namespace API.Services.Implements
         {
             return new RefreshToken
             {
-                TokenId = "RT-" + IdGenerator.GenerateUniqueSuffix(),
+                TokenID = "RT-" + IdGenerator.GenerateUniqueSuffix(),
                 Token = GenerateRefreshToken(),
                 ExpiresAt = DateTime.UtcNow.AddDays(7),
                 CreatedAt = DateTime.UtcNow,
-                UserId = accountId
+                AccountID = accountId
             };
         }
 
