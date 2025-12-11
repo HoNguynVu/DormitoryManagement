@@ -1,5 +1,7 @@
 ﻿using API.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using BusinessObject.DTOs.RoomDTOs;
 
 namespace API.Controllers
 {
@@ -33,6 +35,38 @@ namespace API.Controllers
                 success = false,
                 message = message
             });
+        }
+
+        // Admin endpoints
+        [HttpPost]
+        //[Authorize("Admin")]
+        public async Task<IActionResult> CreateRoom([FromBody] CreateRoomRequest request)
+        {
+            var (success, message, statusCode, room) = await _roomService.CreateRoomAsync(request);
+            if (success)
+                return StatusCode(statusCode, new { success = true, message, data = room });
+
+            return StatusCode(statusCode, new { success = false, message });
+        }
+
+        [HttpPut]
+        //[Authorize("Admin")]
+        public async Task<IActionResult> UpdateRoom([FromBody] UpdateRoomDto request)
+        {
+            var (success, message, statusCode) = await _roomService.UpdateRoomAsync(request);
+            if (success) return StatusCode(statusCode, new { success = true, message });
+
+            return StatusCode(statusCode, new { success = false, message });
+        }
+
+        [HttpDelete("{roomId}")]
+        //[Authorize("Admin")]
+        public async Task<IActionResult> DeleteRoom(string roomId)
+        {
+            var (success, message, statusCode) = await _roomService.DeleteRoomAsync(roomId);
+            if (success) return StatusCode(statusCode, new { success = true, message });
+
+            return StatusCode(statusCode, new { success = false, message });
         }
     }
 }
