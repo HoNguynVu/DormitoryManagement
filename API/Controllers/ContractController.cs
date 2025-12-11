@@ -32,21 +32,34 @@ namespace API.Controllers
             });
         }
 
-        // PUT: api/contracts/confirm-extension/{contractId}
-        // Gọi sau khi thanh toán thành công 
-        [HttpPut("confirm-extension/{contractId}")]
-        public async Task<IActionResult> ConfirmExtension(string contractId, [FromBody] int monthsAdded)
+        [HttpGet("student/{studentId}")]
+        public async Task<IActionResult> GetCurrentContract(string studentId)
         {
-            var result = await _contractService.ConfirmContractExtensionAsync(contractId, monthsAdded);
+            var result = await _contractService.GetCurrentContractAsync(studentId);
+
+            if (!result.Success)
+            {
+                return StatusCode(result.StatusCode, new { message = result.Message });
+            }
+            return Ok(new
+            {
+                message = result.Message,
+                data = result.Data
+            });
+        }
+
+        [HttpPost("terminate/{studentId}")]
+        public async Task<IActionResult> TerminateContract(string studentId)
+        {
+            var result = await _contractService.TerminateContractNowAsync(studentId);
 
             if (!result.Success)
             {
                 return StatusCode(result.StatusCode, new { message = result.Message });
             }
 
-            return StatusCode(result.StatusCode, new { message = result.Message });
+            return Ok(new { message = result.Message });
         }
-
 
     }
 }
