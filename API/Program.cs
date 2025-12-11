@@ -52,6 +52,7 @@ builder.Services.AddScoped<IViolationService, ViolationService>();
 builder.Services.AddScoped<IContractService, ContractService>();
 builder.Services.AddScoped<IRoomService, RoomService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IHealthInsuranceService, HealthInsuranceService>();
 
 //Repositories
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
