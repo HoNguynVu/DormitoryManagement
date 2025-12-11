@@ -14,7 +14,6 @@ namespace API.Services.Implements
             _uow = uow;
         }
 
-        // --- BƯỚC 1: ĐĂNG KÝ MUA (Tạo Invoice) ---
         public async Task<(bool Success, string Message, int StatusCode)> RegisterHealthInsuranceAsync(string studentId, string registrationPlace)
         {
             //Validation 
@@ -81,6 +80,30 @@ namespace API.Services.Implements
             {
                 await _uow.RollbackAsync();
                 return (false, $"DB Error (Write): {ex.Message}", 500);
+            }
+        }
+
+        public async Task<(bool Success, string Message, int StatusCode, HealthInsurance? Data)> GetInsuranceByStudentIdAsync(string studentId)
+        {
+            if (string.IsNullOrWhiteSpace(studentId))
+            {
+                return (false, "Student ID is required.", 400, null);
+            }
+
+            try
+            {
+                var insurance = await _uow.HealthInsurances.GetLatestInsuranceByStudentIdAsync(studentId);
+
+                if (insurance == null)
+                {
+                    return (true, "No insurance record found.", 200, null);
+                }
+
+                return (true, "Success", 200, insurance);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Database Error: {ex.Message}", 500, null);
             }
         }
     }

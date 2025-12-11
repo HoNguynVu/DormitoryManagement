@@ -15,6 +15,8 @@ namespace DataAccess.Interfaces
         // Check xem có yêu cầu mua BHYT nào đang chờ thanh toán không
         Task<bool> HasPendingInsuranceRequestAsync(string studentId);
 
+        // Hàm lấy BTHY mới nhất 
+        Task<HealthInsurance?> GetLatestInsuranceByStudentIdAsync(string studentId);
         // Thêm mới
         void Add(HealthInsurance insurance);
 

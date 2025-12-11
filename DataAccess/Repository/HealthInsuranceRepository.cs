@@ -36,6 +36,13 @@ namespace DataAccess.Repository
                                && i.Status == "Pending");
         }
 
+        public async Task<HealthInsurance?> GetLatestInsuranceByStudentIdAsync(string studentId)
+        {
+            return await _context.HealthInsurances
+                .Where(h => h.StudentId == studentId)
+                //.OrderByDescending(h => h.CreatedAt) // Lấy đơn mới tạo gần đây nhất
+                .FirstOrDefaultAsync();
+        }
         public void Add(HealthInsurance insurance)
         {
             _context.HealthInsurances.Add(insurance);
