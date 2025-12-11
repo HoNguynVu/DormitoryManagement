@@ -59,5 +59,13 @@ namespace DataAccess.Repository
                 .OrderByDescending(c => c.StartDate)
                 .FirstOrDefaultAsync();
         }
+
+        public async Task<bool> HasPendingRenewalRequestAsync(string studentId)
+        {
+            return await _context.Receipts
+                 .AnyAsync(i => i.StudentID == studentId
+                                && i.PaymentType == "Renewal"
+                                && i.Status == "Pending");
+        }
     }
 }

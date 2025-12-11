@@ -13,6 +13,33 @@ namespace API.Services.Implements
             _uow = contractUow;
         }
 
+        public async Task<(bool Success, string Message, int StatusCode, Contract? Data)> GetCurrentContractAsync(string studentId)
+        {
+            if (string.IsNullOrEmpty(studentId))
+                return (false, "Student ID is required.", 400, null);
+
+            try
+            {
+                var student = await _uow.Students.GetStudentByIdAsync(studentId);
+                if (student == null)
+                {
+                    return (false, "Student not found.", 404, null);
+                }
+
+                var contract = await _uow.Contracts.GetActiveContractByStudentId(studentId);
+
+                if (contract == null)
+                {
+                    return (true, "No active contract found.", 200, null);
+                }
+                return (true, "Success", 200, contract);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Error retrieving contract: {ex.Message}", 500, null);
+            }
+        }
+
         public async Task<(bool Success, string Message, int StatusCode)> RequestRenewalAsync(string studentId, int monthsToExtend)
         {
            
@@ -23,23 +50,29 @@ namespace API.Services.Implements
                 return (false, "Extension duration must be greater than 0.", 400);
             try
             {
+                var student = await _uow.Students.GetStudentByIdAsync(studentId);
+                if (student == null)
+                {
+                    return (false, "Student not found.", 404);
+                }
                 // Check hợp đồng active
-                var activeContract = await _uow.ContractRenewals.GetActiveContractByStudentIdAsync(studentId);
+                var activeContract = await _uow.Contracts.GetActiveContractByStudentId(studentId);
                 if (activeContract == null)
                 {
                     return (false, "No active contract found for this student.", 404);
                 }
 
                 // Check pending request
-                bool hasPending = await _uow.ContractRenewals.HasPendingRenewalRequestAsync(studentId);
+                bool hasPending = await _uow.Contracts.HasPendingRenewalRequestAsync(studentId);
                 if (hasPending)
                 {
                     return (false, "A pending renewal request already exists. Please check your invoices.", 409);
                 }
 
                 // Check violations
-                int violations = await _uow.ContractRenewals.CountViolationsByStudentAsync(studentId);
-                if (violations >= 3) return (false, $"Cannot renew. Too many violations ({violations}). Contact manager.", 400);
+                int violations = await _uow.Violations.CountViolationsByStudentId(studentId);
+                if (violations >= 3) 
+                    return (false, $"Cannot renew. Too many violations ({violations}). Contact manager.", 400);
 
                 if (activeContract.Room == null)
                     return (false, "Room data is missing, cannot calculate fee.", 422);
@@ -54,7 +87,7 @@ namespace API.Services.Implements
                 // Add receipt
                 var newReceipt = new Receipt
                 {
-                    ReceiptID = IdGenerator.GenerateUniqueSuffix(),
+                    ReceiptID = "RE-"+IdGenerator.GenerateUniqueSuffix(),
                     StudentID = studentId,
                     RelatedObjectID = activeContract.ContractID,
                     Amount = totalAmount,
@@ -63,7 +96,7 @@ namespace API.Services.Implements
                     PrintTime = DateTime.Now,
                     Content = $"Renewal fee for {monthsToExtend} months for contract {activeContract.ContractID}"
                 };
-                _uow.ContractRenewals.AddRenewalReceipt(newReceipt);
+                _uow.Receipts.AddReceipt(newReceipt);
                 await _uow.CommitAsync();
                 return (true, newReceipt.ReceiptID, 201);
             }
@@ -74,46 +107,47 @@ namespace API.Services.Implements
             }
         }
 
-        public async Task<(bool Success, string Message, int StatusCode)> ConfirmContractExtensionAsync(string contractId, int monthsAdded)
+        public async Task<(bool Success, string Message, int StatusCode)> TerminateContractNowAsync(string studentId)
         {
-            //Validation
-            if (string.IsNullOrWhiteSpace(contractId))
+            // Validation
+            if (string.IsNullOrEmpty(studentId))
+                return (false, "Student ID is required.", 400);
+
+            var contract = await _uow.Contracts.GetActiveContractByStudentId(studentId);
+            if (contract == null)
             {
-                return (false, "Contract ID is required.", 400);
+                return (false, "No active contract found to terminate.", 404);
             }
 
-            if (monthsAdded <= 0)
-            {
-                return (false, "Months added must be a positive integer.", 400);
-            }
-
+            await _uow.BeginTransactionAsync();
             try
             {
-                var contract = await _uow.ContractRenewals.GetContractByIdAsync(contractId);
-                if (contract == null)
+                contract.ContractStatus = "Terminated"; 
+                contract.EndDate = DateOnly.FromDateTime(DateTime.Now);  
+                _uow.Contracts.UpdateContract(contract);
+
+                // B. Trả lại slot cho phòng (Cập nhật Room)
+                if (contract.Room != null)
                 {
-                    return (false, "Contract not found.", 404);
+                    if (contract.Room.CurrentOccupancy > 0)
+                    {
+                        contract.Room.CurrentOccupancy -= 1;
+                    }
+                    if (contract.Room.RoomStatus == "Full")
+                    {
+                        contract.Room.RoomStatus = "Available";
+                    }
+
+                    _uow.Rooms.UpdateRoom(contract.Room); 
                 }
-                DateOnly today = DateOnly.FromDateTime(DateTime.Now);
-                if (contract.EndDate.HasValue && contract.EndDate.Value >= today)
-                {
-                    contract.EndDate = contract.EndDate.Value.AddMonths(monthsAdded);
-                }
-                else
-                {
-                    contract.EndDate = today.AddMonths(monthsAdded);
-                }
-                await _uow.BeginTransactionAsync();
-                _uow.ContractRenewals.UpdateContract(contract);
                 await _uow.CommitAsync();
-                return (true, "Contract extended successfully.", 200);
+                return (true, "Contract terminated successfully due to violations.", 200);
             }
             catch (Exception ex)
             {
                 await _uow.RollbackAsync();
-                return (false, $"Internal Server Error: {ex.Message}", 500);
+                return (false, $"Termination failed: {ex.Message}", 500);
             }
-
         }
     }
 }
