@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
-namespace BusinessObject.Entities;
+using BusinessObject.Entities;
+namespace DataAccess.Models;
 
 public partial class DormitoryDbContext : DbContext
 {
@@ -63,7 +64,7 @@ public partial class DormitoryDbContext : DbContext
     {
         modelBuilder.Entity<Account>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("PK__Accounts__1788CCACFC60AD18");
+            entity.HasKey(e => e.UserId).HasName("PK__Accounts__1788CCACD4B1B5FB");
 
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
@@ -71,7 +72,7 @@ public partial class DormitoryDbContext : DbContext
 
         modelBuilder.Entity<Building>(entity =>
         {
-            entity.HasKey(e => e.BuildingId).HasName("PK__Building__5463CDE47C663029");
+            entity.HasKey(e => e.BuildingId).HasName("PK__Building__5463CDE472F586C4");
 
             entity.HasOne(d => d.Manager).WithMany(p => p.Buildings)
                 .OnDelete(DeleteBehavior.SetNull)
@@ -80,14 +81,14 @@ public partial class DormitoryDbContext : DbContext
 
         modelBuilder.Entity<BuildingManager>(entity =>
         {
-            entity.HasKey(e => e.ManagerId).HasName("PK__Building__3BA2AA8161805C61");
+            entity.HasKey(e => e.ManagerId).HasName("PK__Building__3BA2AA81D266DD72");
 
             entity.HasOne(d => d.User).WithMany(p => p.BuildingManagers).HasConstraintName("FK_BuildingManagers_Accounts");
         });
 
         modelBuilder.Entity<Contract>(entity =>
         {
-            entity.HasKey(e => e.ContractId).HasName("PK__Contract__C90D3409EF8E1A7B");
+            entity.HasKey(e => e.ContractId).HasName("PK__Contract__C90D34096A9346E3");
 
             entity.HasOne(d => d.Room).WithMany(p => p.Contracts).HasConstraintName("FK_Contracts_Rooms");
 
@@ -96,14 +97,14 @@ public partial class DormitoryDbContext : DbContext
 
         modelBuilder.Entity<Equipment>(entity =>
         {
-            entity.HasKey(e => e.EquipmentId).HasName("PK__Equipmen__344745991A9A10DC");
+            entity.HasKey(e => e.EquipmentId).HasName("PK__Equipmen__34474599D1266794");
 
             entity.HasOne(d => d.Room).WithMany(p => p.Equipment).HasConstraintName("FK_Equipment_Rooms");
         });
 
         modelBuilder.Entity<HealthInsurance>(entity =>
         {
-            entity.HasKey(e => e.InsuranceId).HasName("PK__HealthIn__74231BC4269B2B35");
+            entity.HasKey(e => e.InsuranceId).HasName("PK__HealthIn__74231BC451D8F661");
 
             entity.Property(e => e.Status).HasDefaultValue("Active");
 
@@ -112,7 +113,7 @@ public partial class DormitoryDbContext : DbContext
 
         modelBuilder.Entity<OtpCode>(entity =>
         {
-            entity.HasKey(e => e.OtpId).HasName("PK__OtpCodes__3143C4839BC2390E");
+            entity.HasKey(e => e.OtpId).HasName("PK__OtpCodes__3143C483E2152EE4");
 
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
@@ -122,24 +123,24 @@ public partial class DormitoryDbContext : DbContext
 
         modelBuilder.Entity<Parameter>(entity =>
         {
-            entity.HasKey(e => e.ParameterId).HasName("PK__Paramete__F80C6297B51EB92B");
+            entity.HasKey(e => e.ParameterId).HasName("PK__Paramete__F80C6297233AACC1");
         });
 
         modelBuilder.Entity<Payment>(entity =>
         {
-            entity.HasKey(e => e.PaymentId).HasName("PK__Payments__9B556A58B8789242");
+            entity.HasKey(e => e.PaymentId).HasName("PK__Payments__9B556A58DC5D0813");
 
             entity.Property(e => e.PaymentDate).HasDefaultValueSql("(getdate())");
         });
 
         modelBuilder.Entity<Priority>(entity =>
         {
-            entity.HasKey(e => e.PriorityId).HasName("PK__Prioriti__D0A3D0DE795FB3B3");
+            entity.HasKey(e => e.PriorityId).HasName("PK__Prioriti__D0A3D0DE98737F0F");
         });
 
         modelBuilder.Entity<Receipt>(entity =>
         {
-            entity.HasKey(e => e.ReceiptId).HasName("PK__Receipts__CC08C4000899C288");
+            entity.HasKey(e => e.ReceiptId).HasName("PK__Receipts__CC08C400E8AEE7E0");
 
             entity.Property(e => e.PrintTime).HasDefaultValueSql("(getdate())");
 
@@ -148,7 +149,7 @@ public partial class DormitoryDbContext : DbContext
 
         modelBuilder.Entity<RefreshToken>(entity =>
         {
-            entity.HasKey(e => e.TokenId).HasName("PK__RefreshT__658FEE8A66D39897");
+            entity.HasKey(e => e.TokenId).HasName("PK__RefreshT__658FEE8A3880FBFF");
 
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
 
@@ -157,7 +158,7 @@ public partial class DormitoryDbContext : DbContext
 
         modelBuilder.Entity<RegistrationForm>(entity =>
         {
-            entity.HasKey(e => e.FormId).HasName("PK__Registra__FB05B7BD9A388819");
+            entity.HasKey(e => e.FormId).HasName("PK__Registra__FB05B7BD3CFCF568");
 
             entity.Property(e => e.RegistrationTime).HasDefaultValueSql("(getdate())");
 
@@ -168,14 +169,14 @@ public partial class DormitoryDbContext : DbContext
 
         modelBuilder.Entity<Relative>(entity =>
         {
-            entity.HasKey(e => e.RelativeId).HasName("PK__Relative__951FE701413133ED");
+            entity.HasKey(e => e.RelativeId).HasName("PK__Relative__951FE701972CA852");
 
             entity.HasOne(d => d.Student).WithMany(p => p.Relatives).HasConstraintName("FK_Relatives_Students");
         });
 
         modelBuilder.Entity<Room>(entity =>
         {
-            entity.HasKey(e => e.RoomId).HasName("PK__Rooms__328639194D9EC3FA");
+            entity.HasKey(e => e.RoomId).HasName("PK__Rooms__32863919654F63D0");
 
             entity.HasOne(d => d.Building).WithMany(p => p.Rooms).HasConstraintName("FK_Rooms_Buildings");
 
@@ -186,17 +187,17 @@ public partial class DormitoryDbContext : DbContext
 
         modelBuilder.Entity<RoomType>(entity =>
         {
-            entity.HasKey(e => e.RoomTypeId).HasName("PK__RoomType__BCC896113E31F566");
+            entity.HasKey(e => e.RoomTypeId).HasName("PK__RoomType__BCC89611CD2B7C4F");
         });
 
         modelBuilder.Entity<School>(entity =>
         {
-            entity.HasKey(e => e.SchoolId).HasName("PK__Schools__3DA4677BDA4D5261");
+            entity.HasKey(e => e.SchoolId).HasName("PK__Schools__3DA4677B90325D29");
         });
 
         modelBuilder.Entity<Student>(entity =>
         {
-            entity.HasKey(e => e.StudentId).HasName("PK__Students__32C52A793F7EF0B2");
+            entity.HasKey(e => e.StudentId).HasName("PK__Students__32C52A792BE5B323");
 
             entity.HasOne(d => d.Priority).WithMany(p => p.Students)
                 .OnDelete(DeleteBehavior.SetNull)
@@ -213,14 +214,14 @@ public partial class DormitoryDbContext : DbContext
 
         modelBuilder.Entity<UtilityBill>(entity =>
         {
-            entity.HasKey(e => e.BillId).HasName("PK__UtilityB__11F2FC4A5750E441");
+            entity.HasKey(e => e.BillId).HasName("PK__UtilityB__11F2FC4A5E476280");
 
             entity.HasOne(d => d.Room).WithMany(p => p.UtilityBills).HasConstraintName("FK_UtilityBills_Rooms");
         });
 
         modelBuilder.Entity<Violation>(entity =>
         {
-            entity.HasKey(e => e.ViolationId).HasName("PK__Violatio__18B6DC281FA8BBD6");
+            entity.HasKey(e => e.ViolationId).HasName("PK__Violatio__18B6DC28D917E042");
 
             entity.Property(e => e.ViolationTime).HasDefaultValueSql("(getdate())");
 

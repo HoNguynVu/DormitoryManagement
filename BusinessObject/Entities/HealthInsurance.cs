@@ -21,7 +21,7 @@ public partial class HealthInsurance
     public string? CardNumber { get; set; }
 
     [StringLength(255)]
-    public string? InitialHospital { get; set; }
+    public string InitialHospital { get; set; } = null!;
 
     public DateOnly StartDate { get; set; }
 
