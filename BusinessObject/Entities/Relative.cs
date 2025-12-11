@@ -1,37 +1,27 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
+using BusinessObject.Base;
 
-namespace BusinessObject.Entities;
-
-public partial class Relative
+namespace BusinessObject.Entities
 {
-    [Key]
-    [Column("RelativeID")]
-    [StringLength(128)]
-    public string RelativeId { get; set; } = null!;
+    [Table("Relatives")]
+    public class Relative : Person
+    {
+        [Key]
+        [StringLength(128)]
+        public string RelativeID { get; set; }
 
-    [Column("StudentID")]
-    [StringLength(128)]
-    public string StudentId { get; set; } = null!;
+        [Required]
+        [StringLength(128)]
+        public string StudentID { get; set; }
+        [ForeignKey("StudentID")]
+        public Student Student { get; set; }
 
-    [StringLength(100)]
-    public string FullName { get; set; } = null!;
+        [StringLength(100)]
+        public string Occupation { get; set; }
 
-    [StringLength(100)]
-    public string? Occupation { get; set; }
-
-    public DateOnly? DateOfBirth { get; set; }
-
-    [StringLength(20)]
-    public string? PhoneNumber { get; set; }
-
-    [StringLength(500)]
-    public string? Address { get; set; }
-
-    [ForeignKey("StudentId")]
-    [InverseProperty("Relatives")]
-    public virtual Student Student { get; set; } = null!;
+        [Column(TypeName = "date")]
+        public DateTime? DateOfBirth { get; set; }
+    }
 }

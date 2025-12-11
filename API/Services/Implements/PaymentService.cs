@@ -6,6 +6,7 @@ using BusinessObject.Config;
 using BusinessObject.DTOs;
 using BusinessObject.DTOs.PaymentDTOs;
 using BusinessObject.Entities;
+using Microsoft.Extensions.Options;
 
 namespace API.Services.Implements
 {
@@ -14,9 +15,9 @@ namespace API.Services.Implements
         private readonly ZaloPaySettings _zaloConfig;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IPaymentUow _paymentUow;
-        public PaymentService(ZaloPaySettings zaloConfig,IHttpClientFactory httpClientFactory, IPaymentUow paymentUow)
+        public PaymentService(IOptions<ZaloPaySettings> zaloConfig,IHttpClientFactory httpClientFactory, IPaymentUow paymentUow)
         {
-            _zaloConfig = zaloConfig;
+            _zaloConfig = zaloConfig.Value;
             _httpClientFactory = httpClientFactory;
             _paymentUow = paymentUow;
         }
@@ -32,7 +33,7 @@ namespace API.Services.Implements
             {
                 return (400, new PaymentLinkDTO { IsSuccess = false, Message = "Registration form is not in pending status" });
             }
-            var roomType = await _paymentUow.RoomTypes.GetRoomTypeByRoomId(form.RoomId);
+            var roomType = await _paymentUow.RoomTypes.GetRoomTypeByRoomId(form.RoomID);
             var amount = roomType.Price;
             var appTransId = GenerateAppTransId(PaymentConstants.PrefixRegis, registrationId);
             string description = $"Thanh toan dang ky o {registrationId}";
@@ -42,10 +43,10 @@ namespace API.Services.Implements
             {
                 var receipt = new Receipt
                 {
-                    ReceiptId = "REC-" + IdGenerator.GenerateUniqueSuffix(),
-                    StudentId = form.StudentId,
+                    ReceiptID = "REC-" + IdGenerator.GenerateUniqueSuffix(),
+                    StudentID = form.StudentID,
                     Amount = amount,
-                    RelatedObjectId = registrationId,
+                    RelatedObjectID = registrationId,
                     PaymentType = PaymentConstants.TypeRegis,
                     Status = PaymentConstants.StatusPending,
                     PrintTime = DateTime.Now,
@@ -53,13 +54,12 @@ namespace API.Services.Implements
                 };
                 var payment = new Payment
                 {
-                    PaymentId = appTransId,
+                    PaymentID = appTransId,
                     PaymentMethod = PaymentConstants.MethodZaloPay,
                     Amount = amount,
-                    TransactionId = appTransId,
+                    TransactionID = appTransId,
                     Status = PaymentConstants.StatusPending,
                     PaymentDate = DateTime.Now,
-                    ReceiptId = receipt.ReceiptId,
                 };
                 _paymentUow.Receipts.AddReceipt(receipt);
                 _paymentUow.Payments.AddPayment(payment);

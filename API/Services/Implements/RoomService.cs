@@ -28,14 +28,14 @@ namespace API.Services.Implements
                 {
                     // Tra cứu số lượng Pending từ Dictionary (trên RAM, cực nhanh)
                     // Nếu không tìm thấy (GetValueOrDefault) thì trả về 0
-                    int pendingCount = pendingCountsDict.GetValueOrDefault(room.RoomId, 0);
+                    int pendingCount = pendingCountsDict.GetValueOrDefault(room.RoomID, 0);
 
                     // Tính toán hiển thị cho Frontend
                     // RegisteredOccupancy ở đây hiểu là số lượng ĐANG GIỮ CHỖ
 
                     regisRoomDTOs.Add(new RegisRoomDTOs
                     {
-                        RoomId = room.RoomId,
+                        RoomId = room.RoomID,
                         RoomName = room.RoomName,
                         // Vì đã Include ở Repo nên không cần query lại RoomType
                         RoomType = room.RoomType?.TypeName ?? "Unknown",

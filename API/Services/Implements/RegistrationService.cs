@@ -43,9 +43,9 @@ namespace API.Services.Implements
 
                 var form = new RegistrationForm
                 {
-                    FormId = "RF-" + IdGenerator.GenerateUniqueSuffix(),
-                    StudentId = registrationForm.StudentId,
-                    RoomId = registrationForm.RoomId,
+                    FormID = "RF-" + IdGenerator.GenerateUniqueSuffix(),
+                    StudentID = registrationForm.StudentId,
+                    RoomID = registrationForm.RoomId,
                     RegistrationTime = DateTime.UtcNow,
                     Status = "Pending"
                 };

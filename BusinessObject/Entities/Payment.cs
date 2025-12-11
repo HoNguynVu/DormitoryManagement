@@ -1,34 +1,35 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
-namespace BusinessObject.Entities;
-
-public partial class Payment
+namespace BusinessObject.Entities
 {
-    [Key]
-    [Column("PaymentID")]
-    [StringLength(128)]
-    public string PaymentId { get; set; } = null!;
+    [Table("Payments")]
+    public class Payment
+    {
+        [Key]
+        [StringLength(128)]
+        public string PaymentID { get; set; }
 
-    [Column("ReceiptID")]
-    [StringLength(128)]
-    public string ReceiptId { get; set; } = null!;
+        [Required]
+        [StringLength(128)]
+        public string ReceiptID { get; set; }
+        // Lưu ý: SQL không có FK constraint cho ReceiptID trong bảng Payments, nhưng logic thì có
+        
+        [Required]
+        [StringLength(50)]
+        public string PaymentMethod { get; set; }
 
-    [StringLength(50)]
-    public string PaymentMethod { get; set; } = null!;
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal Amount { get; set; }
 
-    [Column(TypeName = "decimal(18, 2)")]
-    public decimal Amount { get; set; }
+        public DateTime PaymentDate { get; set; } = DateTime.Now;
 
-    public DateTime PaymentDate { get; set; }
+        [StringLength(100)]
+        public string TransactionID { get; set; }
 
-    [Column("TransactionID")]
-    [StringLength(100)]
-    public string? TransactionId { get; set; }
-
-    [StringLength(50)]
-    public string Status { get; set; } = null!;
+        [Required]
+        [StringLength(50)]
+        public string Status { get; set; }
+    }
 }

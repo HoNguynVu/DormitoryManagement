@@ -20,8 +20,8 @@ namespace DataAccess.Repository
         public async Task<OtpCode?> GetOtpByEmail(string email)
         {
             return await _context.OtpCodes
-                .Include(o => o.User)
-                .Where(o => o.User.Email == email && o.IsActive == true)
+                .Include(o => o.Account)
+                .Where(o => o.Account.Email == email && o.IsActive == true)
                 .OrderByDescending(o => o.CreatedAt)
                 .FirstOrDefaultAsync();
         }
@@ -29,7 +29,7 @@ namespace DataAccess.Repository
         public async Task<OtpCode?> GetActiveOtp(string userId, string purpose)
         {
             return await _context.OtpCodes
-                .Where(o => o.UserId == userId && o.Purpose == purpose && o.IsActive == true)
+                .Where(o => o.AccountID == userId && o.Purpose == purpose && o.IsActive == true)
                 .OrderByDescending(o => o.CreatedAt)
                 .FirstOrDefaultAsync();
         }
