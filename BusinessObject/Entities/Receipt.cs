@@ -29,11 +29,11 @@ public partial class Receipt
     public string Status { get; set; } = null!;
 
     [StringLength(100)]
-    public string? PaymentType { get; set; }
+    public string PaymentType { get; set; } = null!;
 
     [Column("RelatedObjectID")]
     [StringLength(128)]
-    public string? RelatedObjectId { get; set; }
+    public string RelatedObjectId { get; set; } = null!;
 
     [ForeignKey("StudentId")]
     [InverseProperty("Receipts")]

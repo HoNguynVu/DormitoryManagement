@@ -6,8 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BusinessObject.Entities;
 
-[Index("CitizenId", Name = "UQ__Building__6E49FBED9A05B1CD", IsUnique = true)]
-[Index("Email", Name = "UQ__Building__A9D1053424B7304D", IsUnique = true)]
+[Index("CitizenId", Name = "UQ__Building__6E49FBEDF4061713", IsUnique = true)]
+[Index("Email", Name = "UQ__Building__A9D10534C1CA8F43", IsUnique = true)]
 public partial class BuildingManager
 {
     [Key]
