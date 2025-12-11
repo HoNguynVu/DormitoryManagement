@@ -40,7 +40,7 @@ namespace DataAccess.Repository
         {
             return await _context.HealthInsurances
                 .Where(h => h.StudentID == studentId)
-                //.OrderByDescending(h => h.CreatedAt) // Lấy đơn mới tạo gần đây nhất
+                .OrderByDescending(h => h.CreatedAt) // Lấy đơn mới tạo gần đây nhất
                 .FirstOrDefaultAsync();
         }
         public void Add(HealthInsurance insurance)

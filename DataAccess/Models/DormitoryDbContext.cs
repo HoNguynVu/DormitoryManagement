@@ -54,7 +54,7 @@ namespace DataAccess.Models
             if (!optionsBuilder.IsConfigured)
             {
                 // Lưu ý: Nên chuyển connection string vào appsettings.json
-                optionsBuilder.UseSqlServer("Server=localhost\\SQLEXPRESS,1433;Database=DormitoryDB;User Id=Admin1;Password=vudz1234;TrustServerCertificate=True;");
+                optionsBuilder.UseSqlServer("Server=(local);Database=DormitoryDB;uid=sa;Password=123456;TrustServerCertificate=True;");
             }
         }
 

@@ -48,8 +48,8 @@ namespace API.Services.Implements
             {
                 var healthInsurance = new HealthInsurance
                 {
-                    InsuranceId = "HI-" + IdGenerator.GenerateUniqueSuffix(),
-                    StudentId = studentId,
+                    InsuranceID = "HI-" + IdGenerator.GenerateUniqueSuffix(),
+                    StudentID = studentId,
                     InitialHospital = registrationPlace,
                     StartDate = DateOnly.FromDateTime(DateTime.Now),
                     EndDate = DateOnly.FromDateTime(DateTime.Now),
@@ -60,11 +60,11 @@ namespace API.Services.Implements
 
                 var receipt = new Receipt
                 {
-                    ReceiptId = IdGenerator.GenerateUniqueSuffix(),
-                    StudentId = studentId,
+                    ReceiptID = IdGenerator.GenerateUniqueSuffix(),
+                    StudentID = studentId,
                     Amount = Cost.INSURANCE_COST_PER_YEAR,
                     PaymentType = "HealthInsurance",
-                    RelatedObjectId = healthInsurance.InsuranceId,
+                    RelatedObjectID = healthInsurance.InsuranceID,
                     Status = "Pending",
                     PrintTime = DateTime.Now,
                     Content = $"Health Insurance Fee (Place: {registrationPlace})"
@@ -74,7 +74,7 @@ namespace API.Services.Implements
                 _uow.HealthInsurances.Add(healthInsurance);
                 await _uow.CommitAsync();
 
-                return (true, receipt.ReceiptId, 201);
+                return (true, receipt.ReceiptID, 201);
             }
             catch (Exception ex)
             {
