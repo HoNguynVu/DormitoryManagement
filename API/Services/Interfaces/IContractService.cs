@@ -2,8 +2,8 @@
 {
     public interface IContractService
     {
-        Task<string> RequestRenewalAsync(string studentId, int monthsToExtend);
+        Task<(bool Success, string Message, int StatusCode)> RequestRenewalAsync(string studentId, int monthsToExtend);
 
-        Task ConfirmContractExtensionAsync(string contractId, int monthsAdded);
+        Task<(bool Success, string Message, int StatusCode)> ConfirmContractExtensionAsync(string contractId, int monthsAdded);
     }
 }
