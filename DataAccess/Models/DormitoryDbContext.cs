@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
-namespace BusinessObject.Entities;
+using BusinessObject.Entities;
+namespace DataAccess.Models;
 
 public partial class DormitoryDbContext : DbContext
 {
