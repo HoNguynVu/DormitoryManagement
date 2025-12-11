@@ -11,6 +11,7 @@ namespace DataAccess.Interfaces
     {
         Task<IEnumerable<RoomType>> GetAllRoomTypes();
         Task<RoomType?> GetRoomTypeById(string roomTypeId);
+        Task<RoomType?> GetRoomTypeByRoomId(string roomId);
         void AddRoomType(RoomType roomType);
         void UpdateRoomType(RoomType roomType);
         void DeleteRoomType(RoomType roomType);

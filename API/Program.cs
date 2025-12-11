@@ -40,6 +40,7 @@ builder.Services.AddScoped<IRegistrationUow>(sp => sp.GetRequiredService<UnitOfW
 builder.Services.AddScoped<IContractUow>(sp => sp.GetRequiredService<UnitOfWork>());
 builder.Services.AddScoped<IRoomUow>(sp => sp.GetRequiredService<UnitOfWork>());
 builder.Services.AddScoped<IViolationUow>(sp => sp.GetRequiredService<UnitOfWork>());
+builder.Services.AddScoped<IPaymentUow>(sp => sp.GetRequiredService<UnitOfWork>());
 
 // Services (interfaces + concrete where other services request the concrete type)
 builder.Services.AddScoped<EmailService>();
@@ -49,6 +50,7 @@ builder.Services.AddScoped<IRegistrationService, RegistrationService>();
 builder.Services.AddScoped<IViolationService, ViolationService>();
 builder.Services.AddScoped<IContractService, ContractService>();
 builder.Services.AddScoped<IRoomService, RoomService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 
 //Repositories
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
