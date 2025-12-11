@@ -28,6 +28,9 @@ public partial class Contract
     [StringLength(30)]
     public string ContractStatus { get; set; } = null!;
 
+    [InverseProperty("Contract")]
+    public virtual ICollection<Receipt> Receipts { get; set; } = new List<Receipt>();
+
     [ForeignKey("RoomId")]
     [InverseProperty("Contracts")]
     public virtual Room Room { get; set; } = null!;
