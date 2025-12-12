@@ -20,7 +20,7 @@ namespace DataAccess.Repository
         {
             _context.Payments.Add(payment);
         }
-        public async Task<Payment?> GetPaymentById(int paymentId)
+        public async Task<Payment?> GetPaymentById(string paymentId)
         {
             return await _context.Payments.FindAsync(paymentId);
         }

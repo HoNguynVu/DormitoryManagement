@@ -23,7 +23,10 @@ namespace DataAccess.Repository
         }
         public async Task<Contract?> GetContractById(string contractId)
         {
-            return await _context.Contracts.FindAsync(contractId);
+            return await _context.Contracts
+                .Include(c => c.Room)
+                    .ThenInclude(r=>r.RoomType)
+                .FirstOrDefaultAsync(c => c.ContractID == contractId);
         }
         public async Task<IEnumerable<Contract>> GetContractsByStudentId(string studentId)
         {

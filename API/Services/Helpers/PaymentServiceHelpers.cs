@@ -1,4 +1,7 @@
-﻿using API.Services.Helpers;
+﻿using API.Services.Common;
+using API.Services.Helpers;
+using BusinessObject.DTOs.RegisDTOs;
+using BusinessObject.Entities;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
@@ -70,54 +73,117 @@ namespace API.Services.Implements
 
         private async Task<(bool Success, string Message, int StatusCode)> HanldeRegisSuccessPayment(string appTransId, string zpTransId)
         {
-            //var (regisSuccess, regisMessage, regisStatusCode, registration) = await _registrationService.GetRegistrationByIdAsync(registrationId);
-            //if (!regisSuccess || registration == null)
+            //return await ExecutePaymentTransaction(appTransId, zpTransId, async (receipt) =>
             //{
-            //    return (false, $"Không tìm thấy đăng ký với ID: {registrationId}", regisStatusCode);
-            //}
-            //registration.PaymentStatus = PaymentConstants.RegisPaid;
-            //_registrationService.UpdateRegistration(registration);
-            //await _registrationService.SaveChangesAsync();
+            //    // Logic riêng: Update trạng thái đơn đăng ký
+            //    var request = new UpdateFormRequest
+            //    {
+            //        FormId = receipt.RelatedObjectID,
+            //        Status = "Paid"
+            //    };
+            //    return await _registrationService.UpdateStatusForm(request);
+            //}); đợi hoàn thành chức năng đăng ký
             return (true, "Cập nhật trạng thái thanh toán thành công.", 200);
         }
 
         private async Task<(bool Success, string Message, int StatusCode)> HanldeRenewalSuccessPayment(string appTransId, string zpTransId)
         {
-            //var (regisSuccess, regisMessage, regisStatusCode, registration) = await _registrationService.GetRegistrationByIdAsync(registrationId);
-            //if (!regisSuccess || registration == null)
-            //{
-            //    return (false, $"Không tìm thấy đăng ký với ID: {registrationId}", regisStatusCode);
-            //}
-            //registration.PaymentStatus = PaymentConstants.RegisPaid;
-            //_registrationService.UpdateRegistration(registration);
-            //await _registrationService.SaveChangesAsync();
-            return (true, "Cập nhật trạng thái thanh toán thành công.", 200);
+            return await ExecutePaymentTransaction(appTransId, zpTransId, async (receipt) =>
+            {
+                var contract = await _paymentUow.Contracts.GetContractById(receipt.RelatedObjectID);
+
+                // 2. Kiểm tra dữ liệu Hợp đồng và Phòng
+                if (contract == null)
+                    return (false, "Contract not found.", 404);
+
+                if (contract.Room?.RoomType == null)
+                    return (false, "Room configuration is missing.", 500);
+
+                // 3. Lấy giá và kiểm tra an toàn
+                decimal? rawPrice = contract.Room.RoomType.Price;
+
+                if (!rawPrice.HasValue || rawPrice.Value == 0)
+                {
+                    return (false, "Room price is invalid (zero or not set). Cannot calculate extension.", 500);
+                }
+
+                // 4. Tính toán số tháng (Dùng .Value để lấy giá trị thực)
+                int months = (int)(receipt.Amount / rawPrice.Value);
+
+                if (months <= 0)
+                {
+                    return (false, "Payment amount is not enough for 1 month extension.", 400);
+                }
+
+                //return await _contractService.ConfirmRenewalContractAsync(receipt.RelatedObjectID, months);
+                return (true, "Gia hạn hợp đồng thành công.", 200);
+            });
         }
 
         private async Task<(bool Success, string Message, int StatusCode)> HanldeUtilitySuccessPayment(string appTransId, string zpTransId)
         {
-            //var (regisSuccess, regisMessage, regisStatusCode, registration) = await _registrationService.GetRegistrationByIdAsync(registrationId);
-            //if (!regisSuccess || registration == null)
+            //return await ExecutePaymentTransaction(appTransId, zpTransId, async (receipt) =>
             //{
-            //    return (false, $"Không tìm thấy đăng ký với ID: {registrationId}", regisStatusCode);
-            //}
-            //registration.PaymentStatus = PaymentConstants.RegisPaid;
-            //_registrationService.UpdateRegistration(registration);
-            //await _registrationService.SaveChangesAsync();
+            //    // Logic riêng: Gạch nợ hóa đơn điện nước
+            //    return await _utilityService.ConfirmUtilityPaymentAsync(receipt.RelatedObjectID);
+            //});
             return (true, "Cập nhật trạng thái thanh toán thành công.", 200);
         }
 
         private async Task<(bool Success, string Message, int StatusCode)> HanldeInsuranceSuccessPayment(string appTransId, string zpTransId)
         {
-            //var (regisSuccess, regisMessage, regisStatusCode, registration) = await _registrationService.GetRegistrationByIdAsync(registrationId);
-            //if (!regisSuccess || registration == null)
-            //{
-            //    return (false, $"Không tìm thấy đăng ký với ID: {registrationId}", regisStatusCode);
-            //}
-            //registration.PaymentStatus = PaymentConstants.RegisPaid;
-            //_registrationService.UpdateRegistration(registration);
-            //await _registrationService.SaveChangesAsync();
-            return (true, "Cập nhật trạng thái thanh toán thành công.", 200);
+            return await ExecutePaymentTransaction(appTransId, zpTransId, async (receipt) =>
+            {
+                return await _healthInsuranceService.ConfirmInsurancePaymentAsync(receipt.RelatedObjectID);
+            });
+        }
+
+        // Hàm Generic xử lý chung cho mọi loại thanh toán
+        private async Task<(bool Success, string Message, int StatusCode)> ExecutePaymentTransaction(
+            string appTransId,
+            string zpTransId,
+            Func<Receipt, Task<(bool Success, string Message, int StatusCode)>> businessLogic)
+        {
+            try
+            {
+                // 1. Tìm Payment
+                var payment = await _paymentUow.Payments.GetPaymentById(appTransId);
+                if (payment == null)
+                    return (false, $"Payment not found for AppTransId: {appTransId}", 404);
+
+                // 2. Tìm Receipt
+                var receipt = await _paymentUow.Receipts.GetReceiptById(payment.ReceiptID);
+                if (receipt == null)
+                    return (false, "Receipt not found", 404);
+
+                // 3. Kiểm tra Idempotency (Nếu đã Paid thì return luôn)
+                if (receipt.Status == PaymentConstants.StatusSuccess)
+                    return (true, "Transaction already processed successfully.", 200);
+
+                // 4. CHẠY LOGIC NGHIỆP VỤ RIÊNG (Registration, Contract, Insurance...)
+                var logicResult = await businessLogic(receipt);
+
+                // 5. Nếu nghiệp vụ thành công -> Cập nhật Receipt & Payment
+                if (logicResult.Success)
+                {
+                    payment.Status = PaymentConstants.StatusSuccess;
+                    payment.TransactionID = zpTransId; // Lưu mã ZaloPay
+
+                    receipt.Status = PaymentConstants.StatusSuccess;
+                    receipt.PrintTime = DateTime.Now;
+
+                    _paymentUow.Payments.UpdatePayment(payment);
+                    _paymentUow.Receipts.UpdateReceipt(receipt);
+
+                    await _paymentUow.CommitAsync();
+                }
+
+                return logicResult;
+            }
+            catch (Exception ex)
+            {
+                return (false, $"System Error: {ex.Message}", 500);
+            }
         }
     }
 }

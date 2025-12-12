@@ -10,7 +10,7 @@ namespace DataAccess.Interfaces
     public interface IPaymentRepository
     {
         void AddPayment(Payment payment);
-        Task<Payment?> GetPaymentById(int paymentId);
+        Task<Payment?> GetPaymentById(string paymentId);
         void UpdatePayment(Payment payment);
     }
 }

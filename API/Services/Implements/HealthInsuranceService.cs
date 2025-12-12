@@ -42,7 +42,7 @@ namespace API.Services.Implements
                 return (false, $"Your current insurance is valid until {currentInsurance.EndDate}. Renewal is only allowed 3 months before expiration.", 400);
             }
 
-            // Add Receipt
+            // Add Insurance
             await _uow.BeginTransactionAsync();
             try
             {
