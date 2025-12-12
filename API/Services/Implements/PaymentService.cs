@@ -16,11 +16,23 @@ namespace API.Services.Implements
         private readonly ZaloPaySettings _zaloConfig;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IPaymentUow _paymentUow;
-        public PaymentService(IOptions<ZaloPaySettings> zaloConfig,IHttpClientFactory httpClientFactory, IPaymentUow paymentUow)
+
+        private readonly IHealthInsuranceService _healthInsuranceService;
+        private readonly IRegistrationService _registrationService;
+        private readonly IContractService _contractService;
+        public PaymentService(IOptions<ZaloPaySettings> zaloConfig,
+            IHttpClientFactory httpClientFactory, 
+            IPaymentUow paymentUow, 
+            IHealthInsuranceService healthInsuranceService,
+            IRegistrationService registrationService,
+            IContractService contractService)
         {
             _zaloConfig = zaloConfig.Value;
             _httpClientFactory = httpClientFactory;
             _paymentUow = paymentUow;
+            _healthInsuranceService = healthInsuranceService;
+            _registrationService = registrationService;
+            _contractService = contractService;
         }
 
         public async Task<(int StatusCode, PaymentLinkDTO dto)> CreateZaloPayLinkForRegistration(string registrationId)
@@ -49,6 +61,7 @@ namespace API.Services.Implements
             var amount = roomType.Price;
             var appTransId = GenerateAppTransId(PaymentConstants.PrefixRegis, registrationId);
             string description = $"Thanh toan dang ky o {registrationId}";
+
             string orderUrl = await CallZaloPayCreateOrder(appTransId, (long)amount, description, registrationId);
             if (string.IsNullOrEmpty(orderUrl))
             {
@@ -73,6 +86,7 @@ namespace API.Services.Implements
                     PaymentID = appTransId,
                     PaymentMethod = PaymentConstants.MethodZaloPay,
                     Amount = amount,
+                    ReceiptID = receipt.ReceiptID,
                     TransactionID = appTransId,
                     Status = PaymentConstants.StatusPending,
                     PaymentDate = DateTime.Now,
