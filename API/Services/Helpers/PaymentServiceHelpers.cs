@@ -67,5 +67,57 @@ namespace API.Services.Implements
                 throw new Exception($"ZaloPay Error: {debugInfo}");
             }
         }
+
+        private async Task<(bool Success, string Message, int StatusCode)> HanldeRegisSuccessPayment(string appTransId, string zpTransId)
+        {
+            //var (regisSuccess, regisMessage, regisStatusCode, registration) = await _registrationService.GetRegistrationByIdAsync(registrationId);
+            //if (!regisSuccess || registration == null)
+            //{
+            //    return (false, $"Không tìm thấy đăng ký với ID: {registrationId}", regisStatusCode);
+            //}
+            //registration.PaymentStatus = PaymentConstants.RegisPaid;
+            //_registrationService.UpdateRegistration(registration);
+            //await _registrationService.SaveChangesAsync();
+            return (true, "Cập nhật trạng thái thanh toán thành công.", 200);
+        }
+
+        private async Task<(bool Success, string Message, int StatusCode)> HanldeRenewalSuccessPayment(string appTransId, string zpTransId)
+        {
+            //var (regisSuccess, regisMessage, regisStatusCode, registration) = await _registrationService.GetRegistrationByIdAsync(registrationId);
+            //if (!regisSuccess || registration == null)
+            //{
+            //    return (false, $"Không tìm thấy đăng ký với ID: {registrationId}", regisStatusCode);
+            //}
+            //registration.PaymentStatus = PaymentConstants.RegisPaid;
+            //_registrationService.UpdateRegistration(registration);
+            //await _registrationService.SaveChangesAsync();
+            return (true, "Cập nhật trạng thái thanh toán thành công.", 200);
+        }
+
+        private async Task<(bool Success, string Message, int StatusCode)> HanldeUtilitySuccessPayment(string appTransId, string zpTransId)
+        {
+            //var (regisSuccess, regisMessage, regisStatusCode, registration) = await _registrationService.GetRegistrationByIdAsync(registrationId);
+            //if (!regisSuccess || registration == null)
+            //{
+            //    return (false, $"Không tìm thấy đăng ký với ID: {registrationId}", regisStatusCode);
+            //}
+            //registration.PaymentStatus = PaymentConstants.RegisPaid;
+            //_registrationService.UpdateRegistration(registration);
+            //await _registrationService.SaveChangesAsync();
+            return (true, "Cập nhật trạng thái thanh toán thành công.", 200);
+        }
+
+        private async Task<(bool Success, string Message, int StatusCode)> HanldeInsuranceSuccessPayment(string appTransId, string zpTransId)
+        {
+            //var (regisSuccess, regisMessage, regisStatusCode, registration) = await _registrationService.GetRegistrationByIdAsync(registrationId);
+            //if (!regisSuccess || registration == null)
+            //{
+            //    return (false, $"Không tìm thấy đăng ký với ID: {registrationId}", regisStatusCode);
+            //}
+            //registration.PaymentStatus = PaymentConstants.RegisPaid;
+            //_registrationService.UpdateRegistration(registration);
+            //await _registrationService.SaveChangesAsync();
+            return (true, "Cập nhật trạng thái thanh toán thành công.", 200);
+        }
     }
 }
