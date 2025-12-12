@@ -106,5 +106,62 @@ namespace API.Services.Implements
                 return (false, $"Database Error: {ex.Message}", 500, null);
             }
         }
+
+        public async Task<(bool Success, string Message, int StatusCode)> ConfirmInsurancePaymentAsync(string insuranceId)
+        {
+            if (string.IsNullOrEmpty(insuranceId))
+                return (false, "Insurance ID is required.", 400);
+
+            await _uow.BeginTransactionAsync();
+            try
+            {
+                // 1. Tìm bản ghi bảo hiểm đang chờ (Pending)
+                var insurance = await _uow.HealthInsurances.GetInsuranceByInsuranceId(insuranceId);
+
+                if (insurance == null)
+                {
+                    return (false, "Health insurance record not found.", 404);
+                }
+
+                if (insurance.Status == "Active")
+                {
+                    return (true, "Insurance is already active.", 200); 
+                }
+
+                // 2. Logic tính ngày hiệu lực 
+                DateOnly today = DateOnly.FromDateTime(DateTime.Now);
+                DateOnly startDate = today;
+
+                // Kiểm tra xem sinh viên có bảo hiểm cũ nào đang Active không 
+                var activeOldInsurance = await _uow.HealthInsurances.GetActiveInsuranceByStudentIdAsync(insurance.StudentID);
+
+                if (activeOldInsurance != null && activeOldInsurance.EndDate >= today)
+                {
+                    // Trường hợp A: Có bảo hiểm cũ còn hạn -> Nối tiếp
+                    startDate = activeOldInsurance.EndDate.AddDays(1);
+                }
+                else
+                {
+                    // Trường hợp B: Không có hoặc đã hết hạn -> Tính từ hôm nay
+                    startDate = today;
+                }
+
+                // 3. Cập nhật thông tin bản ghi
+                insurance.Status = "Active";
+                insurance.StartDate = startDate;
+                insurance.EndDate = startDate.AddYears(1); // Mặc định mua 1 năm
+                insurance.CardNumber = IdGenerator.GenerateUniqueSuffix(); 
+
+                _uow.HealthInsurances.Update(insurance);
+                // 4. Lưu và Commit
+                await _uow.CommitAsync();
+                return (true, $"Insurance activated successfully. Valid from {insurance.StartDate} to {insurance.EndDate}", 200);
+            }
+            catch (Exception ex)
+            {
+                await _uow.RollbackAsync();
+                return (false, $"Error activating insurance: {ex.Message}", 500);
+            }
+        }
     }
 }

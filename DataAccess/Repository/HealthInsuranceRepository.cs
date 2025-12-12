@@ -43,6 +43,12 @@ namespace DataAccess.Repository
                 .OrderByDescending(h => h.CreatedAt) // Lấy đơn mới tạo gần đây nhất
                 .FirstOrDefaultAsync();
         }
+
+        public async Task<HealthInsurance?> GetInsuranceByInsuranceId(string insuranceId)
+        {
+            return await _context.HealthInsurances
+                .FirstOrDefaultAsync(h => h.InsuranceID == insuranceId);
+        }
         public void Add(HealthInsurance insurance)
         {
             _context.HealthInsurances.Add(insurance);
