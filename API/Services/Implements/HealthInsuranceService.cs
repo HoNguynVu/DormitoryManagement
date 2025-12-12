@@ -58,23 +58,9 @@ namespace API.Services.Implements
                     CardNumber = ""
                 };
 
-                var receipt = new Receipt
-                {
-                    ReceiptID = IdGenerator.GenerateUniqueSuffix(),
-                    StudentID = studentId,
-                    Amount = Cost.INSURANCE_COST_PER_YEAR,
-                    PaymentType = "HealthInsurance",
-                    RelatedObjectID = healthInsurance.InsuranceID,
-                    Status = "Pending",
-                    PrintTime = DateTime.Now,
-                    Content = $"Health Insurance Fee (Place: {registrationPlace})"
-                };
-
-                _uow.Receipts.AddReceipt(receipt);
                 _uow.HealthInsurances.Add(healthInsurance);
                 await _uow.CommitAsync();
-
-                return (true, receipt.ReceiptID, 201);
+                return (true, healthInsurance.InsuranceID, 201);
             }
             catch (Exception ex)
             {
