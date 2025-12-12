@@ -13,7 +13,7 @@ namespace DataAccess.Interfaces
 
         void Update(MaintenanceRequest request);
 
-
+        Task<IEnumerable<MaintenanceRequest>> GetMaintenanceFilteredAsync(string? studentId, string? status);
         Task<MaintenanceRequest?> GetMaintenanceByIdAsync(string maintenanceId);
     }
 }

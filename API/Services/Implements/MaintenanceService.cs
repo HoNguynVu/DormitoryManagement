@@ -1,8 +1,136 @@
-﻿using API.Services.Interfaces;
+﻿using API.Services.Common;
+using API.Services.Helpers;
+using API.Services.Interfaces;
+using API.UnitOfWorks;
+using BusinessObject.DTOs.MaintenanceDTOs;
+using BusinessObject.Entities;
 
 namespace API.Services.Implements
 {
     public class MaintenanceService : IMaintenanceService
     {
+        private readonly IMaintenanceUow _uow;
+        public MaintenanceService(IMaintenanceUow uow)
+        {
+            _uow = uow;
+        }
+        public async Task<(bool Success, string Message, int StatusCode)> CreateRequestAsync(CreateMaintenanceDto dto)
+        {
+            // Validation đầu vào
+            if (dto == null || string.IsNullOrEmpty(dto.StudentId) || string.IsNullOrEmpty(dto.Description))
+            {
+                return (false, "Thông tin yêu cầu không hợp lệ (Thiếu StudentId hoặc Mô tả).", 400);
+            }
+            await _uow.BeginTransactionAsync();
+            try
+            {
+                // Kiểm tra xem Sinh viên có đang ở KTX không (Phải có hợp đồng Active)
+                var contract = await _uow.Contracts.GetActiveContractByStudentId(dto.StudentId);
+
+                if (contract == null || contract.Room == null)
+                {
+                    return (false, "Sinh viên chưa có hợp đồng phòng hiệu lực, không thể gửi yêu cầu.", 403);
+                }
+
+                // Tạo Entity mới
+                var request = new MaintenanceRequest
+                {
+                    RequestID = "MT-" + IdGenerator.GenerateUniqueSuffix(),
+                    StudentID = dto.StudentId,
+                    RoomID = contract.Room.RoomID,
+                    Description = dto.Description,
+                    Status = "Pending",            
+                    RequestDate = DateTime.Now,
+                    RepairCost = 0             
+                };
+
+                _uow.Maintenances.Add(request);
+                await _uow.CommitAsync();
+
+                return (true, "Gửi yêu cầu bảo trì thành công.", 201);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Lỗi hệ thống: {ex.Message}", 500);
+            }
+        }
+
+        public async Task<(bool Success, string Message, int StatusCode, object? Data)> GetRequestsAsync(string? studentId, string? status)
+        {
+            try
+            {
+                // Gọi Repository để lấy dữ liệu (đã Include Room và Student trong Repo)
+                var requests = await _uow.Maintenances.GetMaintenanceFilteredAsync(studentId,status);
+                return (true, "Lấy danh sách thành công.", 200, requests);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Lỗi truy vấn: {ex.Message}", 500, null);
+            }
+        }
+
+        public async Task<(bool Success, string Message, int StatusCode)> UpdateStatusAsync(UpdateMaintenanceStatusDto dto)
+        {
+            // 1. Validation
+            if (string.IsNullOrEmpty(dto.RequestId) || string.IsNullOrEmpty(dto.NewStatus))
+            {
+                return (false, "Request ID and New Status are required.", 400);
+            }
+
+            await _uow.BeginTransactionAsync();
+            try
+            {
+                // 2. Tìm yêu cầu bảo trì
+                var request = await _uow.Maintenances.GetMaintenanceByIdAsync(dto.RequestId);
+                if (request == null)
+                {
+                    return (false, "Maintenance request not found.", 404);
+                }
+
+                // 3. Cập nhật thông tin chung
+                request.Status = dto.NewStatus;
+                request.ManagerNote = dto.ManagerNote;
+
+                // 4. Xử lý Logic khi trạng thái là "Completed" (Đã sửa xong)
+                if (dto.NewStatus == "Completed")
+                {
+                    request.ResolvedDate = DateTime.Now;
+                    request.RepairCost = dto.RepairCost;
+
+                    // --- LOGIC SINH HÓA ĐƠN ---
+                    if (dto.RepairCost > 0)
+                    {
+                        var receipt = new Receipt
+                        {
+                            ReceiptID = "RE-" + IdGenerator.GenerateUniqueSuffix(),
+                            StudentID = request.StudentID,
+                            Amount = dto.RepairCost,
+                            PaymentType = PaymentConstants.TypeMaintenanceFee, // Đánh dấu loại thanh toán
+                            Status = "Pending",             // Chờ thanh toán
+                            Content = $"Phí sửa chữa cho yêu cầu {request.RequestID}: {request.Description}",
+                            PrintTime = DateTime.Now
+                        };
+
+                        _uow.Receipts.AddReceipt(receipt);
+                    }
+                }
+
+                // 5. Lưu xuống DB
+                _uow.Maintenances.Update(request);
+                await _uow.CommitAsync();
+
+                string msg = (dto.NewStatus == "Completed" && dto.RepairCost > 0)
+                    ? "Đã hoàn thành sửa chữa và tạo hóa đơn thu phí cho sinh viên."
+                    : "Cập nhật trạng thái thành công.";
+
+                return (true, msg, 200);
+            }
+            catch (Exception ex)
+            {
+                await _uow.RollbackAsync();
+                return (false, $"Lỗi hệ thống: {ex.Message}", 500);
+            }
+        }
+
     }
 }

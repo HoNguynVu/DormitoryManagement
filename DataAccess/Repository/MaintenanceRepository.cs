@@ -34,5 +34,14 @@ namespace DataAccess.Repository
                 .Include(m => m.Room)
                 .FirstOrDefaultAsync(m => m.RequestID == maintenanceId);
         }
+
+        public async Task<IEnumerable<MaintenanceRequest>> GetMaintenanceFilteredAsync(string? studentId, string? status)
+        {
+            return await _context.MaintenanceRequests
+               .Include(m => m.Student)
+               .Include(m => m.Room)
+               .Where(m => m.StudentID.Contains(studentId??"") || m.Status.Contains(status??""))
+               .ToListAsync();
+        }
     }
 }
