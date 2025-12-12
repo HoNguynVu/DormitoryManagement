@@ -10,25 +10,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DataAccess.Repository
 {
-    public class AccountRepository : IAccountRepository
+    public class AccountRepository : GenericRepository<Account>, IAccountRepository
     {
         private readonly DormitoryDbContext _context;
-        public AccountRepository(DormitoryDbContext context)
+        public AccountRepository(DormitoryDbContext context) : base(context)
         {
-            _context = context;
-        }
-        public async Task<IEnumerable<Account>> GetAllAccounts()
-        {
-            return await _context.Accounts.ToListAsync();
-        }
-        public async Task<Account?> GetAccountById(string accountId)
-        {
-            return await _context.Accounts.FindAsync(accountId);
         }
         public async Task<Account?> GetAccountByUsername(string username)
         {
-            return await _context.Accounts
-                .FirstOrDefaultAsync(a => a.Username == username);
+            return await _dbSet.FirstOrDefaultAsync(a => a.Username == username);
         }
         public async Task<Account?> GetAccountByOtp(string otp)
         {
@@ -36,18 +26,6 @@ namespace DataAccess.Repository
                 .Where(o => o.Code == otp)
                 .Select(o => o.Account)
                 .FirstOrDefaultAsync();
-        }
-        public void AddAccount(Account account)
-        {
-            _context.Accounts.Add(account);
-        }
-        public void UpdateAccount(Account account)
-        {
-            _context.Accounts.Update(account);
-        }
-        public void DeleteAccount(Account account)
-        {
-            _context.Accounts.Remove(account);
         }
     }
 }

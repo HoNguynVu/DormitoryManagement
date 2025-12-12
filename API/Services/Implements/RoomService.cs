@@ -64,7 +64,7 @@ namespace API.Services.Implements
                 return (false, "Building not found", 400, null);
 
             // Validate room type exists and derive capacity from it
-            var roomType = await _roomUow.RoomTypes.GetRoomTypeById(request.RoomTypeId);
+            var roomType = await _roomUow.RoomTypes.GetByIdAsync(request.RoomTypeId);
             if (roomType == null)
                 return (false, "RoomType not found", 400, null);
 
@@ -72,7 +72,7 @@ namespace API.Services.Implements
             var roomId = $"RM_{request.BuildingId}_{request.RoomName}";
 
             // Ensure unique RoomID
-            var existing = await _roomUow.Rooms.GetRoomById(roomId);
+            var existing = await _roomUow.Rooms.GetByIdAsync(roomId);
             if (existing != null)
                 return (false, "Room already exists", 409, null);
 
@@ -92,7 +92,7 @@ namespace API.Services.Implements
 
             try
             {
-                _roomUow.Rooms.AddRoom(room);
+                _roomUow.Rooms.Add(room);
                 await _roomUow.SaveChangesAsync();
 
                 var response = new RoomResponseDto
@@ -122,7 +122,7 @@ namespace API.Services.Implements
 
             try
             {
-                var existing = await _roomUow.Rooms.GetRoomById(request.RoomID);
+                var existing = await _roomUow.Rooms.GetByIdAsync(request.RoomID);
                 if (existing is null) return (false, "Room not found", 404);
 
                 // Do not allow renaming building or room name because RoomID is derived and is primary key
@@ -135,7 +135,7 @@ namespace API.Services.Implements
                 // If room type changes, fetch it and update capacity accordingly
                 if (!string.IsNullOrWhiteSpace(request.RoomTypeID) && request.RoomTypeID != existing.RoomTypeID)
                 {
-                    var newType = await _roomUow.RoomTypes.GetRoomTypeById(request.RoomTypeID);
+                    var newType = await _roomUow.RoomTypes.GetByIdAsync(request.RoomTypeID);
                     if (newType == null) return (false, "New RoomType not found", 400);
 
                     // New capacity must be >= current occupancy
@@ -165,7 +165,7 @@ namespace API.Services.Implements
                 if (request.IsUnderMaintenance.HasValue) existing.IsUnderMaintenance = request.IsUnderMaintenance.Value;
                 if (request.IsBeingCleaned.HasValue) existing.IsBeingCleaned = request.IsBeingCleaned.Value;
 
-                _roomUow.Rooms.UpdateRoom(existing);
+                _roomUow.Rooms.Update(existing);
                 await _roomUow.SaveChangesAsync();
 
                 return (true, "Room updated", 200);
@@ -182,10 +182,10 @@ namespace API.Services.Implements
 
             try
             {
-                var existing = await _roomUow.Rooms.GetRoomById(roomId);
+                var existing = await _roomUow.Rooms.GetByIdAsync(roomId);
                 if (existing is null) return (false, "Room not found", 404);
 
-                _roomUow.Rooms.DeleteRoom(existing);
+                _roomUow.Rooms.Delete(existing);
                 await _roomUow.SaveChangesAsync();
 
                 return (true, "Room deleted", 200);

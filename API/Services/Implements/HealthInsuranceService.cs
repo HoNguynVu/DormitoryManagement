@@ -22,7 +22,7 @@ namespace API.Services.Implements
             if (string.IsNullOrEmpty(registrationPlace))
                 return (false, "Registration place is required.", 400);
             // Check Dkien
-            var student = await _uow.Students.GetStudentByIdAsync(studentId);
+            var student = await _uow.Students.GetByIdAsync(studentId);
             if (student == null)
             {
                 return (false, "Student not found.", 404);
@@ -70,7 +70,7 @@ namespace API.Services.Implements
                     Content = $"Health Insurance Fee (Place: {registrationPlace})"
                 };
 
-                _uow.Receipts.AddReceipt(receipt);
+                _uow.Receipts.Add   (receipt);
                 _uow.HealthInsurances.Add(healthInsurance);
                 await _uow.CommitAsync();
 
@@ -116,7 +116,7 @@ namespace API.Services.Implements
             try
             {
                 // 1. Tìm bản ghi bảo hiểm đang chờ (Pending)
-                var insurance = await _uow.HealthInsurances.GetInsuranceByInsuranceId(insuranceId);
+                var insurance = await _uow.HealthInsurances.GetByIdAsync(insuranceId);
 
                 if (insurance == null)
                 {

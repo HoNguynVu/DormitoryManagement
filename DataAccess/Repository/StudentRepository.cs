@@ -10,36 +10,29 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DataAccess.Repository
 {
-    public class StudentRepository : IStudentRepository
+    public class StudentRepository : GenericRepository<Student>, IStudentRepository
     {
-        private readonly DormitoryDbContext _context;
-        public StudentRepository(DormitoryDbContext context)
+        public StudentRepository(DormitoryDbContext context) : base(context)
         {
-            _context = context;
         }
-        public async Task<IEnumerable<Student>> GetAllStudentsAsync()
+
+        public async Task<Student?> GetStudentByEmailAsync(string email)
         {
-            return await _context.Students.ToListAsync();
+            return await _dbSet
+                .Include(s => s.School)
+                .Include(s => s.Priority)
+                .Include(s => s.Account)
+                .FirstOrDefaultAsync(s => s.Email == email);
         }
-        public async Task<Student?> GetStudentByIdAsync(string studentId)
+
+        // ✅ Override để thêm eager loading
+        public override async Task<Student?> GetByIdAsync(string id)
         {
-            return await _context.Students.FindAsync(studentId);
-        }
-        public async Task<Student?> GetStudentByEmailAsync(string Email)
-        {
-            return await _context.Students.FirstOrDefaultAsync(s => s.Email == Email);
-        }
-        public void AddStudent(Student student)
-        {
-            _context.Students.Add(student);
-        }
-        public void UpdateStudent(Student student)
-        {
-            _context.Students.Update(student);
-        }
-        public void DeleteStudent(Student student)
-        {
-            _context.Students.Remove(student);
+            return await _dbSet
+                .Include(s => s.School)
+                .Include(s => s.Priority)
+                .Include(s => s.Account)
+                .FirstOrDefaultAsync(s => s.StudentID == id);
         }
     }
 }

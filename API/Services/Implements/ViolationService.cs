@@ -34,7 +34,7 @@ namespace API.Services.Implements
                     Resolution = null
                 };
 
-                _violationUow.Violations.AddViolation(newViolation);
+                _violationUow.Violations.Add(newViolation);
                 await _violationUow.CommitAsync(); // Commit violation
                 
                 // ===== QUERY: COUNT VIOLATIONS (no transaction needed) =====
@@ -50,14 +50,14 @@ namespace API.Services.Implements
                     {
                         activeContract.ContractStatus = "Terminated";
                         activeContract.EndDate = DateOnly.FromDateTime(DateTime.UtcNow);
-                        _violationUow.Contracts.UpdateContract(activeContract);
+                        _violationUow.Contracts.Update(activeContract);
                         
                         await _violationUow.CommitAsync(); // Commit contract update
                     }
                 }
 
                 // ===== RETURN RESPONSE =====
-                var createdViolation = await _violationUow.Violations.GetViolationById(newViolation.ViolationID);
+                var createdViolation = await _violationUow.Violations.GetByIdAsync(newViolation.ViolationID);
                 if (createdViolation == null)
                 {
                     return (false, "Failed to retrieve created violation.", 500, null);
@@ -83,14 +83,14 @@ namespace API.Services.Implements
             await _violationUow.BeginTransactionAsync();
             try
             {
-                var violation = await _violationUow.Violations.GetViolationById(request.ViolationId);
+                var violation = await _violationUow.Violations.GetByIdAsync(request.ViolationId);
                 if (violation == null)
                 {
                     return (false, "Violation not found.", 404);
                 }
 
                 violation.Resolution = request.Resolution;
-                _violationUow.Violations.UpdateViolation(violation);
+                _violationUow.Violations.Update(violation);
 
                 await _violationUow.CommitAsync();
 
@@ -124,7 +124,7 @@ namespace API.Services.Implements
         {
             try
             {
-                var violations = await _violationUow.Violations.GetAllViolations();
+                var violations = await _violationUow.Violations.GetAllAsync();
                 
                 var response = violations.Select(v => 
                 {

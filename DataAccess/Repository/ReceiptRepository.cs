@@ -10,28 +10,12 @@ using System.Threading.Tasks;
 
 namespace DataAccess.Repository
 {
-    public class ReceiptRepository : IReceiptRepository
+    public class ReceiptRepository : GenericRepository<Receipt>, IReceiptRepository
     {
         private readonly DormitoryDbContext _context;
-        public ReceiptRepository(DormitoryDbContext context)
+        public ReceiptRepository(DormitoryDbContext context) : base(context)
         {
-            _context = context;
         }
-        public async Task<IEnumerable<Receipt>> GetAllReceipts()
-        {
-            return await _context.Receipts.ToListAsync();
-        }
-        public async Task<Receipt?> GetReceiptById(string receiptId)
-        {
-            return await _context.Receipts.FindAsync(receiptId);
-        }
-        public void AddReceipt(Receipt receipt)
-        {
-            _context.Receipts.Add(receipt);
-        }
-        public void UpdateReceipt(Receipt receipt)
-        {
-            _context.Receipts.Update(receipt);
-        }
+
     }
 }

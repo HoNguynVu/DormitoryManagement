@@ -7,10 +7,7 @@ using BusinessObject.Entities;
 
 namespace DataAccess.Interfaces
 {
-    public interface IPaymentRepository
+    public interface IPaymentRepository : IGenericRepository<Payment>
     {
-        void AddPayment(Payment payment);
-        Task<Payment?> GetPaymentById(int paymentId);
-        void UpdatePayment(Payment payment);
     }
 }

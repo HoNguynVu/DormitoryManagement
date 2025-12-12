@@ -7,13 +7,8 @@ using BusinessObject.Entities;
 
 namespace DataAccess.Interfaces
 {
-    public interface IRoomTypeRepository
+    public interface IRoomTypeRepository : IGenericRepository<RoomType>
     {
-        Task<IEnumerable<RoomType>> GetAllRoomTypes();
-        Task<RoomType?> GetRoomTypeById(string roomTypeId);
         Task<RoomType?> GetRoomTypeByRoomId(string roomId);
-        void AddRoomType(RoomType roomType);
-        void UpdateRoomType(RoomType roomType);
-        void DeleteRoomType(RoomType roomType);
     }
 }

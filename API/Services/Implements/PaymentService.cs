@@ -77,8 +77,8 @@ namespace API.Services.Implements
                     Status = PaymentConstants.StatusPending,
                     PaymentDate = DateTime.Now,
                 };
-                _paymentUow.Receipts.AddReceipt(receipt);
-                _paymentUow.Payments.AddPayment(payment);
+                _paymentUow.Receipts.Add(receipt);
+                _paymentUow.Payments.Add(payment);
                 await _paymentUow.CommitAsync();
                 return (200, new PaymentLinkDTO { IsSuccess = true, PaymentUrl = orderUrl, Message = "ZaloPay payment link created successfully." });
             }

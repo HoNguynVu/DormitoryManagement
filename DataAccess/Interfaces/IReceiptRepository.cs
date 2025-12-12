@@ -7,10 +7,7 @@ using BusinessObject.Entities;
 
 namespace DataAccess.Interfaces
 {
-    public interface IReceiptRepository
+    public interface IReceiptRepository : IGenericRepository<Receipt>
     {
-        void AddReceipt(Receipt receipt);
-        Task<Receipt?> GetReceiptById(string receiptId);
-        void UpdateReceipt(Receipt receipt);
     }
 }

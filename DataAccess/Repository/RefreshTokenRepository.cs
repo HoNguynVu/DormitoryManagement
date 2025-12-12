@@ -2,57 +2,38 @@
 using DataAccess.Interfaces;
 using DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DataAccess.Repository
 {
-    public class RefreshTokenRepository : IRefreshTokenRepository
+    public class RefreshTokenRepository : GenericRepository<RefreshToken>, IRefreshTokenRepository
     {
-        private readonly DormitoryDbContext _context;
-        public RefreshTokenRepository(DormitoryDbContext context)
+        public RefreshTokenRepository(DormitoryDbContext context) : base(context)
         {
-            _context = context;
         }
-        public void AddRefreshToken(RefreshToken refreshToken)
-        {
-            _context.RefreshTokens.Add(refreshToken);
-        }
+
         public async Task<RefreshToken?> GetRefreshToken(string token)
         {
-            return await _context.RefreshTokens
-                .FirstOrDefaultAsync(rt => rt.Token == token);
+            return await _dbSet
+                .FirstOrDefaultAsync(rt => rt.Token == token && 
+                                          rt.RevokedAt == null && 
+                                          rt.ExpiresAt > DateTime.UtcNow);
         }
+
         public void RevokeRefreshToken(string userId)
         {
-           
-            var tokens = _context.RefreshTokens
-               .Where(rt => rt.AccountID == userId && rt.RevokedAt == null).ToList();
+            var tokens = _dbSet.Where(rt => rt.AccountID == userId && rt.RevokedAt == null);
             foreach (var token in tokens)
             {
                 token.RevokedAt = DateTime.UtcNow;
             }
         }
-        public void DeleteRefreshToken(RefreshToken refreshToken)
-        {
-            _context.RefreshTokens.Remove(refreshToken);
-        }
-        public void UpdateRefreshToken(RefreshToken refreshToken)
-        {
-            _context.RefreshTokens.Update(refreshToken);
-        }
+
         public bool IsValid(string token)
         {
-            var refreshToken = _context.RefreshTokens
-                .FirstOrDefault(rt => rt.Token == token);
-            if (refreshToken == null || refreshToken.RevokedAt != null || refreshToken.ExpiresAt < DateTime.UtcNow)
-            {
-                return false;
-            }
-            return true;
+            var refreshToken = _dbSet.FirstOrDefault(rt => rt.Token == token);
+            return refreshToken != null && 
+                   refreshToken.RevokedAt == null && 
+                   refreshToken.ExpiresAt > DateTime.UtcNow;
         }
     }
 }
