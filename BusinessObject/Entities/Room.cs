@@ -55,4 +55,6 @@ public partial class Room
 
     [InverseProperty("Room")]
     public virtual ICollection<UtilityBill> UtilityBills { get; set; } = new List<UtilityBill>();
+
+    public virtual ICollection<MaintenanceRequest> MaintenanceRequests { get; set; } = new List<MaintenanceRequest>();
 }
