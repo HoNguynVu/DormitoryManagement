@@ -17,6 +17,9 @@ namespace DataAccess.Interfaces
 
         // Hàm lấy BTHY mới nhất 
         Task<HealthInsurance?> GetLatestInsuranceByStudentIdAsync(string studentId);
+
+        // Lấy theo ID
+        Task<HealthInsurance?> GetInsuranceByInsuranceId(string insuranceId);
         // Thêm mới
         void Add(HealthInsurance insurance);
 
