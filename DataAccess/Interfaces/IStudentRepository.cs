@@ -7,13 +7,8 @@ using System.Threading.Tasks;
 
 namespace DataAccess.Interfaces
 {
-    public interface IStudentRepository
+    public interface IStudentRepository : IGenericRepository<Student>
     {
-        Task<Student?> GetStudentByIdAsync(string studentId);
-        Task<IEnumerable<Student>> GetAllStudentsAsync();
-        Task<Student?> GetStudentByEmailAsync(string Email);
-        void AddStudent(Student student);
-        void UpdateStudent(Student student);
-        void DeleteStudent(Student student);
+        Task<Student?> GetStudentByEmailAsync(string email);
     }
 }

@@ -7,14 +7,9 @@ using BusinessObject.Entities;
 
 namespace DataAccess.Interfaces
 {
-    public interface IRegistrationFormRepository
+    public interface IRegistrationFormRepository : IGenericRepository<RegistrationForm>
     {
-        Task<IEnumerable<RegistrationForm>> GetAllForms();
-        Task<RegistrationForm?> GetByIdAsync(string formId);
         Task<int> CountRegistrationFormsByRoomId(string roomId);
         Task<Dictionary<string, int>> CountPendingFormsByRoomAsync();
-        void Add(RegistrationForm registrationForm);
-        void Update(RegistrationForm registrationForm);
-        void Delete(RegistrationForm registrationForm);
     }
 }

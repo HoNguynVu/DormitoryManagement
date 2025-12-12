@@ -1,30 +1,19 @@
-using BusinessObject.Entities;
+﻿using BusinessObject.Entities;
 using DataAccess.Interfaces;
 using DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataAccess.Repository
 {
-    public class ViolationRepository : IViolationRepository
+    public class ViolationRepository : GenericRepository<Violation>, IViolationRepository
     {
-        private readonly DormitoryDbContext _context;
-
-        public ViolationRepository(DormitoryDbContext context)
+        public ViolationRepository(DormitoryDbContext context) : base(context)
         {
-            _context = context;
-        }
-
-        public async Task<Violation?> GetViolationById(string violationId)
-        {
-            return await _context.Violations
-                .Include(v => v.Student)
-                .Include(v => v.ReportingManager)
-                .FirstOrDefaultAsync(v => v.ViolationID == violationId);
         }
 
         public async Task<IEnumerable<Violation>> GetViolationsByStudentId(string studentId)
         {
-            return await _context.Violations
+            return await _dbSet
                 .Include(v => v.Student)
                 .Include(v => v.ReportingManager)
                 .Where(v => v.StudentID == studentId)
@@ -32,18 +21,9 @@ namespace DataAccess.Repository
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Violation>> GetAllViolations()
-        {
-            return await _context.Violations
-                .Include(v => v.Student)
-                .Include(v => v.ReportingManager)
-                .OrderByDescending(v => v.ViolationTime)
-                .ToListAsync();
-        }
-
         public async Task<IEnumerable<Violation>> GetPendingViolations()
         {
-            return await _context.Violations
+            return await _dbSet
                 .Include(v => v.Student)
                 .Include(v => v.ReportingManager)
                 .Where(v => string.IsNullOrEmpty(v.Resolution))
@@ -53,24 +33,16 @@ namespace DataAccess.Repository
 
         public async Task<int> CountViolationsByStudentId(string studentId)
         {
-            return await _context.Violations
-                .Where(v => v.StudentID == studentId)
-                .CountAsync();
+            return await _dbSet.CountAsync(v => v.StudentID == studentId);
         }
 
-        public void AddViolation(Violation violation)
+        // ✅ Override để thêm eager loading
+        public override async Task<Violation?> GetByIdAsync(string id)
         {
-            _context.Violations.Add(violation);
-        }
-
-        public void UpdateViolation(Violation violation)
-        {
-            _context.Violations.Update(violation);
-        }
-
-        public void DeleteViolation(Violation violation)
-        {
-            _context.Violations.Remove(violation);
+            return await _dbSet
+                .Include(v => v.Student)
+                .Include(v => v.ReportingManager)
+                .FirstOrDefaultAsync(v => v.ViolationID == id);
         }
     }
 }

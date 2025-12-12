@@ -53,5 +53,21 @@ namespace API.Controllers
                 data = result.Data
             });
         }
+
+        [HttpPut("{insuranceId}/confirm")]
+        public async Task<IActionResult> ConfirmPayment(string insuranceId)
+        {
+            // 1. Gọi Service
+            var result = await _healthInsuranceService.ConfirmInsurancePaymentAsync(insuranceId);
+
+            // 2. Xử lý kết quả trả về
+            if (!result.Success)
+            {
+                return StatusCode(result.StatusCode, new { message = result.Message });
+            }
+
+            // 3. Thành công (200 OK)
+            return Ok(new { message = result.Message });
+        }
     }
 }

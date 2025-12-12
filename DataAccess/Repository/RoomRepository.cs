@@ -3,46 +3,34 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DataAccess.Interfaces;
 using BusinessObject.Entities;
+using DataAccess.Interfaces;
 using DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataAccess.Repository
 {
-    public class RoomRepository : IRoomRepository
+    public class RoomRepository : GenericRepository<Room>, IRoomRepository
     {
-        private readonly DormitoryDbContext _context;
-        public RoomRepository(DormitoryDbContext context)
+        public RoomRepository(DormitoryDbContext context) : base(context)
         {
-            _context = context;
         }
-        public async Task<IEnumerable<Room>> GetAllRooms()
-        {
-            return await _context.Rooms.ToListAsync();
-        }
-        public async Task<Room?> GetRoomById(string roomId)
-        {
-            return await _context.Rooms.FindAsync(roomId);
-        }
-       
+
         public async Task<IEnumerable<Room>> GetAllRoomsWithTypesAsync()
         {
-            return await _context.Rooms
-                                 .Include(r => r.RoomType)
-                                 .ToListAsync();
+            return await _dbSet
+                .Include(r => r.RoomType)
+                .Include(r => r.Building)
+                .ToListAsync();
         }
-        public void AddRoom(Room room)
+
+        // ✅ Override để thêm eager loading
+        public override async Task<Room?> GetByIdAsync(string id)
         {
-            _context.Rooms.Add(room);
-        }
-        public void UpdateRoom(Room room)
-        {
-            _context.Rooms.Update(room);
-        }
-        public void DeleteRoom(Room room)
-        {
-            _context.Rooms.Remove(room);
+            return await _dbSet
+                .Include(r => r.RoomType)
+                .Include(r => r.Building)
+                .FirstOrDefaultAsync(r => r.RoomID == id);
         }
     }
 }

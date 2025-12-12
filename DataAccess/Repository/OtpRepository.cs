@@ -1,50 +1,32 @@
 ﻿using BusinessObject.Entities;
+using DataAccess.Interfaces;
 using DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DataAccess.Interfaces;
 
 namespace DataAccess.Repository
 {
-    public class OtpRepository : IOtpRepository
+    public class OtpRepository : GenericRepository<OtpCode>, IOtpRepository
     {
-        private readonly DormitoryDbContext _context;
-        public OtpRepository(DormitoryDbContext context)
+        public OtpRepository(DormitoryDbContext context) : base(context)
         {
-            _context = context;
         }
+
         public async Task<OtpCode?> GetOtpByEmail(string email)
         {
-            return await _context.OtpCodes
-                .Include(o => o.Account)
-                .Where(o => o.Account.Email == email && o.IsActive == true)
-                .OrderByDescending(o => o.CreatedAt)
-                .FirstOrDefaultAsync();
-        }
-        
-        public async Task<OtpCode?> GetActiveOtp(string userId, string purpose)
-        {
-            return await _context.OtpCodes
-                .Where(o => o.AccountID == userId && o.Purpose == purpose && o.IsActive == true)
+            return await _dbSet
+                .Where(o => o.Account.Email == email)
                 .OrderByDescending(o => o.CreatedAt)
                 .FirstOrDefaultAsync();
         }
 
-        public void AddOtp(OtpCode otpCode)
+        public async Task<OtpCode?> GetActiveOtp(string userId, string purpose)
         {
-            _context.OtpCodes.Add(otpCode);
-        }
-        public void UpdateOtp(OtpCode otpCode)
-        {
-            _context.OtpCodes.Update(otpCode);
-        }
-        public void DeleteOtp(OtpCode otpCode)
-        {
-            _context.OtpCodes.Remove(otpCode);
+            return await _dbSet
+                .Where(o => o.AccountID == userId && 
+                           o.Purpose == purpose && 
+                           o.IsActive)
+                .OrderByDescending(o => o.CreatedAt)
+                .FirstOrDefaultAsync();
         }
     }
 }
