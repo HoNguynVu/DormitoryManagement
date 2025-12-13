@@ -27,7 +27,7 @@ namespace API.Services.Implements
                 int pendingForms = await _registrationUow.RegistrationForms.CountRegistrationFormsByRoomId(registrationForm.RoomId);
                 int occupancy = studentsInRoom + pendingForms;
 
-                var room = await _registrationUow.Rooms.GetRoomById(registrationForm.RoomId);
+                var room = await _registrationUow.Rooms.GetByIdAsync(registrationForm.RoomId);
                 if (room == null)
                 {
                     await _registrationUow.RollbackAsync(); 

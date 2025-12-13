@@ -7,14 +7,10 @@ using BusinessObject.Entities;
 
 namespace DataAccess.Interfaces
 {
-    public interface IRefreshTokenRepository
+    public interface IRefreshTokenRepository : IGenericRepository<RefreshToken>
     {
-        void AddRefreshToken(RefreshToken refreshToken);
         Task<RefreshToken?> GetRefreshToken(string token);
         void RevokeRefreshToken(string userId);
-        void DeleteRefreshToken(RefreshToken refreshToken);
-
-        void UpdateRefreshToken(RefreshToken refreshToken);
         bool IsValid(string token);
     }
 }

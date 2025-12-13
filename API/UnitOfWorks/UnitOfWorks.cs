@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.UnitOfWorks
 {
-    public class UnitOfWork : IAuthUow, IRegistrationUow, IViolationUow, IRoomUow , IContractUow, IPaymentUow , IHealthInsuranceUow ,IMaintenanceUow
+    public class UnitOfWork : IAuthUow, IRegistrationUow, IViolationUow, IRoomUow , IContractUow, IPaymentUow , IHealthInsuranceUow,IMaintenanceUow, IParameterUow
     {
         private readonly DormitoryDbContext _context;
         private IDbContextTransaction? _transaction;
@@ -25,6 +25,7 @@ namespace API.UnitOfWorks
         public IPaymentRepository Payments { get; }
         public IReceiptRepository Receipts { get; }
         public IHealthInsuranceRepository HealthInsurances { get; }
+        public IParameterRepository Parameters { get; }
 
         public IMaintenanceRepository Maintenances { get; }
         public UnitOfWork(DormitoryDbContext context, IDbContextTransaction? dbContextTransaction)
@@ -40,13 +41,13 @@ namespace API.UnitOfWorks
             OtpCodes = new OtpRepository(_context);
             RefreshTokens = new RefreshTokenRepository(_context);
             RegistrationForms = new RegistrationFormRepository(_context);
-            Contracts = new ContractRepository(_context);
             Rooms = new RoomRepository(_context);
             RoomTypes = new RoomTypeRepository(_context);
             Payments = new PaymentRepository(_context);
             Receipts = new ReceiptRepository(_context);
             HealthInsurances = new HealthInsuranceRepository(_context);
             Maintenances = new MaintenanceRepository(_context);
+            Parameters = new ParameterRepository(_context);
         }
 
         public async Task BeginTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)

@@ -35,7 +35,7 @@ namespace API.Services.Implements
                     if (oldOtp != null)
                     {
                         oldOtp.IsActive = false;
-                        _authUow.OtpCodes.UpdateOtp(oldOtp);
+                        _authUow.OtpCodes.Update(oldOtp);
                     }
 
                     // 📌 Tạo OTP mới
@@ -53,7 +53,7 @@ namespace API.Services.Implements
                     await _authUow.BeginTransactionAsync();
                     try
                     {
-                        _authUow.OtpCodes.AddOtp(otp);
+                        _authUow.OtpCodes.Add(otp);
                         await _authUow.CommitAsync();
                     }
                     catch (Exception ex)
@@ -118,9 +118,9 @@ namespace API.Services.Implements
             await _authUow.BeginTransactionAsync();
             try
             {
-                _authUow.Accounts.AddAccount(newAccount);
-                _authUow.Students.AddStudent(newStudent);
-                _authUow.OtpCodes.AddOtp(newOtp);
+                _authUow.Accounts.Add(newAccount);
+                _authUow.Students.Add(newStudent);
+                _authUow.OtpCodes.Add(newOtp);
                 await _authUow.CommitAsync();
             }
             catch (Exception ex)
@@ -154,15 +154,15 @@ namespace API.Services.Implements
                 return (false, "OTP has expired.", 400);
             }
             
-            var account = await _authUow.Accounts.GetAccountById(UserId);
+            var account = await _authUow.Accounts.GetByIdAsync(UserId);
             // 📌 Cập nhật trạng thái verify email
             account.IsEmailVerified = true;
             otpRecord.IsActive = false; // Vô hiệu hóa OTP sau khi sử dụng
             await _authUow.BeginTransactionAsync();
             try
             {
-                _authUow.Accounts.UpdateAccount(account);
-                _authUow.OtpCodes.UpdateOtp(otpRecord);
+                _authUow.Accounts.Update(account);
+                _authUow.OtpCodes.Update(otpRecord);
                 await _authUow.CommitAsync();
             }
             catch (Exception ex)
@@ -189,8 +189,8 @@ namespace API.Services.Implements
                 await _authUow.BeginTransactionAsync();
                 try
                 {
-                    _authUow.Accounts.DeleteAccount(user);
-                    _authUow.Students.DeleteStudent(student);
+                    _authUow.Accounts.Delete(user);
+                    _authUow.Students.Delete(student);
                     await _authUow.CommitAsync();
                 }
                 catch (Exception ex)
@@ -210,7 +210,7 @@ namespace API.Services.Implements
             try
             {
                 _authUow.RefreshTokens.RevokeRefreshToken(user.UserId);
-                _authUow.RefreshTokens.AddRefreshToken(refreshToken);
+                _authUow.RefreshTokens.Add(refreshToken);
                 await _authUow.CommitAsync();
             }
             catch (Exception ex)
@@ -251,9 +251,9 @@ namespace API.Services.Implements
                 if (oldOtp != null)
                 {
                     oldOtp.IsActive = false;
-                    _authUow.OtpCodes.UpdateOtp(oldOtp);
+                    _authUow.OtpCodes.Update(oldOtp);
                 }
-                _authUow.OtpCodes.AddOtp(otp);
+                _authUow.OtpCodes.Add(otp);
                 await _authUow.CommitAsync();
             }
             catch (Exception ex)
@@ -296,7 +296,7 @@ namespace API.Services.Implements
             await _authUow.BeginTransactionAsync();
             try
             {
-                _authUow.OtpCodes.UpdateOtp(otpRecord);
+                _authUow.OtpCodes.Update(otpRecord);
                 await _authUow.CommitAsync();
             }
             catch (Exception ex)
@@ -317,7 +317,7 @@ namespace API.Services.Implements
             await _authUow.BeginTransactionAsync();
             try
             {
-                _authUow.Accounts.UpdateAccount(user);
+                _authUow.Accounts.Update(user);
                 await _authUow.CommitAsync();
             }
             catch (Exception ex)

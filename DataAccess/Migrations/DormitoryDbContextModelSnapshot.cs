@@ -380,6 +380,12 @@ namespace DataAccess.Migrations
                     b.Property<decimal>("DefaultWaterPrice")
                         .HasColumnType("decimal(18, 2)");
 
+                    b.Property<DateTime>("EffectiveDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.HasKey("ParameterID");
 
                     b.ToTable("Parameters");
@@ -782,6 +788,12 @@ namespace DataAccess.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(18, 2)");
 
+                    b.Property<int>("ElectricityNewIndex")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ElectricityOldIndex")
+                        .HasColumnType("int");
+
                     b.Property<int>("ElectricityUsage")
                         .HasColumnType("int");
 
@@ -797,6 +809,12 @@ namespace DataAccess.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("WaterNewIndex")
+                        .HasColumnType("int");
+
+                    b.Property<int>("WaterOldIndex")
+                        .HasColumnType("int");
 
                     b.Property<int>("WaterUsage")
                         .HasColumnType("int");

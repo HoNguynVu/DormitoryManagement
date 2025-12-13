@@ -7,16 +7,12 @@ using BusinessObject.Entities;
 
 namespace DataAccess.Interfaces
 {
-    public interface IContractRepository
+    public interface IContractRepository : IGenericRepository<Contract>
     {
-        Task<IEnumerable<Contract>> GetAllContracts();
-        Task<Contract?> GetContractById(string contractId);
         Task<IEnumerable<Contract>> GetContractsByStudentId(string studentId);
-        Task<Contract?> GetActiveContractByStudentId(string studentId);
         Task<int> CountContractsByRoomIdAndStatus(string roomId, string status);
+        Task<Contract?> GetActiveContractByStudentId(string studentId);
         Task<bool> HasPendingRenewalRequestAsync(string studentId);
-        void AddContract(Contract contract);
-        void UpdateContract(Contract contract);
-        void DeleteContract(Contract contract);
+        Task<IEnumerable<Contract>> GetExpiredContractsAsync(DateOnly olderThan);
     }
 }

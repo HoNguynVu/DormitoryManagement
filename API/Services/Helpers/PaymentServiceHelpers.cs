@@ -90,7 +90,7 @@ namespace API.Services.Implements
         {
             return await ExecutePaymentTransaction(appTransId, zpTransId, async (receipt) =>
             {
-                var contract = await _paymentUow.Contracts.GetContractById(receipt.RelatedObjectID);
+                var contract = await _paymentUow.Contracts.GetByIdAsync(receipt.RelatedObjectID);
 
                 // 2. Kiểm tra dữ liệu Hợp đồng và Phòng
                 if (contract == null)
@@ -146,12 +146,12 @@ namespace API.Services.Implements
             try
             {
                 // 1. Tìm Payment
-                var payment = await _paymentUow.Payments.GetPaymentById(appTransId);
+                var payment = await _paymentUow.Payments.GetByIdAsync(appTransId);
                 if (payment == null)
                     return (false, $"Payment not found for AppTransId: {appTransId}", 404);
 
                 // 2. Tìm Receipt
-                var receipt = await _paymentUow.Receipts.GetReceiptById(payment.ReceiptID);
+                var receipt = await _paymentUow.Receipts.GetByIdAsync(payment.ReceiptID);
                 if (receipt == null)
                     return (false, "Receipt not found", 404);
 
@@ -171,8 +171,8 @@ namespace API.Services.Implements
                     receipt.Status = PaymentConstants.StatusSuccess;
                     receipt.PrintTime = DateTime.Now;
 
-                    _paymentUow.Payments.UpdatePayment(payment);
-                    _paymentUow.Receipts.UpdateReceipt(receipt);
+                    _paymentUow.Payments.Update(payment);
+                    _paymentUow.Receipts.Update(receipt);
 
                     await _paymentUow.CommitAsync();
                 }

@@ -20,7 +20,7 @@ namespace API.Services.Implements
 
             try
             {
-                var student = await _uow.Students.GetStudentByIdAsync(studentId);
+                var student = await _uow.Students.GetByIdAsync(studentId);
                 if (student == null)
                 {
                     return (false, "Student not found.", 404, null);
@@ -50,7 +50,7 @@ namespace API.Services.Implements
                 return (false, "Extension duration must be greater than 0.", 400);
             try
             {
-                var student = await _uow.Students.GetStudentByIdAsync(studentId);
+                var student = await _uow.Students.GetByIdAsync(studentId);
                 if (student == null)
                 {
                     return (false, "Student not found.", 404);
@@ -96,7 +96,7 @@ namespace API.Services.Implements
                     PrintTime = DateTime.Now,
                     Content = $"Renewal fee for {monthsToExtend} months for contract {activeContract.ContractID}"
                 };
-                _uow.Receipts.AddReceipt(newReceipt);
+                _uow.Receipts.Add(newReceipt);
                 await _uow.CommitAsync();
                 return (true, newReceipt.ReceiptID, 201);
             }
@@ -124,7 +124,7 @@ namespace API.Services.Implements
             {
                 contract.ContractStatus = "Terminated"; 
                 contract.EndDate = DateOnly.FromDateTime(DateTime.Now);  
-                _uow.Contracts.UpdateContract(contract);
+                _uow.Contracts.Update(contract);
 
                 // B. Trả lại slot cho phòng (Cập nhật Room)
                 if (contract.Room != null)
@@ -138,7 +138,7 @@ namespace API.Services.Implements
                         contract.Room.RoomStatus = "Available";
                     }
 
-                    _uow.Rooms.UpdateRoom(contract.Room); 
+                    _uow.Rooms.Update(contract.Room); 
                 }
                 await _uow.CommitAsync();
                 return (true, "Contract terminated successfully due to violations.", 200);

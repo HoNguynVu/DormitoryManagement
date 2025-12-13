@@ -6,27 +6,18 @@ using System.Threading.Tasks;
 using DataAccess.Interfaces;
 using BusinessObject.Entities;
 using DataAccess.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace DataAccess.Repository
 {
-    public class PaymentRepository : IPaymentRepository
+    public class PaymentRepository : GenericRepository<Payment>, IPaymentRepository
     {
-        private readonly DormitoryDbContext _context;
-        public PaymentRepository(DormitoryDbContext context)
+        public PaymentRepository(DormitoryDbContext context) : base(context)
         {
-            _context = context;
         }
-        public void AddPayment(Payment payment)
+        public async Task<Payment?> GetPaymentByReceiptIdAsync(string receiptId)
         {
-            _context.Payments.Add(payment);
-        }
-        public async Task<Payment?> GetPaymentById(string paymentId)
-        {
-            return await _context.Payments.FindAsync(paymentId);
-        }
-        public void UpdatePayment(Payment payment)
-        {
-            _context.Payments.Update(payment);
+            return await _dbSet.FirstOrDefaultAsync(p => p.ReceiptID == receiptId);
         }
     }
 }

@@ -7,14 +7,9 @@ using BusinessObject.Entities;
 
 namespace DataAccess.Interfaces
 {
-    public interface IAccountRepository
+    public interface IAccountRepository : IGenericRepository<Account>
     {
-        Task<IEnumerable<Account>> GetAllAccounts();
-        Task<Account?> GetAccountById(string accountId);
         Task<Account?> GetAccountByUsername(string username);
         Task<Account?> GetAccountByOtp(string otp);
-        void AddAccount(Account account);
-        void UpdateAccount(Account account);
-        void DeleteAccount(Account account);
     }
 }

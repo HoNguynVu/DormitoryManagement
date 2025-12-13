@@ -7,12 +7,10 @@ using BusinessObject.Entities;
 
 namespace DataAccess.Interfaces
 {
-    public interface IOtpRepository
+    public interface IOtpRepository : IGenericRepository<OtpCode>
     {
         Task<OtpCode?> GetOtpByEmail(string email);
         Task<OtpCode?> GetActiveOtp(string userId, string purpose);
-        void AddOtp(OtpCode otpCode);
-        void UpdateOtp(OtpCode otpCode);
-        void DeleteOtp(OtpCode otpCode);
+        
     }
 }

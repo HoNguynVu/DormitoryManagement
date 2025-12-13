@@ -10,13 +10,10 @@ using System.Threading.Tasks;
 
 namespace DataAccess.Repository
 {
-    public class HealthInsuranceRepository : IHealthInsuranceRepository
+    public class HealthInsuranceRepository : GenericRepository<HealthInsurance>, IHealthInsuranceRepository
     {
-        private readonly DormitoryDbContext _context;
-
-        public HealthInsuranceRepository(DormitoryDbContext context)
+        public HealthInsuranceRepository(DormitoryDbContext context) : base(context)
         {
-            _context = context;
         }
 
         public async Task<HealthInsurance?> GetActiveInsuranceByStudentIdAsync(string studentId)
@@ -44,19 +41,5 @@ namespace DataAccess.Repository
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<HealthInsurance?> GetInsuranceByInsuranceId(string insuranceId)
-        {
-            return await _context.HealthInsurances
-                .FirstOrDefaultAsync(h => h.InsuranceID == insuranceId);
-        }
-        public void Add(HealthInsurance insurance)
-        {
-            _context.HealthInsurances.Add(insurance);
-        }
-
-        public void Update(HealthInsurance insurance)
-        {
-            _context.HealthInsurances.Update(insurance);
-        }
     }
 }

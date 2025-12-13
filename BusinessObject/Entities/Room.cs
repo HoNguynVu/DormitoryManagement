@@ -56,5 +56,24 @@ public partial class Room
     [InverseProperty("Room")]
     public virtual ICollection<UtilityBill> UtilityBills { get; set; } = new List<UtilityBill>();
 
+    /// <summary>
+    /// Assign a new RoomType to this Room. This updates the Capacity from the RoomType
+    /// and validates that the new capacity is not less than the current occupancy.
+    /// </summary>
+    /// <param name="newType">RoomType to assign</param>
+    /// <exception cref="ArgumentNullException">If newType is null</exception>
+    /// <exception cref="InvalidOperationException">If newType.Capacity is less than CurrentOccupancy</exception>
+    public void AssignRoomType(RoomType newType)
+    {
+        if (newType == null) throw new ArgumentNullException(nameof(newType));
+
+        if (newType.Capacity < this.CurrentOccupancy)
+            throw new InvalidOperationException("New room type capacity is less than current occupancy");
+
+        this.RoomTypeID = newType.RoomTypeID;
+        this.Capacity = newType.Capacity;
+        this.RoomType = newType;
+    }
+
     public virtual ICollection<MaintenanceRequest> MaintenanceRequests { get; set; } = new List<MaintenanceRequest>();
 }

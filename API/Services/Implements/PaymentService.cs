@@ -91,8 +91,8 @@ namespace API.Services.Implements
                     Status = PaymentConstants.StatusPending,
                     PaymentDate = DateTime.Now,
                 };
-                _paymentUow.Receipts.AddReceipt(receipt);
-                _paymentUow.Payments.AddPayment(payment);
+                _paymentUow.Receipts.Add(receipt);
+                _paymentUow.Payments.Add(payment);
                 await _paymentUow.CommitAsync();
                 return (200, new PaymentLinkDTO { IsSuccess = true, PaymentUrl = orderUrl, Message = "ZaloPay payment link created successfully." });
             }
@@ -165,7 +165,49 @@ namespace API.Services.Implements
             }
         }
 
-
+        public async Task<(bool Success, string Message, int StatusCode)> ConfirmPaymentForRegistration(string registrationId)
+        {
+            var registration = await _paymentUow.RegistrationForms.GetByIdAsync(registrationId);
+            if (registration == null)
+            {
+                return (false, "Registration form not found.", 404);
+            }
+            var receipt = await _paymentUow.Receipts.GetReceiptByTypeAndRelatedIdAsync(PaymentConstants.TypeRegis, registrationId);
+            if (receipt == null)
+            {
+                return (false, "Receipt not found for the registration form.", 404);
+            }
+            var payment = await _paymentUow.Payments.GetPaymentByReceiptIdAsync(receipt.ReceiptID);
+            if (payment == null || payment.Status != PaymentConstants.StatusSuccess)
+            {
+                return (false, "Payment not completed for the registration form.", 400);
+            }
+            var newContract = new Contract
+            {
+                ContractID = "CT-" + IdGenerator.GenerateUniqueSuffix(),
+                StudentID = registration.StudentID,
+                RoomID = registration.RoomID,
+                StartDate = DateOnly.FromDateTime(DateTime.UtcNow),
+                ContractStatus = "Active",
+                EndDate = DateOnly.FromDateTime(DateTime.UtcNow).AddMonths(6)
+            };
+            await _paymentUow.BeginTransactionAsync();
+            try
+            {
+                registration.Status = "Confirmed";
+                receipt.Status = "Completed";
+                payment.Status = PaymentConstants.StatusSuccess;
+                _paymentUow.RegistrationForms.Update(registration);
+                _paymentUow.Contracts.Add(newContract);
+                await _paymentUow.CommitAsync();
+                return (true, "Payment confirmed and contract created successfully.", 200);
+            }
+            catch (Exception ex)
+            {
+                await _paymentUow.RollbackAsync();
+                return (false, $"Failed to confirm payment: {ex.Message}", 500);
+            }
+        }
 
     }
 }

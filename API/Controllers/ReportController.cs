@@ -1,0 +1,37 @@
+using API.Services.Interfaces;
+using BusinessObject.DTOs.ReportDTOs;
+using BusinessObject.DTOs.RoomDTOs;
+using Microsoft.AspNetCore.Mvc;
+
+namespace API.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class ReportController : ControllerBase
+    {
+        private readonly IReportService _reportService;
+
+        public ReportController(IReportService reportService)
+        {
+            _reportService = reportService;
+        }
+
+        [HttpGet("priority")]
+        public async Task<IActionResult> GetStudentsByPriority([FromQuery] string? priorityId)
+        {
+            var students = await _reportService.GetStudentsByPriorityAsync(priorityId);
+            return Ok(new { success = true, data = students });
+        }
+
+        [HttpGet("expired-contracts")]
+        public async Task<IActionResult> GetExpiredContracts([FromQuery] string? beforeDate)
+        {
+            DateOnly cutoff;
+            if (string.IsNullOrWhiteSpace(beforeDate)) cutoff = DateOnly.FromDateTime(DateTime.UtcNow);
+            else if (!DateOnly.TryParse(beforeDate, out cutoff)) return BadRequest(new { success = false, message = "Invalid date format (YYYY-MM-DD)" });
+
+            var list = await _reportService.GetExpiredContractsAsync(cutoff);
+            return Ok(new { success = true, data = list });
+        }
+    }
+}

@@ -3,72 +3,59 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DataAccess.Interfaces;
 using BusinessObject.Entities;
+using DataAccess.Interfaces;
 using DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataAccess.Repository
 {
-    public class ContractRepository : IContractRepository
+    public class ContractRepository : GenericRepository<Contract>, IContractRepository
     {
-        private readonly DormitoryDbContext _context;
-        public ContractRepository(DormitoryDbContext context)
+        public ContractRepository(DormitoryDbContext context) : base(context)
         {
-            _context = context;
         }
-        public async Task<IEnumerable<Contract>> GetAllContracts()
-        {
-            return await _context.Contracts.ToListAsync();
-        }
-        public async Task<Contract?> GetContractById(string contractId)
-        {
-            return await _context.Contracts
-                .Include(c => c.Room)
-                    .ThenInclude(r=>r.RoomType)
-                .FirstOrDefaultAsync(c => c.ContractID == contractId);
-        }
+
         public async Task<IEnumerable<Contract>> GetContractsByStudentId(string studentId)
         {
-            return await _context.Contracts
+            return await _dbSet
                 .Where(c => c.StudentID == studentId)
                 .ToListAsync();
-        }
-        public void AddContract(Contract contract)
-        {
-            _context.Contracts.Add(contract);
-        }
-        public void UpdateContract(Contract contract)
-        {
-            _context.Contracts.Update(contract);
-        }
-        public void DeleteContract(Contract contract)
-        {
-            _context.Contracts.Remove(contract);
         }
 
         public async Task<int> CountContractsByRoomIdAndStatus(string roomId, string status)
         {
-            return await _context.Contracts
-                .Where(c => c.RoomID == roomId && c.ContractStatus == status)
-                .CountAsync();
+            return await _dbSet
+                .CountAsync(c => c.RoomID == roomId && c.ContractStatus == status);
         }
+
         public async Task<Contract?> GetActiveContractByStudentId(string studentId)
         {
-            return await _context.Contracts
+            return await _dbSet
                 .Include(c => c.Student)
                 .Include(c => c.Room)
-                .Where(c => c.StudentID == studentId && (c.ContractStatus == "Active" || c.ContractStatus == "Pending"))
+                    .ThenInclude(r => r.RoomType)
+                .Where(c => c.StudentID == studentId && 
+                           (c.ContractStatus == "Active" || c.ContractStatus == "Pending"))
                 .OrderByDescending(c => c.StartDate)
                 .FirstOrDefaultAsync();
         }
-
         public async Task<bool> HasPendingRenewalRequestAsync(string studentId)
         {
             return await _context.Receipts
                  .AnyAsync(i => i.StudentID == studentId
                                 && i.PaymentType == "Renewal"
                                 && i.Status == "Pending");
+        }
+
+        public async Task<IEnumerable<Contract>> GetExpiredContractsAsync(DateOnly olderThan)
+        {
+            return await _dbSet
+                .Include(c => c.Student)
+                .Include(c => c.Room)
+                    .ThenInclude(r => r.RoomType)
+                .Where(c => c.EndDate != null && c.EndDate < olderThan && c.ContractStatus == "Active")
+                .ToListAsync();
         }
     }
 }

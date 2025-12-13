@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DataAccess.Interfaces
 {
-    public interface IHealthInsuranceRepository
+    public interface IHealthInsuranceRepository : IGenericRepository<HealthInsurance>
     {
         // Lấy BHYT đang hiệu lực của sinh viên (để check trùng hoặc gia hạn)
         Task<HealthInsurance?> GetActiveInsuranceByStudentIdAsync(string studentId);
@@ -17,14 +17,6 @@ namespace DataAccess.Interfaces
 
         // Hàm lấy BTHY mới nhất 
         Task<HealthInsurance?> GetLatestInsuranceByStudentIdAsync(string studentId);
-
-        // Lấy theo ID
-        Task<HealthInsurance?> GetInsuranceByInsuranceId(string insuranceId);
-        // Thêm mới
-        void Add(HealthInsurance insurance);
-
-        // Cập nhật
-        void Update(HealthInsurance insurance);
 
     }
 }

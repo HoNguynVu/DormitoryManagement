@@ -17,5 +17,7 @@ namespace BusinessObject.Entities
 
         [Column(TypeName = "decimal(18, 2)")]
         public decimal DefaultWaterPrice { get; set; }
+        public DateTime EffectiveDate { get; set; }   // Ngày bắt đầu áp dụng
+        public bool IsActive { get; set; }
     }
 }

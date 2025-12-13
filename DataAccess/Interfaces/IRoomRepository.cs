@@ -3,17 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Linq.Expressions;
 using BusinessObject.Entities;
 
 namespace DataAccess.Interfaces
 {
-    public interface IRoomRepository
+    public interface IRoomRepository : IGenericRepository<Room>
     {
-        Task<IEnumerable<Room>> GetAllRooms();
-        Task<Room?> GetRoomById(string roomId);
         Task<IEnumerable<Room>> GetAllRoomsWithTypesAsync();
-        void AddRoom(Room room);
-        void UpdateRoom(Room room);
-        void DeleteRoom(Room room);
+        Task<IEnumerable<Room>> FindBySpecificationAsync(Expression<Func<Room, bool>> spec);
     }
 }

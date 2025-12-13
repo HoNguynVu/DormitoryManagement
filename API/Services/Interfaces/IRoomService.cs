@@ -12,5 +12,9 @@ namespace API.Services.Interfaces
         Task<(bool Success, string Message, int StatusCode)> UpdateRoomAsync(UpdateRoomDto request);
 
         Task<(bool Success, string Message, int StatusCode)> DeleteRoomAsync(string roomId);
+
+        Task<(bool Success, string Message, int StatusCode, RoomStatusDto?)> GetRoomStatusAsync(string roomId);
+
+        Task<(bool Success, string Message, int StatusCode, IEnumerable<AvailableRoomDto>)> GetAvailableRoomsAsync(RoomFilterDto filter);
     }
 }
