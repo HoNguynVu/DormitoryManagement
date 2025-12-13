@@ -2,6 +2,8 @@
 using API.UnitOfWorks;
 using BusinessObject.DTOs.RoomDTOs;
 using BusinessObject.Entities;
+using BusinessObject.Factories;
+using DataAccess.Specifications;
 
 namespace API.Services.Implements
 {
@@ -17,33 +19,22 @@ namespace API.Services.Implements
         {
             try
             {
-                // 1. Lấy tất cả phòng kèm loại phòng (1 Query)
                 var rooms = await _roomUow.Rooms.GetAllRoomsWithTypesAsync();
-
-                // 2. Lấy tất cả số lượng đơn đang Pending (1 Query)
                 var pendingCountsDict = await _roomUow.RegistrationForms.CountPendingFormsByRoomAsync();
-
                 var regisRoomDTOs = new List<RegisRoomDTOs>();
 
                 foreach (var room in rooms)
                 {
-                    // Tra cứu số lượng Pending từ Dictionary (trên RAM, cực nhanh)
-                    // Nếu không tìm thấy (GetValueOrDefault) thì trả về 0
                     int pendingCount = pendingCountsDict.GetValueOrDefault(room.RoomID, 0);
-
-                    // Tính toán hiển thị cho Frontend
-                    // RegisteredOccupancy ở đây hiểu là số lượng ĐANG GIỮ CHỖ
-
                     regisRoomDTOs.Add(new RegisRoomDTOs
                     {
                         RoomId = room.RoomID,
                         RoomName = room.RoomName,
-                        // Vì đã Include ở Repo nên không cần query lại RoomType
                         RoomType = room.RoomType?.TypeName ?? "Unknown",
                         Price = room.RoomType?.Price ?? 0,
                         Capacity = room.Capacity,
-                        CurrentOccupancy = room.CurrentOccupancy, // Số người đang ở thực tế (Contract Active)
-                        RegisteredOccupancy = pendingCount // Số người đang chờ thanh toán
+                        CurrentOccupancy = room.CurrentOccupancy,
+                        RegisteredOccupancy = pendingCount
                     });
                 }
 
@@ -59,36 +50,17 @@ namespace API.Services.Implements
         {
             if (request is null) return (false, "Request is null", 400, null);
 
-            // Validate building exists
             if (!await _roomUow.BuildingExistsAsync(request.BuildingId))
                 return (false, "Building not found", 400, null);
 
-            // Validate room type exists and derive capacity from it
             var roomType = await _roomUow.RoomTypes.GetByIdAsync(request.RoomTypeId);
             if (roomType == null)
                 return (false, "RoomType not found", 400, null);
 
-            // Build canonical RoomID following your script pattern
-            var roomId = $"RM_{request.BuildingId}_{request.RoomName}";
-
-            // Ensure unique RoomID
-            var existing = await _roomUow.Rooms.GetByIdAsync(roomId);
+            var room = RoomFactory.Create(request, roomType);
+            var existing = await _roomUow.Rooms.GetByIdAsync(room.RoomID);
             if (existing != null)
                 return (false, "Room already exists", 409, null);
-
-            var room = new Room
-            {
-                RoomID = roomId,
-                RoomName = request.RoomName,
-                BuildingID = request.BuildingId,
-                RoomTypeID = request.RoomTypeId,
-                // Use the capacity defined by RoomType to guarantee consistency with dataset
-                Capacity = roomType.Capacity,
-                CurrentOccupancy = 0,
-                RoomStatus = string.IsNullOrWhiteSpace(request.Status) ? "Available" : request.Status,
-                IsUnderMaintenance = false,
-                IsBeingCleaned = false
-            };
 
             try
             {
@@ -125,31 +97,29 @@ namespace API.Services.Implements
                 var existing = await _roomUow.Rooms.GetByIdAsync(request.RoomID);
                 if (existing is null) return (false, "Room not found", 404);
 
-                // Do not allow renaming building or room name because RoomID is derived and is primary key
                 if (!string.IsNullOrWhiteSpace(request.BuildingID) && request.BuildingID != existing.BuildingID)
                     return (false, "Changing BuildingID is not allowed. Delete and recreate room to move it.", 400);
 
                 if (!string.IsNullOrWhiteSpace(request.RoomName) && request.RoomName != existing.RoomName)
                     return (false, "Changing RoomName is not allowed. Delete and recreate room to rename it.", 400);
 
-                // If room type changes, fetch it and update capacity accordingly
                 if (!string.IsNullOrWhiteSpace(request.RoomTypeID) && request.RoomTypeID != existing.RoomTypeID)
                 {
                     var newType = await _roomUow.RoomTypes.GetByIdAsync(request.RoomTypeID);
                     if (newType == null) return (false, "New RoomType not found", 400);
 
-                    // New capacity must be >= current occupancy
-                    if (newType.Capacity < existing.CurrentOccupancy)
-                        return (false, "New room type capacity is less than current occupancy", 400);
-
-                    existing.RoomTypeID = newType.RoomTypeID;
-                    existing.Capacity = newType.Capacity;
+                    try
+                    {
+                        existing.AssignRoomType(newType);
+                    }
+                    catch (InvalidOperationException ioe)
+                    {
+                        return (false, ioe.Message, 400);
+                    }
                 }
 
-                // If client provides explicit capacity, ensure it's not less than current occupancy
                 if (request.Capacity.HasValue)
                 {
-                    // Capacity is defined by RoomType in this system. Do not allow ad-hoc capacity updates.
                     return (false, "Capacity is managed by RoomType and cannot be updated directly. Change RoomType to modify capacity.", 400);
                 }
 
@@ -193,6 +163,73 @@ namespace API.Services.Implements
             catch (Exception ex)
             {
                 return (false, $"Failed to delete room: {ex.Message}", 500);
+            }
+        }
+
+        public async Task<(bool Success, string Message, int StatusCode, RoomStatusDto?)> GetRoomStatusAsync(string roomId)
+        {
+            if (string.IsNullOrWhiteSpace(roomId)) return (false, "Room id is required", 400, null);
+
+            var room = await _roomUow.Rooms.GetByIdAsync(roomId);
+            if (room == null) return (false, "Room not found", 404, null);
+
+            // Count active contracts and pending registration forms
+            var activeCount = await _roomUow.Contracts.CountContractsByRoomIdAndStatus(roomId, "Active");
+            var pendingCount = await _roomUow.RegistrationForms.CountRegistrationFormsByRoomId(roomId);
+
+            var occupied = Math.Max(room.CurrentOccupancy, activeCount); // prefer DB occupancy or contracts
+            var available = Math.Max(0, room.Capacity - (occupied + pendingCount));
+
+            var dto = new RoomStatusDto
+            {
+                RoomID = room.RoomID,
+                Capacity = room.Capacity,
+                Occupied = occupied,
+                AvailableBeds = available,
+                RoomStatus = room.RoomStatus
+            };
+
+            return (true, "Success", 200, dto);
+        }
+
+        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<AvailableRoomDto>)> GetAvailableRoomsAsync(RoomFilterDto filter)
+        {
+            try
+            {
+                var spec = RoomSpecifications.ByFilter(filter);
+
+                var rooms = await _roomUow.Rooms.FindBySpecificationAsync(spec);
+
+                var pendingDict = await _roomUow.RegistrationForms.CountPendingFormsByRoomAsync();
+
+                var result = new List<AvailableRoomDto>();
+                foreach (var room in rooms)
+                {
+                    var activeCount = await _roomUow.Contracts.CountContractsByRoomIdAndStatus(room.RoomID, "Active");
+                    var pending = pendingDict.GetValueOrDefault(room.RoomID, 0);
+                    var occupied = Math.Max(room.CurrentOccupancy, activeCount);
+                    var availableBeds = Math.Max(0, room.Capacity - (occupied + pending));
+
+                    if (filter?.OnlyAvailable == true && availableBeds <= 0)
+                        continue;
+
+                    result.Add(new AvailableRoomDto
+                    {
+                        RoomID = room.RoomID,
+                        RoomName = room.RoomName,
+                        Capacity = room.Capacity,
+                        Occupied = occupied,
+                        AvailableBeds = availableBeds,
+                        Price = room.RoomType?.Price ?? 0,
+                        RoomType = room.RoomType?.TypeName ?? string.Empty
+                    });
+                }
+
+                return (true, "Success", 200, result);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Error: {ex.Message}", 500, Enumerable.Empty<AvailableRoomDto>());
             }
         }
     }

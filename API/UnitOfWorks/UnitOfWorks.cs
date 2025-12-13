@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.UnitOfWorks
 {
-    public class UnitOfWork : IAuthUow, IRegistrationUow, IViolationUow, IRoomUow , IContractUow, IPaymentUow , IHealthInsuranceUow
+    public class UnitOfWork : IAuthUow, IRegistrationUow, IViolationUow, IRoomUow , IContractUow, IPaymentUow, IHealthInsuranceUow
     {
         private readonly DormitoryDbContext _context;
         private IDbContextTransaction? _transaction;
@@ -25,6 +25,7 @@ namespace API.UnitOfWorks
         public IPaymentRepository Payments { get; }
         public IReceiptRepository Receipts { get; }
         public IHealthInsuranceRepository HealthInsurances { get; }
+
         public UnitOfWork(DormitoryDbContext context, IDbContextTransaction? dbContextTransaction)
         {
             _context = context;
@@ -38,7 +39,6 @@ namespace API.UnitOfWorks
             OtpCodes = new OtpRepository(_context);
             RefreshTokens = new RefreshTokenRepository(_context);
             RegistrationForms = new RegistrationFormRepository(_context);
-            Contracts = new ContractRepository(_context);
             Rooms = new RoomRepository(_context);
             RoomTypes = new RoomTypeRepository(_context);
             Payments = new PaymentRepository(_context);
