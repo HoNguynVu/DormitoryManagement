@@ -74,4 +74,6 @@ public partial class Room
         this.Capacity = newType.Capacity;
         this.RoomType = newType;
     }
+
+    public virtual ICollection<MaintenanceRequest> MaintenanceRequests { get; set; } = new List<MaintenanceRequest>();
 }

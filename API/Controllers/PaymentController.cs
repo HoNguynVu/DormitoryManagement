@@ -1,4 +1,5 @@
 ﻿using API.Services.Interfaces;
+using BusinessObject.DTOs.PaymentDTOs;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -17,6 +18,17 @@ namespace API.Controllers
         {
             var (statusCode, dto) = await _paymentService.CreateZaloPayLinkForRegistration(registrationId);
             return StatusCode(statusCode, dto);
+        }
+
+        [HttpPost("callback")]
+        public async Task<IActionResult> ZaloPayCallback([FromBody] ZaloPayCallbackDTO cbData)
+        {
+            var result = await _paymentService.ProcessZaloPayCallback(cbData);
+            return Ok(new
+            {
+                return_code = result.ReturnCode,
+                return_message = result.ReturnMessage
+            });
         }
     }
 }

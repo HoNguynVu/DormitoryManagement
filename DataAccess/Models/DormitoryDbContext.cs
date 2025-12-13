@@ -49,6 +49,8 @@ namespace DataAccess.Models
         public virtual DbSet<Receipt> Receipts { get; set; }
         public virtual DbSet<Payment> Payments { get; set; }
 
+        public virtual DbSet<MaintenanceRequest> MaintenanceRequests { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
@@ -195,6 +197,27 @@ namespace DataAccess.Models
             {
                 entity.HasKey(e => e.InsuranceID);
                 entity.HasOne(d => d.Student).WithMany(p => p.HealthInsurances).HasConstraintName("FK_HealthInsurances_Students");
+            });
+
+            modelBuilder.Entity<MaintenanceRequest>(entity =>
+            {
+                entity.HasKey(e => e.RequestID);
+                entity.Property(e => e.RequestDate).HasDefaultValueSql("(getdate())");
+
+                entity.HasOne(d => d.Room)
+                      .WithMany(p => p.MaintenanceRequests) 
+                      .HasForeignKey(d => d.RoomID)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(d => d.Student)
+                      .WithMany() 
+                      .HasForeignKey(d => d.StudentID)
+                      .OnDelete(DeleteBehavior.NoAction); 
+
+                entity.HasOne(d => d.Equipment)
+                      .WithMany() 
+                      .HasForeignKey(d => d.EquipmentID)
+                      .OnDelete(DeleteBehavior.SetNull);    
             });
 
             OnModelCreatingPartial(modelBuilder);

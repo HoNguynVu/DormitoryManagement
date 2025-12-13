@@ -149,5 +149,56 @@ namespace API.Services.Implements
                 return (false, $"Termination failed: {ex.Message}", 500);
             }
         }
+
+        public async Task<(bool Success, string Message, int StatusCode)> ConfirmContractExtensionAsync(string contractId, int monthsAdded)
+        {
+            // 1. Validation
+            if (string.IsNullOrEmpty(contractId))
+            {
+                return (false, "Contract ID is required.", 400);
+            }
+            if (monthsAdded <= 0)
+            {
+                return (false, "Months added must be greater than 0.", 400);
+            }
+
+            await _uow.BeginTransactionAsync();
+            try
+            {
+                // 3. Lấy thông tin hợp đồng
+                var contract = await _uow.Contracts.GetContractById(contractId);
+
+                if (contract == null)
+                {
+                    return (false, "Contract not found.", 404);
+                }
+
+                DateOnly today = DateOnly.FromDateTime(DateTime.Now);
+
+                if (contract.EndDate.HasValue && contract.EndDate.Value >= today)
+                {
+                    contract.EndDate = contract.EndDate.Value.AddMonths(monthsAdded);
+                }
+                else
+                {
+                    contract.EndDate = today.AddMonths(monthsAdded);
+                    if (contract.ContractStatus == "Expired")
+                    {
+                        contract.ContractStatus = "Active";
+                    }
+                }
+
+                // 5. Cập nhật và Lưu xuống DB
+                _uow.Contracts.UpdateContract(contract);
+                await _uow.CommitAsync();
+
+                return (true, $"Contract extended successfully by {monthsAdded} months. New EndDate: {contract.EndDate}", 200);
+            }
+            catch (Exception ex)
+            {
+                await _uow.RollbackAsync();
+                return (false, $"Error confirming extension: {ex.Message}", 500);
+            }
+        }
     }
 }

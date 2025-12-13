@@ -61,5 +61,27 @@ namespace API.Controllers
             return Ok(new { message = result.Message });
         }
 
+        [HttpPut("confirm-extension/{contractId}")]
+        public async Task<IActionResult> ConfirmExtension(string contractId, [FromBody] ConfirmExtensionDto request)
+        {
+            // 1. Validation 
+            if (request == null || request.MonthsAdded <= 0)
+            {
+                return BadRequest(new { message = "Số tháng gia hạn phải lớn hơn 0." });
+            }
+
+            // 2. Gọi Service
+            var result = await _contractService.ConfirmContractExtensionAsync(contractId, request.MonthsAdded);
+
+            // 3. Xử lý kết quả trả về từ Tuple (Success, Message, StatusCode)
+            if (!result.Success)
+            {
+                return StatusCode(result.StatusCode, new { message = result.Message });
+            }
+
+            // 4. Thành công (200 OK)
+            return Ok(new { message = result.Message });
+        }
+
     }
 }
