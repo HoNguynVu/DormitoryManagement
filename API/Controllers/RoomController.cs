@@ -68,5 +68,25 @@ namespace API.Controllers
 
             return StatusCode(statusCode, new { success = false, message });
         }
+
+        [HttpGet("{roomId}/status")]
+        //[Authorize("Admin")]
+        public async Task<IActionResult> GetRoomStatus(string roomId)
+        {
+            var (success, message, statusCode, roomStatus) = await _roomService.GetRoomStatusAsync(roomId);
+            if (success)
+                return StatusCode(statusCode, new { success = true, message, data = roomStatus });
+            return StatusCode(statusCode, new { success = false, message });
+        }
+
+        [HttpPost("available")]
+        //[Authorize("Admin")]
+        public async Task<IActionResult> GetAvailableRooms([FromBody] RoomFilterDto filter)
+        {
+            var (success, message, statusCode, availableRooms) = await _roomService.GetAvailableRoomsAsync(filter);
+            if (success)
+                return StatusCode(statusCode, new { success = true, message, data = availableRooms });
+            return StatusCode(statusCode, new { success = false, message });
+        }
     }
 }

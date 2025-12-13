@@ -40,7 +40,6 @@ namespace API.UnitOfWorks
             OtpCodes = new OtpRepository(_context);
             RefreshTokens = new RefreshTokenRepository(_context);
             RegistrationForms = new RegistrationFormRepository(_context);
-            Contracts = new ContractRepository(_context);
             Rooms = new RoomRepository(_context);
             RoomTypes = new RoomTypeRepository(_context);
             Payments = new PaymentRepository(_context);
