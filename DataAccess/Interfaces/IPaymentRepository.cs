@@ -9,5 +9,6 @@ namespace DataAccess.Interfaces
 {
     public interface IPaymentRepository : IGenericRepository<Payment>
     {
+        Task<Payment?> GetPaymentByReceiptIdAsync(string receiptId);
     }
 }
