@@ -12,8 +12,6 @@ namespace DataAccess.Repository
 {
     public class HealthInsuranceRepository : GenericRepository<HealthInsurance>, IHealthInsuranceRepository
     {
-        private readonly DormitoryDbContext _context;
-
         public HealthInsuranceRepository(DormitoryDbContext context) : base(context)
         {
         }
