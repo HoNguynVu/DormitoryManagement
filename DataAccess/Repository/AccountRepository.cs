@@ -12,7 +12,6 @@ namespace DataAccess.Repository
 {
     public class AccountRepository : GenericRepository<Account>, IAccountRepository
     {
-        private readonly DormitoryDbContext _context;
         public AccountRepository(DormitoryDbContext context) : base(context)
         {
         }

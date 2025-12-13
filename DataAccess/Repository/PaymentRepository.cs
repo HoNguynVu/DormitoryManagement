@@ -11,7 +11,6 @@ namespace DataAccess.Repository
 {
     public class PaymentRepository : GenericRepository<Payment>, IPaymentRepository
     {
-        private readonly DormitoryDbContext _context;
         public PaymentRepository(DormitoryDbContext context) : base(context)
         {
         }

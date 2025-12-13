@@ -12,7 +12,6 @@ namespace DataAccess.Repository
 {
     public class ReceiptRepository : GenericRepository<Receipt>, IReceiptRepository
     {
-        private readonly DormitoryDbContext _context;
         public ReceiptRepository(DormitoryDbContext context) : base(context)
         {
         }
