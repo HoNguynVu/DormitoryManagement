@@ -25,6 +25,11 @@ namespace BusinessObject.Entities
         [ForeignKey("RoomID")]
         public virtual Room Room { get; set; }
 
+        public string? EquipmentID { get; set; }
+
+        [ForeignKey("EquipmentID")]
+        public virtual Equipment? Equipment { get; set; }
+
         [Required]
         [StringLength(500)]
         public string Description { get; set; } // Mô tả hư hỏng

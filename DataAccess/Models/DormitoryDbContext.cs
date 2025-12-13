@@ -213,6 +213,11 @@ namespace DataAccess.Models
                       .WithMany() 
                       .HasForeignKey(d => d.StudentID)
                       .OnDelete(DeleteBehavior.NoAction); 
+
+                entity.HasOne(d => d.Equipment)
+                      .WithMany() 
+                      .HasForeignKey(d => d.EquipmentID)
+                      .OnDelete(DeleteBehavior.SetNull);    
             });
 
             OnModelCreatingPartial(modelBuilder);
