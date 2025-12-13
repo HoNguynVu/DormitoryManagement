@@ -10,5 +10,7 @@ namespace API.UnitOfWorks
 
         public IContractRepository Contracts { get; }
         public IReceiptRepository Receipts { get; }
+
+        public IEquipmentRepository Equipments { get; }
     }
 }

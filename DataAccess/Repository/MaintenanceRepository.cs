@@ -40,6 +40,7 @@ namespace DataAccess.Repository
             return await _context.MaintenanceRequests
                .Include(m => m.Student)
                .Include(m => m.Room)
+               .Include(m=>m.Equipment)
                .Where(m => m.StudentID.Contains(studentId??"") || m.Status.Contains(status??""))
                .ToListAsync();
         }

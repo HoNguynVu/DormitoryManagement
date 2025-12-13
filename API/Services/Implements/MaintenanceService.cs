@@ -32,6 +32,23 @@ namespace API.Services.Implements
                     return (false, "Sinh viên chưa có hợp đồng phòng hiệu lực, không thể gửi yêu cầu.", 403);
                 }
 
+                if (!string.IsNullOrEmpty(dto.EquipmentId))
+                {
+                    var equipment = await _uow.Equipments.GetEquipmentByIdAsync(dto.EquipmentId);
+
+                    // 1. Kiểm tra thiết bị có tồn tại không
+                    if (equipment == null)
+                        return (false, "Thiết bị không tồn tại.", 404);
+
+                    // 2. Kiểm tra thiết bị có thuộc phòng của SV không 
+                    if (equipment.RoomID != contract.RoomID)
+                        return (false, "Thiết bị này không thuộc phòng của bạn.", 400);
+
+                    // 3. Cập nhật trạng thái thiết bị -> "Under Maintenance" 
+                    equipment.Status = "Under Maintenance";
+                    _uow.Equipments.UpdateEquipment(equipment);
+                }
+
                 // Tạo Entity mới
                 var request = new MaintenanceRequest
                 {
@@ -90,7 +107,10 @@ namespace API.Services.Implements
                 // 3. Cập nhật thông tin chung
                 request.Status = dto.NewStatus;
                 request.ManagerNote = dto.ManagerNote;
-
+                if (dto.NewStatus == "Completed" && request.Equipment != null)
+                {
+                    request.Equipment.Status = "Good";
+                }
                 // 4. Xử lý Logic khi trạng thái là "Completed" (Đã sửa xong)
                 if (dto.NewStatus == "Completed")
                 {

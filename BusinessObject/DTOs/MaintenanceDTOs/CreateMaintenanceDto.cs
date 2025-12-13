@@ -10,5 +10,6 @@ namespace BusinessObject.DTOs.MaintenanceDTOs
     {
         public string StudentId { get; set; } = null!;
         public string Description { get; set; } = null!;
+        public string? EquipmentId { get; set; } = null;
     }
 }
