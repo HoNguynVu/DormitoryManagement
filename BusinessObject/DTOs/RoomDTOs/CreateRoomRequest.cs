@@ -12,7 +12,6 @@ namespace BusinessObject.DTOs.RoomDTOs
         public string RoomTypeId { get; set; } = string.Empty;
 
         public string RoomName { get; set; } = string.Empty;
-        public int Capacity { get; set; }
         public string Status { get; set; } = "Available";
     }
 }

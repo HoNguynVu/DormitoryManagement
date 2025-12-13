@@ -7,6 +7,7 @@ using BusinessObject.Entities;
 using DataAccess.Interfaces;
 using DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace DataAccess.Repository
 {
@@ -31,6 +32,17 @@ namespace DataAccess.Repository
                 .Include(r => r.RoomType)
                 .Include(r => r.Building)
                 .FirstOrDefaultAsync(r => r.RoomID == id);
+        }
+
+        // New: apply specification expression on DB side
+        public async Task<IEnumerable<Room>> FindBySpecificationAsync(Expression<Func<Room, bool>> spec)
+        {
+            if (spec == null) return Enumerable.Empty<Room>();
+            return await _dbSet
+                .Include(r => r.RoomType)
+                .Include(r => r.Building)
+                .Where(spec)
+                .ToListAsync();
         }
     }
 }
