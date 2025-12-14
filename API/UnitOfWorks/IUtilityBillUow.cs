@@ -6,5 +6,8 @@ namespace API.UnitOfWorks
     {
         IUtilityBillRepository UtilityBills { get; }
         IParameterRepository Parameters { get; }
+        IContractRepository Contracts { get; }
+        IAccountRepository Accounts { get; }
+        INotificationRepository Notifications { get; }
     }
 }

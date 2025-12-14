@@ -28,6 +28,7 @@ namespace API.UnitOfWorks
         public IHealthInsuranceRepository HealthInsurances { get; }
         public IParameterRepository Parameters { get; }
         public IUtilityBillRepository UtilityBills { get; }
+        public INotificationRepository Notifications { get; }
         public UnitOfWork(DormitoryDbContext context, IDbContextTransaction? dbContextTransaction)
         {
             _context = context;
@@ -48,6 +49,7 @@ namespace API.UnitOfWorks
             HealthInsurances = new HealthInsuranceRepository(_context);
             Parameters = new ParameterRepository(_context);
             UtilityBills = new UtilityBillRepository(_context);
+            Notifications = new NotificationRepository(_context);
         }
 
         public async Task BeginTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)

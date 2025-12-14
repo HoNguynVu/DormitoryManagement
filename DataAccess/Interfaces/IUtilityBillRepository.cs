@@ -11,6 +11,7 @@ namespace DataAccess.Interfaces
     {
         Task<UtilityBill?> GetByRoomAndPeriodAsync(string roomId, int month, int year);
         Task<UtilityBill?> GetLastMonthBillAsync(string roomId);
+        Task<bool> IsBillExistsAsync (string roomId, int month, int year);
         Task<UtilityBill?> GetByRoomAsync(string roomId);
     }
 }

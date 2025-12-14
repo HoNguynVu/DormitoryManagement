@@ -3,21 +3,37 @@ using API.Services.Interfaces;
 using API.UnitOfWorks;
 using BusinessObject.DTOs.UtilityBillDTOs;
 using BusinessObject.Entities;
+using API.Services.Helpers;
+using API.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace API.Services.Implements
 {
     public class UtilityBillService : IUtilityBillService
     {
         private readonly IUtilityBillUow _utilityBillUow;
-        public UtilityBillService(IUtilityBillUow utilityBillUow)
+        private readonly IHubContext<NotificationHub> _hubContext;
+        public UtilityBillService(IUtilityBillUow utilityBillUow, IHubContext<NotificationHub> hubContext)
         {
             _utilityBillUow = utilityBillUow;
+            _hubContext = hubContext;
         }
+
+        private string NotiMessage(int month, int year)
+        {
+            return $"Your utility bill for {month}/{year} is now available. Please check your BILLS for details and make the payment on time to avoid any late fees.";
+        }
+
         public async Task<(bool Success, string Message, int StatusCode)> CreateUtilityBill(CreateBillDTO dto)
         {
             if (dto.RoomId == null)
             {
                 return (false, "RoomId is required", 400);
+            }
+            bool exists = await _utilityBillUow.UtilityBills.IsBillExistsAsync(dto.RoomId, DateTime.Now.Month, DateTime.Now.Year);
+            if (exists)
+            {
+                return (false, "Bill already exists", 400);
             }
             var lastBill = await _utilityBillUow.UtilityBills.GetLastMonthBillAsync(dto.RoomId);
             var lastElectricityIndex = lastBill?.ElectricityNewIndex ?? 0;
@@ -43,18 +59,41 @@ namespace API.Services.Implements
                 Year = DateTime.Now.Year,
                 Status = "Unpaid"
             };
+            var activeContracts = await _utilityBillUow.Contracts.GetContractsByRoomIdAndStatus(dto.RoomId, "Active");
+            var newMessage = NotiMessage(newBill.Month, newBill.Year);
+            var listNotifications = new List<Notification>();
+            foreach (var contract in activeContracts)
+            {
+                var accountId = contract.Student.AccountID;
+                var newNoti = NotificationServiceHelpers.CreateNew(
+                    accountId: accountId,
+                    title: "New Utility Bill Available",
+                    message: newMessage,
+                    type: "UtilityBill"
+                );
+                listNotifications.Add(newNoti);
+            }
+
             _utilityBillUow.BeginTransactionAsync();
             try
             {
                 _utilityBillUow.UtilityBills.Add(newBill);
+                foreach (var noti in listNotifications)
+                {
+                    _utilityBillUow.Notifications.Add(noti);
+                }
                 await _utilityBillUow.CommitAsync();
-                return (true, "Utility bill created successfully", 201);
             }
             catch (Exception ex)
             {
                 await _utilityBillUow.RollbackAsync();
                 return (false, $"Failed to create utility bill: {ex.Message}", 500);
             }
+            foreach (var noti in listNotifications)
+            {
+                await _hubContext.Clients.Group(noti.AccountID).SendAsync("ReceiveNotification", noti);
+            }
+            return (true, "Utility bill created successfully", 201);
         }
     }
 }

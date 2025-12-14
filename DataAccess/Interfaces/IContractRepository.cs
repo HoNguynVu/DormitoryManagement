@@ -9,6 +9,7 @@ namespace DataAccess.Interfaces
 {
     public interface IContractRepository : IGenericRepository<Contract>
     {
+        Task<IEnumerable<Contract>> GetContractsByRoomIdAndStatus(string roomId, string status);
         Task<IEnumerable<Contract>> GetContractsByStudentId(string studentId);
         Task<int> CountContractsByRoomIdAndStatus(string roomId, string status);
         Task<Contract?> GetActiveContractByStudentId(string studentId);
