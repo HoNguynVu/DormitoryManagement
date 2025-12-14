@@ -13,10 +13,17 @@ namespace API.Controllers
         {
             _paymentService = paymentService;
         }
-        [HttpPost("create-zalopay-link/{registrationId}")]
+        [HttpPost("create-zalopay-link/regis/{registrationId}")]
         public async Task<IActionResult> CreateZaloPayLinkForRegistration(string registrationId)
         {
             var (statusCode, dto) = await _paymentService.CreateZaloPayLinkForRegistration(registrationId);
+            return StatusCode(statusCode, dto);
+        }
+
+        [HttpPost("create-zalopay-link/renew/{receiptId}")]
+        public async Task<IActionResult> CreateZaloPayLinkForContract(string receiptId)
+        {
+            var (statusCode, dto) = await _paymentService.CreateZaloPayLinkForRenewal(receiptId);
             return StatusCode(statusCode, dto);
         }
 
