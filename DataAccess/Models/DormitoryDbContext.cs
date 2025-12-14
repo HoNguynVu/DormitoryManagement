@@ -20,9 +20,6 @@ namespace DataAccess.Models
         public virtual DbSet<Account> Accounts { get; set; }
         public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
         public virtual DbSet<OtpCode> OtpCodes { get; set; }
-
-        // Person Inheritance Group
-        // Không cần DbSet<Person> vì đây là abstract class
         public virtual DbSet<Student> Students { get; set; }
         public virtual DbSet<Relative> Relatives { get; set; }
         public virtual DbSet<BuildingManager> BuildingManagers { get; set; }
@@ -49,6 +46,8 @@ namespace DataAccess.Models
         public virtual DbSet<Receipt> Receipts { get; set; }
         public virtual DbSet<Payment> Payments { get; set; }
 
+        // Noti
+        public virtual DbSet<Notification> Notifications { get; set; }
         public virtual DbSet<MaintenanceRequest> MaintenanceRequests { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -199,6 +198,11 @@ namespace DataAccess.Models
                 entity.HasOne(d => d.Student).WithMany(p => p.HealthInsurances).HasConstraintName("FK_HealthInsurances_Students");
             });
 
+            modelBuilder.Entity<Notification>(entity =>
+            {
+                entity.HasKey(e => e.NotificationID);
+                entity.HasOne(d => d.Account).WithMany().HasForeignKey(d => d.AccountID).OnDelete(DeleteBehavior.Cascade);
+                });
             modelBuilder.Entity<MaintenanceRequest>(entity =>
             {
                 entity.HasKey(e => e.RequestID);

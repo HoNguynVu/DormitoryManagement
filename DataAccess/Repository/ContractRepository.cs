@@ -29,6 +29,14 @@ namespace DataAccess.Repository
                 .CountAsync(c => c.RoomID == roomId && c.ContractStatus == status);
         }
 
+        public async Task<IEnumerable<Contract>> GetContractsByRoomIdAndStatus(string roomId, string status)
+        {
+            return await _dbSet
+                .Include(c => c.Student).ThenInclude(s => s.Account)
+                .Where(c => c.RoomID == roomId && c.ContractStatus == status)
+                .ToListAsync();
+        }
+
         public async Task<Contract?> GetActiveContractByStudentId(string studentId)
         {
             return await _dbSet

@@ -4,6 +4,7 @@ using DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(DormitoryDbContext))]
-    partial class DormitoryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251214054444_new_table_Notification")]
+    partial class new_table_Notification
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -302,56 +305,6 @@ namespace DataAccess.Migrations
                     b.HasIndex("AccountID");
 
                     b.ToTable("Notifications");
-            modelBuilder.Entity("BusinessObject.Entities.MaintenanceRequest", b =>
-                {
-                    b.Property<string>("RequestID")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("EquipmentID")
-                        .HasColumnType("nvarchar(128)");
-
-                    b.Property<string>("ManagerNote")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("RepairCost")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.Property<DateTime>("RequestDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("(getdate())");
-
-                    b.Property<DateTime?>("ResolvedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("RoomID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(128)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("StudentID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(128)");
-
-                    b.HasKey("RequestID");
-
-                    b.HasIndex("EquipmentID");
-
-                    b.HasIndex("RoomID");
-
-                    b.HasIndex("StudentID");
-
-                    b.ToTable("MaintenanceRequests");
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.OtpCode", b =>
@@ -986,29 +939,6 @@ namespace DataAccess.Migrations
                         .IsRequired();
 
                     b.Navigation("Account");
-            modelBuilder.Entity("BusinessObject.Entities.MaintenanceRequest", b =>
-                {
-                    b.HasOne("BusinessObject.Entities.Equipment", "Equipment")
-                        .WithMany()
-                        .HasForeignKey("EquipmentID");
-
-                    b.HasOne("BusinessObject.Entities.Room", "Room")
-                        .WithMany("MaintenanceRequests")
-                        .HasForeignKey("RoomID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("BusinessObject.Entities.Student", "Student")
-                        .WithMany()
-                        .HasForeignKey("StudentID")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Equipment");
-
-                    b.Navigation("Room");
-
-                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.OtpCode", b =>
@@ -1194,8 +1124,6 @@ namespace DataAccess.Migrations
                     b.Navigation("Contracts");
 
                     b.Navigation("Equipment");
-
-                    b.Navigation("MaintenanceRequests");
 
                     b.Navigation("RegistrationForms");
 

@@ -15,6 +15,10 @@ namespace DataAccess.Repository
         public UtilityBillRepository(DormitoryDbContext context) : base(context)
         {
         }
+        public async Task<bool> IsBillExistsAsync(string roomId, int month, int year)
+        {
+            return await _dbSet.AnyAsync(bill => bill.RoomID == roomId && bill.Month == month && bill.Year == year);
+        }
         public async Task<UtilityBill?> GetByRoomAndPeriodAsync(string roomId, int month, int year)
         {
             return await _dbSet.FirstOrDefaultAsync(bill => bill.RoomID == roomId && bill.Month == month && bill.Year == year);

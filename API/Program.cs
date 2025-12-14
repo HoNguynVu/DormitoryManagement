@@ -1,4 +1,5 @@
-﻿using API.Services.Implements;
+﻿using API.Hubs;
+using API.Services.Implements;
 using API.Services.Interfaces;
 using API.UnitOfWorks;
 using BusinessObject.Config;
@@ -101,4 +102,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();app.Run();
+app.MapHub<NotificationHub>("/notificationHub");
+
+app.Run();

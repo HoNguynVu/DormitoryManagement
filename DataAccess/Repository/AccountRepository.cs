@@ -15,6 +15,13 @@ namespace DataAccess.Repository
         public AccountRepository(DormitoryDbContext context) : base(context)
         {
         }
+        public async Task<Account?> GetAccountByStudentId(string studentId)
+        {
+            return await _context.Students
+                .Where(s => s.StudentID == studentId)
+                .Select(s => s.Account)
+                .FirstOrDefaultAsync();
+        }
         public async Task<Account?> GetAccountByUsername(string username)
         {
             return await _dbSet.FirstOrDefaultAsync(a => a.Username == username);
