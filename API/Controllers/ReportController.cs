@@ -40,5 +40,15 @@ namespace API.Controllers
             var list = await _reportService.GetContractsByStudentAsync(studentId);
             return Ok(new { success = true, data = list });
         }
+
+        // New endpoint: equipment status for a room
+        [HttpGet("room/{roomId}/equipment")]
+        public async Task<IActionResult> GetEquipmentByRoom(string roomId)
+        {
+            if (string.IsNullOrWhiteSpace(roomId)) return BadRequest(new { success = false, message = "RoomId is required" });
+
+            var items = await _reportService.GetEquipmentStatusByRoomAsync(roomId);
+            return Ok(new { success = true, data = items });
+        }
     }
 }
