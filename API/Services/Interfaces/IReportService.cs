@@ -7,5 +7,6 @@ namespace API.Services.Interfaces
     {
         Task<IEnumerable<Student>> GetStudentsByPriorityAsync(string? priorityId = null);
         Task<IEnumerable<ExpiredContractDto>> GetExpiredContractsAsync(DateOnly olderThan);
+        Task<IEnumerable<StudentContractDto>> GetContractsByStudentAsync(string studentId);
     }
 }

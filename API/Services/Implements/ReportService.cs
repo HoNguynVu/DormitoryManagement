@@ -37,5 +37,23 @@ namespace API.Services.Implements
                 ContractStatus = c.ContractStatus
             });
         }
+
+        public async Task<IEnumerable<StudentContractDto>> GetContractsByStudentAsync(string studentId)
+        {
+            if (string.IsNullOrWhiteSpace(studentId)) return Enumerable.Empty<StudentContractDto>();
+
+            var contracts = await _contractUow.Contracts.FindAsync(c => c.StudentID == studentId);
+
+            return contracts.Select(c => new StudentContractDto
+            {
+                ContractID = c.ContractID,
+                StudentID = c.StudentID,
+                StudentName = c.Student?.FullName ?? string.Empty,
+                RoomID = c.RoomID,
+                StartDate = c.StartDate,
+                EndDate = c.EndDate,
+                ContractStatus = c.ContractStatus
+            });
+        }
     }
 }

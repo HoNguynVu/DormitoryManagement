@@ -33,5 +33,12 @@ namespace API.Controllers
             var list = await _reportService.GetExpiredContractsAsync(cutoff);
             return Ok(new { success = true, data = list });
         }
+
+        [HttpGet("student/{studentId}/contracts")]
+        public async Task<IActionResult> GetContractsByStudent(string studentId)
+        {
+            var list = await _reportService.GetContractsByStudentAsync(studentId);
+            return Ok(new { success = true, data = list });
+        }
     }
 }
