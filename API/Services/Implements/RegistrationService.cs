@@ -1,4 +1,5 @@
-﻿using API.Services.Helpers;
+﻿using API.Services.Common;
+using API.Services.Helpers;
 using API.Services.Interfaces;
 using API.UnitOfWorks;
 using BusinessObject.DTOs.RegisDTOs;
@@ -84,6 +85,38 @@ namespace API.Services.Implements
             }
             //gởi mail yêu cầu thanh toán ở đây nếu status = approved
             return (true, "Registration form status updated successfully.", 200);
+        }
+
+        public async Task<(bool Success, string Message, int StatusCode)> ConfirmPaymentForRegistration(string registrationId)
+        {
+            var registration = await _registrationUow.RegistrationForms.GetByIdAsync(registrationId);
+            if (registration == null)
+            {
+                return (false, "Registration form not found.", 404);
+            }
+            var newContract = new Contract
+            {
+                ContractID = "CT-" + IdGenerator.GenerateUniqueSuffix(),
+                StudentID = registration.StudentID,
+                RoomID = registration.RoomID,
+                StartDate = DateOnly.FromDateTime(DateTime.UtcNow),
+                ContractStatus = "Active",
+                EndDate = DateOnly.FromDateTime(DateTime.UtcNow).AddMonths(6)
+            };
+            await _registrationUow.BeginTransactionAsync();
+            try
+            {
+                registration.Status = "Confirmed";
+                _registrationUow.RegistrationForms.Update(registration);
+                _registrationUow.Contracts.Add(newContract);
+                await _registrationUow.CommitAsync();
+                return (true, "Payment confirmed and contract created successfully.", 200);
+            }
+            catch (Exception ex)
+            {
+                await _registrationUow.RollbackAsync();
+                return (false, $"Failed to confirm payment: {ex.Message}", 500);
+            }
         }
     }
 }
