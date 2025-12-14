@@ -7,6 +7,7 @@ using BusinessObject.DTOs;
 using BusinessObject.DTOs.PaymentDTOs;
 using BusinessObject.Entities;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 
 namespace API.Services.Implements
@@ -178,6 +179,98 @@ namespace API.Services.Implements
             }
         }
 
+        public async Task<(int StatusCode, PaymentLinkDTO dto)> CreateZaloPayLinkForUtility(string utilityId, string payerStudentId)
+        {
+            // Validate
+            if (string.IsNullOrEmpty(utilityId))
+            {
+                return (400, new PaymentLinkDTO { IsSuccess = false, Message = "Invalid utility ID" });
+            }
+            if (string.IsNullOrEmpty(payerStudentId))
+            {
+                return (400, new PaymentLinkDTO { IsSuccess = false, Message = "Invalid student ID" });
+            }
+
+            var student = await _paymentUow.Students.GetByIdAsync(payerStudentId);
+            if (student == null)
+            {
+                return (404, new PaymentLinkDTO { IsSuccess = false, Message = "Student not found" });
+            }
+            var utilityBill = await _paymentUow.UtilityBills.GetByIdAsync(utilityId);
+            if (utilityBill == null)
+            {
+                return (404, new PaymentLinkDTO { IsSuccess = false, Message = "Utility bill not found" });
+            }
+            if (utilityBill.Status != "Pending")
+            {
+                return (400, new PaymentLinkDTO { IsSuccess = false, Message = "Utility bill is not in pending status" });
+            }
+
+
+            var contract = await _paymentUow.Contracts.GetActiveContractByStudentId(payerStudentId);
+
+            // Check 1: SV có hợp đồng không?
+            if (contract == null)
+            {
+                return (403, new PaymentLinkDTO { IsSuccess = false, Message = "Student does not have an active contract." });
+            }
+
+            // Check 2: SV có ở đúng cái phòng của hóa đơn điện nước này không?
+            if (contract.RoomID != utilityBill.RoomID)
+            {
+                return (403, new PaymentLinkDTO { IsSuccess = false, Message = "You do not live in the room associated with this bill." });
+            }
+
+            var amount = utilityBill.Amount;
+            var appTransId = GenerateAppTransId(PaymentConstants.PrefixUtility, utilityId);
+            string description = $"Thanh toan hoa don tien dien nuoc {utilityId} ";
+            string orderUrl = await CallZaloPayCreateOrder(appTransId, (long)amount, description, utilityId);
+            if (string.IsNullOrEmpty(orderUrl))
+            {
+                return (500, new PaymentLinkDTO { IsSuccess = false, Message = "Failed to create ZaloPay order" });
+            }
+            await _paymentUow.BeginTransactionAsync();
+            try
+            {
+                var receipt = new Receipt
+                {
+                    ReceiptID = "RE-" + IdGenerator.GenerateUniqueSuffix(),
+                    StudentID = payerStudentId,
+                    Amount = amount,
+                    RelatedObjectID = utilityId,
+                    PaymentType = PaymentConstants.TypeUtility,
+                    Status = PaymentConstants.StatusPending,
+                    PrintTime = DateTime.Now,
+                    Content = $"Payment for utility bill {utilityId}"
+                };
+                var payment = new Payment
+                {
+                    PaymentID = appTransId,
+                    PaymentMethod = PaymentConstants.MethodZaloPay,
+                    Amount = amount,
+                    ReceiptID = receipt.ReceiptID,
+                    TransactionID = appTransId,
+                    Status = PaymentConstants.StatusPending,
+                    PaymentDate = DateTime.Now,
+                };
+                _paymentUow.Receipts.Add(receipt);
+                _paymentUow.Payments.Add(payment);
+                await _paymentUow.CommitAsync();
+                return (200, new PaymentLinkDTO
+                {
+                    IsSuccess = true,
+                    PaymentUrl = orderUrl,
+                    PaymentId = appTransId,
+                    Message = "ZaloPay payment link created successfully."
+                });
+            }
+            catch (Exception ex)
+            {
+                await _paymentUow.RollbackAsync();
+                return (500, new PaymentLinkDTO { IsSuccess = false, Message = $"Failed to create ZaloPay payment link: {ex.Message}" });
+            }
+        }
+
         public async Task<(int StatusCode, PaymentLinkDTO dto)> CreateZaloPayLinkForHealthInsurance(string insuranceId)
         {
             // Validate 
@@ -252,7 +345,7 @@ namespace API.Services.Implements
                 // 1. Validate Input
                 if (cbdata == null || string.IsNullOrEmpty(cbdata.Data) || string.IsNullOrEmpty(cbdata.Mac))
                 {
-                    return (-1, "Dữ liệu callback không hợp lệ.");
+                    return (-1, "Dữ lSiệu callback không hợp lệ.");
                 }
 
                 string dataStr = cbdata.Data;
