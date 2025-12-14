@@ -74,7 +74,7 @@ namespace API.Services.Implements
                 listNotifications.Add(newNoti);
             }
 
-            _utilityBillUow.BeginTransactionAsync();
+            await _utilityBillUow.BeginTransactionAsync();
             try
             {
                 _utilityBillUow.UtilityBills.Add(newBill);
@@ -94,6 +94,35 @@ namespace API.Services.Implements
                 await _hubContext.Clients.Group(noti.AccountID).SendAsync("ReceiveNotification", noti);
             }
             return (true, "Utility bill created successfully", 201);
+        }
+
+        public async Task<(bool Success, string Message, int StatusCode)> ConfirmUtilityPaymentAsync(string billId)
+        {
+            if (!string.IsNullOrEmpty(billId))
+            {
+                return (false, "BillId is required", 400);
+            }
+            var bill = await _utilityBillUow.UtilityBills.GetByIdAsync(billId);
+            if (bill == null)
+            {
+                return (false, "Bill not found", 404);
+            }
+
+            if (bill.Status == "Paid")
+            {
+                return (false, "Bill is already paid", 400);
+            }
+            bill.Status = "Paid";
+            try
+            {
+                _utilityBillUow.UtilityBills.Update(bill);
+                await _utilityBillUow.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Failed to confirm payment: {ex.Message}", 500);
+            }
+            return (true, "Payment confirmed successfully", 200);
         }
     }
 }

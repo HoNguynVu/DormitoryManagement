@@ -73,17 +73,10 @@ namespace API.Services.Implements
 
         private async Task<(bool Success, string Message, int StatusCode)> HanldeRegisSuccessPayment(string appTransId, string zpTransId)
         {
-            //return await ExecutePaymentTransaction(appTransId, zpTransId, async (receipt) =>
-            //{
-            //    // Logic riêng: Update trạng thái đơn đăng ký
-            //    var request = new UpdateFormRequest
-            //    {
-            //        FormId = receipt.RelatedObjectID,
-            //        Status = "Paid"
-            //    };
-            //    return await _registrationService.UpdateStatusForm(request);
-            //}); đợi hoàn thành chức năng đăng ký
-            return (true, "Cập nhật trạng thái thanh toán thành công.", 200);
+            return await ExecutePaymentTransaction(appTransId, zpTransId, async (receipt) =>
+            {
+                return await _registrationService.ConfirmPaymentForRegistration(receipt.RelatedObjectID);
+            });
         }
 
         private async Task<(bool Success, string Message, int StatusCode)> HanldeRenewalSuccessPayment(string appTransId, string zpTransId)
@@ -121,12 +114,11 @@ namespace API.Services.Implements
 
         private async Task<(bool Success, string Message, int StatusCode)> HanldeUtilitySuccessPayment(string appTransId, string zpTransId)
         {
-            //return await ExecutePaymentTransaction(appTransId, zpTransId, async (receipt) =>
-            //{
-            //    // Logic riêng: Gạch nợ hóa đơn điện nước
-            //    return await _utilityService.ConfirmUtilityPaymentAsync(receipt.RelatedObjectID);
-            //});
-            return (true, "Cập nhật trạng thái thanh toán thành công.", 200);
+            return await ExecutePaymentTransaction(appTransId, zpTransId, async (receipt) =>
+            {
+
+                return await _utilityBillService.ConfirmUtilityPaymentAsync(receipt.RelatedObjectID);
+            });
         }
 
         private async Task<(bool Success, string Message, int StatusCode)> HanldeInsuranceSuccessPayment(string appTransId, string zpTransId)
