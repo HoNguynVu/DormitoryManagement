@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace API.UnitOfWorks
 {
     public class UnitOfWork : IAuthUow, IRegistrationUow, IViolationUow, IRoomUow,
-        IContractUow, IPaymentUow , IHealthInsuranceUow, IParameterUow
+        IContractUow, IPaymentUow , IHealthInsuranceUow, IParameterUow, IUtilityBillUow
     {
         private readonly DormitoryDbContext _context;
         private IDbContextTransaction? _transaction;
@@ -27,6 +27,7 @@ namespace API.UnitOfWorks
         public IReceiptRepository Receipts { get; }
         public IHealthInsuranceRepository HealthInsurances { get; }
         public IParameterRepository Parameters { get; }
+        public IUtilityBillRepository UtilityBills { get; }
         public UnitOfWork(DormitoryDbContext context, IDbContextTransaction? dbContextTransaction)
         {
             _context = context;
@@ -46,6 +47,7 @@ namespace API.UnitOfWorks
             Receipts = new ReceiptRepository(_context);
             HealthInsurances = new HealthInsuranceRepository(_context);
             Parameters = new ParameterRepository(_context);
+            UtilityBills = new UtilityBillRepository(_context);
         }
 
         public async Task BeginTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)

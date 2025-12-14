@@ -7,7 +7,7 @@ using BusinessObject.Entities;
 
 namespace DataAccess.Interfaces
 {
-    internal interface IUtilityBillRepository : IGenericRepository<UtilityBill>
+    public interface IUtilityBillRepository : IGenericRepository<UtilityBill>
     {
         Task<UtilityBill?> GetByRoomAndPeriodAsync(string roomId, int month, int year);
         Task<UtilityBill?> GetLastMonthBillAsync(string roomId);
