@@ -9,5 +9,6 @@ namespace API.UnitOfWorks
         public IRoomTypeRepository RoomTypes { get; }
         public IReceiptRepository Receipts { get; }
         public IContractRepository Contracts { get; }
+        public IHealthInsuranceRepository HealthInsurances { get; }
     }
 }

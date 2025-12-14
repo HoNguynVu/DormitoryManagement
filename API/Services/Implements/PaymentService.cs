@@ -177,6 +177,74 @@ namespace API.Services.Implements
                 return (500, new PaymentLinkDTO { IsSuccess = false, Message = $"Database error: {ex.Message}" });
             }
         }
+
+        public async Task<(int StatusCode, PaymentLinkDTO dto)> CreateZaloPayLinkForHealthInsurance(string insuranceId)
+        {
+            // Validate 
+            if (string.IsNullOrEmpty(insuranceId))
+            {
+                return (400, new PaymentLinkDTO { IsSuccess = false, Message = "Invalid insurance ID" });
+            }
+
+            var form = await _paymentUow.HealthInsurances.GetByIdAsync(insuranceId);
+            if (form == null)
+            {
+                return (404, new PaymentLinkDTO { IsSuccess = false, Message = "Health insurance form not found" });
+            }
+            if (form.Status != "Pending")
+            {
+                return (400, new PaymentLinkDTO { IsSuccess = false, Message = "Health insurance form is not in pending status" });
+            }
+            var year = DateTime.Now.Year;
+            var amount = Cost.INSURANCE_COST_PER_YEAR;
+            var appTransId = GenerateAppTransId(PaymentConstants.PrefixHealthInsurance, insuranceId);
+            string description = $"Thanh toan bao hiem y te {insuranceId} nam {year} ";
+            string orderUrl = await CallZaloPayCreateOrder(appTransId, (long)amount, description, insuranceId);
+            if (string.IsNullOrEmpty(orderUrl))
+            {
+                return (500, new PaymentLinkDTO { IsSuccess = false, Message = "Failed to create ZaloPay order" });
+            }
+            await _paymentUow.BeginTransactionAsync();
+            try
+            {
+                var receipt = new Receipt
+                {
+                    ReceiptID = "RE-" + IdGenerator.GenerateUniqueSuffix(),
+                    StudentID = form.StudentID,
+                    Amount = amount,
+                    RelatedObjectID = insuranceId,
+                    PaymentType = PaymentConstants.TypeHealthInsurance,
+                    Status = PaymentConstants.StatusPending,
+                    PrintTime = DateTime.Now,
+                    Content = $"Payment for health insurance form {insuranceId}"
+                };
+                var payment = new Payment
+                {
+                    PaymentID = appTransId,
+                    PaymentMethod = PaymentConstants.MethodZaloPay,
+                    Amount = amount,
+                    ReceiptID = receipt.ReceiptID,
+                    TransactionID = appTransId,
+                    Status = PaymentConstants.StatusPending,
+                    PaymentDate = DateTime.Now,
+                };
+                _paymentUow.Receipts.Add(receipt);
+                _paymentUow.Payments.Add(payment);
+                await _paymentUow.CommitAsync();
+                return (200, new PaymentLinkDTO
+                {
+                    IsSuccess = true,
+                    PaymentUrl = orderUrl,
+                    PaymentId = appTransId,
+                    Message = "ZaloPay payment link created successfully."
+                });
+            }
+            catch (Exception ex)
+            {
+                await _paymentUow.RollbackAsync();
+                return (500, new PaymentLinkDTO { IsSuccess = false, Message = $"Failed to create ZaloPay payment link: {ex.Message}" });
+            }
+        }
         public async Task<(int ReturnCode, string ReturnMessage)> ProcessZaloPayCallback(ZaloPayCallbackDTO cbdata)
         {
             try
