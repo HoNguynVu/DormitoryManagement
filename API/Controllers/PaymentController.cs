@@ -13,17 +13,31 @@ namespace API.Controllers
         {
             _paymentService = paymentService;
         }
-        [HttpPost("create-zalopay-link/regis/{registrationId}")]
+        [HttpPost("create-zalopay-link/registration/{registrationId}")]
         public async Task<IActionResult> CreateZaloPayLinkForRegistration(string registrationId)
         {
             var (statusCode, dto) = await _paymentService.CreateZaloPayLinkForRegistration(registrationId);
             return StatusCode(statusCode, dto);
         }
 
-        [HttpPost("create-zalopay-link/renew/{receiptId}")]
+        [HttpPost("create-zalopay-link/renewal-contract/{receiptId}")]
         public async Task<IActionResult> CreateZaloPayLinkForContract(string receiptId)
         {
             var (statusCode, dto) = await _paymentService.CreateZaloPayLinkForRenewal(receiptId);
+            return StatusCode(statusCode, dto);
+        }
+
+        [HttpPost("create-zalopay-link/utility/{utilityId}")]
+        public async Task<IActionResult> CreateZaloPayLinkForUtility(string utilityId,string payerStudentId)
+        {
+            var (statusCode, dto) = await _paymentService.CreateZaloPayLinkForUtility(utilityId,payerStudentId);
+            return StatusCode(statusCode, dto);
+        }
+
+        [HttpPost("create-zalopay-link/health-insurance/{insuranceId}")]
+        public async Task<IActionResult> CreateZaloPayLinkForUtility(string insuranceId)
+        {
+            var (statusCode, dto) = await _paymentService.CreateZaloPayLinkForHealthInsurance(insuranceId);
             return StatusCode(statusCode, dto);
         }
 
