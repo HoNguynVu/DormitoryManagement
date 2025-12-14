@@ -10,10 +10,12 @@ namespace API.Controllers
     public class ReportController : ControllerBase
     {
         private readonly IReportService _reportService;
+        private readonly IBuildingManagerService _buildingManagerService;
 
-        public ReportController(IReportService reportService)
+        public ReportController(IReportService reportService, IBuildingManagerService buildingManagerService)
         {
             _reportService = reportService;
+            _buildingManagerService = buildingManagerService;
         }
 
         [HttpGet("priority")]
@@ -49,6 +51,14 @@ namespace API.Controllers
 
             var items = await _reportService.GetEquipmentStatusByRoomAsync(roomId);
             return Ok(new { success = true, data = items });
+        }
+
+        // New report endpoint: building managers
+        [HttpGet("managers")]
+        public async Task<IActionResult> GetManagersReport()
+        {
+            var managers = await _buildingManagerService.GetAllManagersAsync();
+            return Ok(new { success = true, data = managers });
         }
     }
 }
