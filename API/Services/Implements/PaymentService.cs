@@ -21,12 +21,14 @@ namespace API.Services.Implements
         private readonly IHealthInsuranceService _healthInsuranceService;
         private readonly IRegistrationService _registrationService;
         private readonly IContractService _contractService;
+        private readonly IUtilityBillService _utilityBillService;
         public PaymentService(IOptions<ZaloPaySettings> zaloConfig,
             IHttpClientFactory httpClientFactory, 
             IPaymentUow paymentUow, 
             IHealthInsuranceService healthInsuranceService,
             IRegistrationService registrationService,
-            IContractService contractService)
+            IContractService contractService,
+            IUtilityBillService utilityBillService)
         {
             _zaloConfig = zaloConfig.Value;
             _httpClientFactory = httpClientFactory;
@@ -34,6 +36,7 @@ namespace API.Services.Implements
             _healthInsuranceService = healthInsuranceService;
             _registrationService = registrationService;
             _contractService = contractService;
+            _utilityBillService = utilityBillService;
         }
 
         public async Task<(int StatusCode, PaymentLinkDTO dto)> CreateZaloPayLinkForRegistration(string registrationId)
