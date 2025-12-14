@@ -22,5 +22,6 @@
         public const string TypeRenewal = "RenewalContract";
         public const string TypeUtility = "Utility";
         public const string TypeHealthInsurance = "HealthInsurance";
+        public const string TypeMaintenanceFee = "MaintenanceFee";
     }
 }

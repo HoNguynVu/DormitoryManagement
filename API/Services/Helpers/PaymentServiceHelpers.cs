@@ -115,8 +115,7 @@ namespace API.Services.Implements
                     return (false, "Payment amount is not enough for 1 month extension.", 400);
                 }
 
-                //return await _contractService.ConfirmRenewalContractAsync(receipt.RelatedObjectID, months);
-                return (true, "Gia hạn hợp đồng thành công.", 200);
+                return await _contractService.ConfirmContractExtensionAsync(receipt.RelatedObjectID, months);
             });
         }
 

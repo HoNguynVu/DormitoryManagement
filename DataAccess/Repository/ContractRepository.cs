@@ -55,5 +55,15 @@ namespace DataAccess.Repository
                                 && i.PaymentType == "Renewal"
                                 && i.Status == "Pending");
         }
+
+        public async Task<IEnumerable<Contract>> GetExpiredContractsAsync(DateOnly olderThan)
+        {
+            return await _dbSet
+                .Include(c => c.Student)
+                .Include(c => c.Room)
+                    .ThenInclude(r => r.RoomType)
+                .Where(c => c.EndDate != null && c.EndDate < olderThan && c.ContractStatus == "Active")
+                .ToListAsync();
+        }
     }
 }

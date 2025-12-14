@@ -4,6 +4,7 @@ using DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(DormitoryDbContext))]
-    partial class DormitoryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251212183708_Update Db Context with MaintenanceRequest")]
+    partial class UpdateDbContextwithMaintenanceRequest
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -267,41 +270,6 @@ namespace DataAccess.Migrations
                     b.ToTable("HealthInsurances");
                 });
 
-            modelBuilder.Entity("BusinessObject.Entities.Notification", b =>
-                {
-                    b.Property<string>("NotificationID")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("AccountID")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("NotificationID");
-
-                    b.HasIndex("AccountID");
-
-                    b.ToTable("Notifications");
             modelBuilder.Entity("BusinessObject.Entities.MaintenanceRequest", b =>
                 {
                     b.Property<string>("RequestID")
@@ -312,9 +280,6 @@ namespace DataAccess.Migrations
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("EquipmentID")
-                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("ManagerNote")
                         .HasColumnType("nvarchar(max)");
@@ -344,8 +309,6 @@ namespace DataAccess.Migrations
                         .HasColumnType("nvarchar(128)");
 
                     b.HasKey("RequestID");
-
-                    b.HasIndex("EquipmentID");
 
                     b.HasIndex("RoomID");
 
@@ -414,12 +377,6 @@ namespace DataAccess.Migrations
 
                     b.Property<decimal>("DefaultWaterPrice")
                         .HasColumnType("decimal(18, 2)");
-
-                    b.Property<DateTime>("EffectiveDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
 
                     b.HasKey("ParameterID");
 
@@ -823,12 +780,6 @@ namespace DataAccess.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(18, 2)");
 
-                    b.Property<int>("ElectricityNewIndex")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ElectricityOldIndex")
-                        .HasColumnType("int");
-
                     b.Property<int>("ElectricityUsage")
                         .HasColumnType("int");
 
@@ -844,12 +795,6 @@ namespace DataAccess.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
-
-                    b.Property<int>("WaterNewIndex")
-                        .HasColumnType("int");
-
-                    b.Property<int>("WaterOldIndex")
-                        .HasColumnType("int");
 
                     b.Property<int>("WaterUsage")
                         .HasColumnType("int");
@@ -977,21 +922,8 @@ namespace DataAccess.Migrations
                     b.Navigation("Student");
                 });
 
-            modelBuilder.Entity("BusinessObject.Entities.Notification", b =>
-                {
-                    b.HasOne("BusinessObject.Entities.Account", "Account")
-                        .WithMany()
-                        .HasForeignKey("AccountID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Account");
             modelBuilder.Entity("BusinessObject.Entities.MaintenanceRequest", b =>
                 {
-                    b.HasOne("BusinessObject.Entities.Equipment", "Equipment")
-                        .WithMany()
-                        .HasForeignKey("EquipmentID");
-
                     b.HasOne("BusinessObject.Entities.Room", "Room")
                         .WithMany("MaintenanceRequests")
                         .HasForeignKey("RoomID")
@@ -1003,8 +935,6 @@ namespace DataAccess.Migrations
                         .HasForeignKey("StudentID")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
-
-                    b.Navigation("Equipment");
 
                     b.Navigation("Room");
 
