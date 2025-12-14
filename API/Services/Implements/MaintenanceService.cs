@@ -131,7 +131,7 @@ namespace API.Services.Implements
                             PrintTime = DateTime.Now
                         };
 
-                        _uow.Receipts.AddReceipt(receipt);
+                        _uow.Receipts.Add(receipt);
                     }
                 }
 

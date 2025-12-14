@@ -31,6 +31,7 @@ namespace API.UnitOfWorks
         public INotificationRepository Notifications { get; }
 
         public IMaintenanceRepository Maintenances { get; }
+        public IEquipmentRepository Equipments { get; }
         public UnitOfWork(DormitoryDbContext context, IDbContextTransaction? dbContextTransaction)
         {
             _context = context;
@@ -53,6 +54,7 @@ namespace API.UnitOfWorks
             Parameters = new ParameterRepository(_context);
             UtilityBills = new UtilityBillRepository(_context);
             Notifications = new NotificationRepository(_context);
+            Equipments = new EquipmentRepository(_context);
         }
 
         public async Task BeginTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
