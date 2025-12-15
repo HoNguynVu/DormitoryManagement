@@ -9,5 +9,6 @@ namespace API.UnitOfWorks
         IContractRepository Contracts { get; }
         IAccountRepository Accounts { get; }
         INotificationRepository Notifications { get; }
+        IStudentRepository Students { get; }
     }
 }

@@ -211,7 +211,7 @@ namespace DataAccess.Models
                 entity.HasOne(d => d.Room)
                       .WithMany(p => p.MaintenanceRequests) 
                       .HasForeignKey(d => d.RoomID)
-                      .OnDelete(DeleteBehavior.Cascade);
+                      .OnDelete(DeleteBehavior.NoAction);
 
                 entity.HasOne(d => d.Student)
                       .WithMany() 

@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace API.UnitOfWorks
 {
     public class UnitOfWork : IAuthUow, IRegistrationUow, IViolationUow, IRoomUow,
-        IContractUow, IPaymentUow , IHealthInsuranceUow, IParameterUow, IUtilityBillUow, IMaintenanceUow
+        IContractUow, IPaymentUow , IHealthInsuranceUow, IParameterUow, IUtilityBillUow, IMaintenanceUow, IBuildingUow
     {
         private readonly DormitoryDbContext _context;
         private IDbContextTransaction? _transaction;
@@ -31,6 +31,8 @@ namespace API.UnitOfWorks
         public INotificationRepository Notifications { get; }
 
         public IMaintenanceRepository Maintenances { get; }
+        public IEquipmentRepository Equipments { get; }
+        public IBuildingManagerRepository BuildingManagers { get; }
         public UnitOfWork(DormitoryDbContext context, IDbContextTransaction? dbContextTransaction)
         {
             _context = context;
@@ -53,6 +55,8 @@ namespace API.UnitOfWorks
             Parameters = new ParameterRepository(_context);
             UtilityBills = new UtilityBillRepository(_context);
             Notifications = new NotificationRepository(_context);
+            Equipments = new EquipmentRepository(_context);
+            BuildingManagers = new BuildingManagerRepository(_context);
         }
 
         public async Task BeginTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)

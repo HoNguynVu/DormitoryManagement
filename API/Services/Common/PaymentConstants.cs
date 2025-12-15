@@ -12,16 +12,23 @@
 
         public const string RegisPaid = "Paid";
         public const string RegisPending = "Pending";
+        public const string RegisCancelled = "Cancelled";
+
+        public const string BillPaid = "Paid";
+        public const string BillUnpaid = "Unpaid";
 
         public const string PrefixRegis = "REG";
         public const string PrefixUtility = "UTL";
         public const string PrefixHealthInsurance = "HI";
         public const string PrefixContract = "CNT";
+        public const string PrefixRenew = "REN";
+
 
         public const string TypeRegis = "Registration";
         public const string TypeRenewal = "RenewalContract";
         public const string TypeUtility = "Utility";
         public const string TypeHealthInsurance = "HealthInsurance";
         public const string TypeMaintenanceFee = "MaintenanceFee";
+        public const string TypeRenew = "RenewContract"; 
     }
 }

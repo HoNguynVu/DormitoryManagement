@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(DormitoryDbContext))]
-    [Migration("20251213154519_Add Equipment in MaintenanceRequest")]
-    partial class AddEquipmentinMaintenanceRequest
+    [Migration("20251214071050_InitialCreateOOAD")]
+    partial class InitialCreateOOAD
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -322,6 +322,43 @@ namespace DataAccess.Migrations
                     b.ToTable("MaintenanceRequests");
                 });
 
+            modelBuilder.Entity("BusinessObject.Entities.Notification", b =>
+                {
+                    b.Property<string>("NotificationID")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("AccountID")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("NotificationID");
+
+                    b.HasIndex("AccountID");
+
+                    b.ToTable("Notifications");
+                });
+
             modelBuilder.Entity("BusinessObject.Entities.OtpCode", b =>
                 {
                     b.Property<string>("OtpID")
@@ -382,6 +419,12 @@ namespace DataAccess.Migrations
 
                     b.Property<decimal>("DefaultWaterPrice")
                         .HasColumnType("decimal(18, 2)");
+
+                    b.Property<DateTime>("EffectiveDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.HasKey("ParameterID");
 
@@ -785,6 +828,12 @@ namespace DataAccess.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(18, 2)");
 
+                    b.Property<int>("ElectricityNewIndex")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ElectricityOldIndex")
+                        .HasColumnType("int");
+
                     b.Property<int>("ElectricityUsage")
                         .HasColumnType("int");
 
@@ -800,6 +849,12 @@ namespace DataAccess.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("WaterNewIndex")
+                        .HasColumnType("int");
+
+                    b.Property<int>("WaterOldIndex")
+                        .HasColumnType("int");
 
                     b.Property<int>("WaterUsage")
                         .HasColumnType("int");
@@ -931,12 +986,13 @@ namespace DataAccess.Migrations
                 {
                     b.HasOne("BusinessObject.Entities.Equipment", "Equipment")
                         .WithMany()
-                        .HasForeignKey("EquipmentID");
+                        .HasForeignKey("EquipmentID")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("BusinessObject.Entities.Room", "Room")
                         .WithMany("MaintenanceRequests")
                         .HasForeignKey("RoomID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("BusinessObject.Entities.Student", "Student")
@@ -950,6 +1006,17 @@ namespace DataAccess.Migrations
                     b.Navigation("Room");
 
                     b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("BusinessObject.Entities.Notification", b =>
+                {
+                    b.HasOne("BusinessObject.Entities.Account", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.OtpCode", b =>

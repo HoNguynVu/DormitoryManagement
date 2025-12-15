@@ -166,7 +166,7 @@ namespace API.Services.Implements
             try
             {
                 // 3. Lấy thông tin hợp đồng
-                var contract = await _uow.Contracts.GetContractById(contractId);
+                var contract = await _uow.Contracts.GetByIdAsync(contractId);
 
                 if (contract == null)
                 {
@@ -189,7 +189,7 @@ namespace API.Services.Implements
                 }
 
                 // 5. Cập nhật và Lưu xuống DB
-                _uow.Contracts.UpdateContract(contract);
+                _uow.Contracts.Update(contract);
                 await _uow.CommitAsync();
 
                 return (true, $"Contract extended successfully by {monthsAdded} months. New EndDate: {contract.EndDate}", 200);

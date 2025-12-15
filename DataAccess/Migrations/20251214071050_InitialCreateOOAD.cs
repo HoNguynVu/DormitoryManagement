@@ -36,7 +36,9 @@ namespace DataAccess.Migrations
                     ParameterID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     DefaultElectricityPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    DefaultWaterPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                    DefaultWaterPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    EffectiveDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -128,6 +130,29 @@ namespace DataAccess.Migrations
                         column: x => x.AccountUserId,
                         principalTable: "Accounts",
                         principalColumn: "UserID");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Notifications",
+                columns: table => new
+                {
+                    NotificationID = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    AccountID = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    Message = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsRead = table.Column<bool>(type: "bit", nullable: false),
+                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Notifications", x => x.NotificationID);
+                    table.ForeignKey(
+                        name: "FK_Notifications_Accounts_AccountID",
+                        column: x => x.AccountID,
+                        principalTable: "Accounts",
+                        principalColumn: "UserID",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -256,7 +281,13 @@ namespace DataAccess.Migrations
                 {
                     InsuranceID = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
                     StudentID = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
-                    InitialHospital = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false)
+                    InitialHospital = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    CardNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    StartDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    EndDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    Cost = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -452,6 +483,10 @@ namespace DataAccess.Migrations
                 {
                     BillID = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
                     RoomID = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    ElectricityOldIndex = table.Column<int>(type: "int", nullable: false),
+                    ElectricityNewIndex = table.Column<int>(type: "int", nullable: false),
+                    WaterOldIndex = table.Column<int>(type: "int", nullable: false),
+                    WaterNewIndex = table.Column<int>(type: "int", nullable: false),
                     ElectricityUsage = table.Column<int>(type: "int", nullable: false),
                     WaterUsage = table.Column<int>(type: "int", nullable: false),
                     Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
@@ -468,6 +503,42 @@ namespace DataAccess.Migrations
                         principalTable: "Rooms",
                         principalColumn: "RoomID",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MaintenanceRequests",
+                columns: table => new
+                {
+                    RequestID = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    StudentID = table.Column<string>(type: "nvarchar(128)", nullable: false),
+                    RoomID = table.Column<string>(type: "nvarchar(128)", nullable: false),
+                    EquipmentID = table.Column<string>(type: "nvarchar(128)", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    RequestDate = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "(getdate())"),
+                    ResolvedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    RepairCost = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ManagerNote = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MaintenanceRequests", x => x.RequestID);
+                    table.ForeignKey(
+                        name: "FK_MaintenanceRequests_Equipment_EquipmentID",
+                        column: x => x.EquipmentID,
+                        principalTable: "Equipment",
+                        principalColumn: "EquipmentID",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_MaintenanceRequests_Rooms_RoomID",
+                        column: x => x.RoomID,
+                        principalTable: "Rooms",
+                        principalColumn: "RoomID");
+                    table.ForeignKey(
+                        name: "FK_MaintenanceRequests_Students_StudentID",
+                        column: x => x.StudentID,
+                        principalTable: "Students",
+                        principalColumn: "StudentID");
                 });
 
             migrationBuilder.CreateIndex(
@@ -534,6 +605,26 @@ namespace DataAccess.Migrations
                 name: "IX_HealthInsurances_StudentID",
                 table: "HealthInsurances",
                 column: "StudentID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MaintenanceRequests_EquipmentID",
+                table: "MaintenanceRequests",
+                column: "EquipmentID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MaintenanceRequests_RoomID",
+                table: "MaintenanceRequests",
+                column: "RoomID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MaintenanceRequests_StudentID",
+                table: "MaintenanceRequests",
+                column: "StudentID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notifications_AccountID",
+                table: "Notifications",
+                column: "AccountID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OtpCodes_AccountID",
@@ -640,10 +731,13 @@ namespace DataAccess.Migrations
                 name: "Contracts");
 
             migrationBuilder.DropTable(
-                name: "Equipment");
+                name: "HealthInsurances");
 
             migrationBuilder.DropTable(
-                name: "HealthInsurances");
+                name: "MaintenanceRequests");
+
+            migrationBuilder.DropTable(
+                name: "Notifications");
 
             migrationBuilder.DropTable(
                 name: "OtpCodes");
@@ -673,22 +767,25 @@ namespace DataAccess.Migrations
                 name: "Violations");
 
             migrationBuilder.DropTable(
-                name: "Rooms");
+                name: "Equipment");
 
             migrationBuilder.DropTable(
                 name: "Students");
 
             migrationBuilder.DropTable(
-                name: "Buildings");
-
-            migrationBuilder.DropTable(
-                name: "RoomTypes");
+                name: "Rooms");
 
             migrationBuilder.DropTable(
                 name: "Priorities");
 
             migrationBuilder.DropTable(
                 name: "Schools");
+
+            migrationBuilder.DropTable(
+                name: "Buildings");
+
+            migrationBuilder.DropTable(
+                name: "RoomTypes");
 
             migrationBuilder.DropTable(
                 name: "BuildingManagers");
