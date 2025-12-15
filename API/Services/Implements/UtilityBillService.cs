@@ -6,6 +6,7 @@ using BusinessObject.Entities;
 using API.Services.Helpers;
 using API.Hubs;
 using Microsoft.AspNetCore.SignalR;
+using API.Services.Common;
 
 namespace API.Services.Implements
 {
@@ -57,7 +58,7 @@ namespace API.Services.Implements
                          (dto.WaterIndex - lastWaterIndex) * parameter.DefaultWaterPrice,
                 Month = DateTime.Now.Month,
                 Year = DateTime.Now.Year,
-                Status = "Unpaid"
+                Status = PaymentConstants.BillUnpaid,
             };
             var activeContracts = await _utilityBillUow.Contracts.GetContractsByRoomIdAndStatus(dto.RoomId, "Active");
             var newMessage = NotiMessage(newBill.Month, newBill.Year);
@@ -89,9 +90,16 @@ namespace API.Services.Implements
                 await _utilityBillUow.RollbackAsync();
                 return (false, $"Failed to create utility bill: {ex.Message}", 500);
             }
-            foreach (var noti in listNotifications)
+            try
             {
-                await _hubContext.Clients.Group(noti.AccountID).SendAsync("ReceiveNotification", noti);
+                foreach (var noti in listNotifications)
+                {
+                    await _hubContext.Clients.User(noti.AccountID).SendAsync("ReceiveNotification", noti);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"SignalR Error: {ex.Message}");
             }
             return (true, "Utility bill created successfully", 201);
         }
@@ -124,6 +132,35 @@ namespace API.Services.Implements
                 return (false, $"Failed to confirm payment: {ex.Message}", 500);
             }
             return (true, "Payment confirmed successfully", 200);
+        }
+        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<UtilityBill> list)> GetBillsByAccountIdAsync(string accountId)
+        {
+            if (string.IsNullOrEmpty(accountId))
+            {
+                return (false, "AccountId is required", 400, Enumerable.Empty<UtilityBill>());
+            }
+            
+            var account = await _utilityBillUow.Accounts.GetByIdAsync(accountId);
+            if (account == null)
+            {
+                return (false, "Account not found", 404, Enumerable.Empty<UtilityBill>());
+            }
+
+            var student = await _utilityBillUow.Students.GetStudentByEmailAsync(account.Email);
+            if (student == null)
+            {
+                return (false, "Student not found", 404, Enumerable.Empty<UtilityBill>());
+            }
+
+            var contract = await _utilityBillUow.Contracts.GetActiveContractByStudentId(student.StudentID);
+            if (contract == null)
+            {
+                return (false, "No active contract found for this student", 404, Enumerable.Empty<UtilityBill>());
+            }
+            var billsOfRoom = await _utilityBillUow.UtilityBills.GetByRoomAsync(contract.RoomID);    
+
+            var unpaidBills = billsOfRoom.Where(b => b.Status != PaymentConstants.BillPaid).ToList();
+            return (true, "Bills retrieved successfully", 200, unpaidBills);
         }
     }
 }

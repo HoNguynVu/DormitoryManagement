@@ -10,10 +10,12 @@ namespace API.Controllers
     public class ReportController : ControllerBase
     {
         private readonly IReportService _reportService;
+        private readonly IBuildingManagerService _buildingManagerService;
 
-        public ReportController(IReportService reportService)
+        public ReportController(IReportService reportService, IBuildingManagerService buildingManagerService)
         {
             _reportService = reportService;
+            _buildingManagerService = buildingManagerService;
         }
 
         [HttpGet("priority")]
@@ -32,6 +34,31 @@ namespace API.Controllers
 
             var list = await _reportService.GetExpiredContractsAsync(cutoff);
             return Ok(new { success = true, data = list });
+        }
+
+        [HttpGet("student/{studentId}/contracts")]
+        public async Task<IActionResult> GetContractsByStudent(string studentId)
+        {
+            var list = await _reportService.GetContractsByStudentAsync(studentId);
+            return Ok(new { success = true, data = list });
+        }
+
+        // New endpoint: equipment status for a room
+        [HttpGet("room/{roomId}/equipment")]
+        public async Task<IActionResult> GetEquipmentByRoom(string roomId)
+        {
+            if (string.IsNullOrWhiteSpace(roomId)) return BadRequest(new { success = false, message = "RoomId is required" });
+
+            var items = await _reportService.GetEquipmentStatusByRoomAsync(roomId);
+            return Ok(new { success = true, data = items });
+        }
+
+        // New report endpoint: building managers
+        [HttpGet("managers")]
+        public async Task<IActionResult> GetManagersReport()
+        {
+            var managers = await _buildingManagerService.GetAllManagersAsync();
+            return Ok(new { success = true, data = managers });
         }
     }
 }

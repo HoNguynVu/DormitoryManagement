@@ -29,12 +29,12 @@ namespace DataAccess.Repository
             var lastMonth = currentDate.AddMonths(-1);
             return await _dbSet.FirstOrDefaultAsync(bill => bill.RoomID == roomId && bill.Month == lastMonth.Month && bill.Year == lastMonth.Year);
         }
-        public async Task<UtilityBill?> GetByRoomAsync(string roomId)
+        public async Task<IEnumerable<UtilityBill>> GetByRoomAsync(string roomId)
         {
             return await _dbSet.Where(bill => bill.RoomID == roomId)
                                .OrderByDescending(bill => bill.Year)
                                .ThenByDescending(bill => bill.Month)
-                               .FirstOrDefaultAsync();
+                               .ToListAsync();
         }
     }
 }
