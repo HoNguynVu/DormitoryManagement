@@ -34,6 +34,7 @@ builder.Services.AddDbContext<DormitoryDbContext>(options =>
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddSignalR();
 
 //Unit of Work
 builder.Services.AddScoped<UnitOfWork>(sp => new UnitOfWork(sp.GetRequiredService<DormitoryDbContext>(), null));
@@ -45,6 +46,8 @@ builder.Services.AddScoped<IViolationUow>(sp => sp.GetRequiredService<UnitOfWork
 builder.Services.AddScoped<IPaymentUow>(sp => sp.GetRequiredService<UnitOfWork>());
 builder.Services.AddScoped<IHealthInsuranceUow>(sp => sp.GetRequiredService<UnitOfWork>());
 builder.Services.AddScoped<IMaintenanceUow>(sp => sp.GetRequiredService<UnitOfWork>());
+builder.Services.AddScoped<IUtilityBillUow>(sp => sp.GetRequiredService<UnitOfWork>());
+builder.Services.AddScoped<IBuildingUow>(sp => sp.GetRequiredService<UnitOfWork>());
 
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -57,6 +60,8 @@ builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IHealthInsuranceService, HealthInsuranceService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IMaintenanceService, MaintenanceService>();
+builder.Services.AddScoped<IUtilityBillService, UtilityBillService>();
+builder.Services.AddScoped<IBuildingManagerService, BuildingManagerService>();
 
 // Đọc config từ appsettings.json
 builder.Services.Configure<ZaloPaySettings>(builder.Configuration.GetSection("ZaloPay"));
