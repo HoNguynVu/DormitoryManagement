@@ -6,6 +6,7 @@ using BusinessObject.Entities;
 using API.Services.Helpers;
 using API.Hubs;
 using Microsoft.AspNetCore.SignalR;
+using API.Services.Common;
 
 namespace API.Services.Implements
 {
@@ -57,7 +58,7 @@ namespace API.Services.Implements
                          (dto.WaterIndex - lastWaterIndex) * parameter.DefaultWaterPrice,
                 Month = DateTime.Now.Month,
                 Year = DateTime.Now.Year,
-                Status = "Unpaid"
+                Status = PaymentConstants.BillUnpaid,
             };
             var activeContracts = await _utilityBillUow.Contracts.GetContractsByRoomIdAndStatus(dto.RoomId, "Active");
             var newMessage = NotiMessage(newBill.Month, newBill.Year);

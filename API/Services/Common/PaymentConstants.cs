@@ -12,6 +12,10 @@
 
         public const string RegisPaid = "Paid";
         public const string RegisPending = "Pending";
+        public const string RegisCancelled = "Cancelled";
+
+        public const string BillPaid = "Paid";
+        public const string BillUnpaid = "Unpaid";
 
         public const string PrefixRegis = "REG";
         public const string PrefixUtility = "UTL";
