@@ -121,6 +121,7 @@ namespace API.Services.Implements
                 return (false, "Bill is already paid", 400);
             }
             bill.Status = "Paid";
+            await _utilityBillUow.BeginTransactionAsync();
             try
             {
                 _utilityBillUow.UtilityBills.Update(bill);
