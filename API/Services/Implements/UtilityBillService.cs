@@ -90,9 +90,16 @@ namespace API.Services.Implements
                 await _utilityBillUow.RollbackAsync();
                 return (false, $"Failed to create utility bill: {ex.Message}", 500);
             }
-            foreach (var noti in listNotifications)
+            try
             {
-                await _hubContext.Clients.Group(noti.AccountID).SendAsync("ReceiveNotification", noti);
+                foreach (var noti in listNotifications)
+                {
+                    await _hubContext.Clients.User(noti.AccountID).SendAsync("ReceiveNotification", noti);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"SignalR Error: {ex.Message}");
             }
             return (true, "Utility bill created successfully", 201);
         }
