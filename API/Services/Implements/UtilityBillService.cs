@@ -125,5 +125,34 @@ namespace API.Services.Implements
             }
             return (true, "Payment confirmed successfully", 200);
         }
+        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<UtilityBill> list)> GetBillsByAccountIdAsync(string accountId)
+        {
+            if (string.IsNullOrEmpty(accountId))
+            {
+                return (false, "AccountId is required", 400, Enumerable.Empty<UtilityBill>());
+            }
+            
+            var account = await _utilityBillUow.Accounts.GetByIdAsync(accountId);
+            if (account == null)
+            {
+                return (false, "Account not found", 404, Enumerable.Empty<UtilityBill>());
+            }
+
+            var student = await _utilityBillUow.Students.GetStudentByEmailAsync(account.Email);
+            if (student == null)
+            {
+                return (false, "Student not found", 404, Enumerable.Empty<UtilityBill>());
+            }
+
+            var contract = await _utilityBillUow.Contracts.GetActiveContractByStudentId(student.StudentID);
+            if (contract == null)
+            {
+                return (false, "No active contract found for this student", 404, Enumerable.Empty<UtilityBill>());
+            }
+            var billsOfRoom = await _utilityBillUow.UtilityBills.GetByRoomAsync(contract.RoomID);    
+
+            var unpaidBills = billsOfRoom.Where(b => b.Status != PaymentConstants.BillPaid).ToList();
+            return (true, "Bills retrieved successfully", 200, unpaidBills);
+        }
     }
 }
