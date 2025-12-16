@@ -6,5 +6,6 @@ namespace BusinessObject.DTOs.ReportDTOs
         public string EquipmentName { get; init; } = string.Empty;
         public string Status { get; init; } = string.Empty;
         public string RoomID { get; init; } = string.Empty;
+        public string RoomName { get; init; } = string.Empty;
     }
 }
