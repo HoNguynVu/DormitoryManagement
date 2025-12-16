@@ -69,6 +69,38 @@ namespace API.Services.Implements
             message.Body = bodyBuilder.ToMessageBody();
             await SendEmailAsync(message);
         }
+
+        public async Task SendRenewalPaymentEmailAsync(DormRenewalSuccessDto dto)
+        {
+            var culture = new CultureInfo("vi-VN");
+            var message = new MimeMessage();
+            message.To.Add(new MailboxAddress(dto.StudentName, dto.StudentEmail));
+            message.Subject = $"[KTX] Biên lai thu phí gia hạn hợp đồng {dto.ContractCode}";
+
+            var bodyBuilder = new BodyBuilder();
+            bodyBuilder.HtmlBody = $@"
+            <div style='font-family: Arial, sans-serif; color: #333;'>
+                <h2 style='color: #28a745;'>GIA HẠN THÀNH CÔNG</h2>
+                <p>Chào bạn <strong>{dto.StudentName}</strong>,</p>
+                <p>Giao dịch thanh toán phí lưu trú cho kỳ tiếp theo của bạn đã thành công.</p>
+            
+                <div style='border: 1px dashed #ccc; padding: 15px; background-color: #fafafa;'>
+                    <p><strong>Thông tin gia hạn:</strong></p>
+                    <ul>
+                        <li>Mã hợp đồng: {dto.ContractCode}</li>
+                        <li>Phòng hiện tại: {dto.RoomNumber} ({dto.BuildingName})</li>
+                        <li>Thời gian gia hạn: <strong>{dto.NewStartDate:dd/MM/yyyy}</strong> đến <strong>{dto.NewEndDate:dd/MM/yyyy}</strong></li>
+                        <li>Tổng tiền thanh toán: <span style='color: #d9534f; font-weight: bold; font-size: 16px;'>{dto.TotalAmountPaid.ToString("N0", culture)} VNĐ</span></li>
+                    </ul>
+                </div>
+            
+                <p>Hợp đồng của bạn đã được cập nhật trên hệ thống.</p>
+                <p>Trân trọng,<br>Ban Quản lý KTX.</p>
+            </div>";
+
+            message.Body = bodyBuilder.ToMessageBody();
+            await SendEmailAsync(message);
+        }
         private async Task SendEmailAsync(MimeMessage emailMessage)
         {
             var credential = GoogleCredential
