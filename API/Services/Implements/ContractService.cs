@@ -433,5 +433,70 @@ namespace API.Services.Implements
                 return (false, $"Internal Server Error: {ex.Message}", 500);
             }
         }
+
+        public async Task<(bool Success, string Message, int StatusCode)> ConfirmRefundAsync(ConfirmRefundDto request)
+        {
+            // Validation
+            if (request == null || string.IsNullOrEmpty(request.ReceiptId))
+            {
+                return (false, "Invalid request. ReceiptId is required.", 400);
+            }
+
+            if (string.IsNullOrEmpty(request.RefundMethod))
+            {
+                return (false, "RefundMethod is required (BankTransfer, Cash, etc.).", 400);
+            }
+
+            await _uow.BeginTransactionAsync();
+            try
+            {
+                // 1. Get receipt
+                var receipt = await _uow.Receipts.GetByIdAsync(request.ReceiptId);
+                if (receipt == null)
+                {
+                    return (false, "Receipt not found.", 404);
+                }
+
+                // 2. Validate receipt type
+                if (receipt.PaymentType != "RoomChangeRefund")
+                {
+                    return (false, "This receipt is not a refund receipt.", 400);
+                }
+
+                // 3. Check if already confirmed
+                if (receipt.Status == "RefundCompleted")
+                {
+                    return (false, "This refund has already been completed.", 409);
+                }
+
+                // 4. Update receipt status and content
+                receipt.Status = "RefundCompleted";
+                
+                // Update content with refund confirmation info
+                var confirmationNote = $" | Đã hoàn tiền qua {request.RefundMethod}";
+                if (!string.IsNullOrEmpty(request.TransactionReference))
+                {
+                    confirmationNote += $" - Mã GD: {request.TransactionReference}";
+                }
+                if (!string.IsNullOrEmpty(request.ManagerNote))
+                {
+                    confirmationNote += $" - Ghi chú: {request.ManagerNote}";
+                }
+                confirmationNote += $" - Xác nhận lúc: {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
+                
+                receipt.Content += confirmationNote;
+
+                _uow.Receipts.Update(receipt);
+
+                await _uow.CommitAsync();
+
+                return (true, $"Đã xác nhận hoàn tiền {receipt.Amount:N0} VND cho sinh viên {receipt.StudentID}.", 200);
+            }
+            catch (Exception ex)
+            {
+                await _uow.RollbackAsync();
+                return (false, $"Internal Server Error: {ex.Message}", 500);
+            }
+        }
     }
 }

@@ -341,6 +341,77 @@ namespace API.Services.Implements
                 return (500, new PaymentLinkDTO { IsSuccess = false, Message = $"Failed to create ZaloPay payment link: {ex.Message}" });
             }
         }
+        public async Task<(int StatusCode, PaymentLinkDTO dto)> CreateZaloPayLinkForRoomChange(string receiptId)
+        {
+            // 1. Validate Input
+            if (string.IsNullOrEmpty(receiptId))
+            {
+                return (400, new PaymentLinkDTO { IsSuccess = false, Message = "Receipt ID is required." });
+            }
+
+            // 2. Get Receipt
+            var receipt = await _paymentUow.Receipts.GetByIdAsync(receiptId);
+            if (receipt == null)
+            {
+                return (404, new PaymentLinkDTO { IsSuccess = false, Message = "Receipt not found." });
+            }
+
+            // 3. Validate receipt type and status
+            if (receipt.PaymentType != PaymentConstants.TypeRoomChange)
+            {
+                return (400, new PaymentLinkDTO { IsSuccess = false, Message = "Invalid receipt type. Expected RoomChangeCharge." });
+            }
+
+            if (receipt.Status != PaymentConstants.StatusPending)
+            {
+                return (400, new PaymentLinkDTO { IsSuccess = false, Message = "This receipt is not pending (already paid or cancelled)." });
+            }
+
+            // 4. Prepare ZaloPay data
+            var amount = receipt.Amount;
+            var appTransId = GenerateAppTransId(PaymentConstants.PrefixRoomChange, receiptId);
+            string description = receipt.Content ?? $"Thanh toan phi doi phong {receipt.RelatedObjectID}";
+
+            // 5. Call ZaloPay API
+            string orderUrl = await CallZaloPayCreateOrder(appTransId, (long)amount, description, receiptId);
+            if (string.IsNullOrEmpty(orderUrl))
+            {
+                return (500, new PaymentLinkDTO { IsSuccess = false, Message = "Failed to create ZaloPay order." });
+            }
+
+            // 6. Save Payment record
+            await _paymentUow.BeginTransactionAsync();
+            try
+            {
+                var payment = new Payment
+                {
+                    PaymentID = appTransId,
+                    PaymentMethod = PaymentConstants.MethodZaloPay,
+                    Amount = amount,
+                    ReceiptID = receipt.ReceiptID,
+                    TransactionID = appTransId,
+                    Status = PaymentConstants.StatusPending,
+                    PaymentDate = DateTime.Now,
+                };
+
+                _paymentUow.Payments.Add(payment);
+                await _paymentUow.CommitAsync();
+
+                return (200, new PaymentLinkDTO
+                {
+                    IsSuccess = true,
+                    PaymentUrl = orderUrl,
+                    PaymentId = appTransId,
+                    Message = "Room change payment link created successfully."
+                });
+            }
+            catch (Exception ex)
+            {
+                await _paymentUow.RollbackAsync();
+                return (500, new PaymentLinkDTO { IsSuccess = false, Message = $"Database error: {ex.Message}" });
+            }
+        }
+
         public async Task<(int ReturnCode, string ReturnMessage)> ProcessZaloPayCallback(ZaloPayCallbackDTO cbdata)
         {
             try
@@ -390,6 +461,10 @@ namespace API.Services.Implements
                 else if (appTransId.Contains($"_{PaymentConstants.PrefixHealthInsurance}_"))
                 {
                     await HanldeInsuranceSuccessPayment(appTransId, zpTransId);
+                }
+                else if (appTransId.Contains($"_{PaymentConstants.PrefixRoomChange}_"))
+                {
+                    await HandleRoomChangeSuccessPayment(appTransId, zpTransId);
                 }
                 else
                 {
