@@ -1,4 +1,5 @@
-﻿using BusinessObject.Entities;  
+﻿using BusinessObject.DTOs.ContractDTOs;
+using BusinessObject.Entities;  
 namespace API.Services.Interfaces
 {
     public interface IContractService
@@ -8,5 +9,7 @@ namespace API.Services.Interfaces
         Task<(bool Success, string Message, int StatusCode)> TerminateContractNowAsync(string studentId);
 
         Task<(bool Success, string Message, int StatusCode)> ConfirmContractExtensionAsync(string contractId, int monthsAdded);
+        Task<(bool Success, string Message, int StatusCode, IEnumerable<ExpiringContractDTO>)> GetExpiringContractByManager(int daysUntilExpiration, string managerId);
+        Task<(bool Success, string Message, int StatusCode, int numContracts)> CountExpiringContractsByManager(int daysUntilExpiration, string managerID);
     }
 }
