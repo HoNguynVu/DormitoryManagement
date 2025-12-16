@@ -22,6 +22,7 @@ namespace API.Controllers
             _exportService = exportService;
         }
 
+        // Get Students by Priority
         [HttpGet("priority")]
         public async Task<IActionResult> GetStudentsByPriority([FromQuery] string? priorityId)
         {
@@ -29,6 +30,7 @@ namespace API.Controllers
             return Ok(new { success = true, data = students });
         }
 
+        // Get Expired Contracts
         [HttpGet("expired-contracts")]
         public async Task<IActionResult> GetExpiredContracts([FromQuery] string? beforeDate)
         {
@@ -40,6 +42,8 @@ namespace API.Controllers
             return Ok(new { success = true, data = list });
         }
 
+
+        //Get Student Contracts
         [HttpGet("student/{studentId}/contracts")]
         public async Task<IActionResult> GetContractsByStudent(string studentId)
         {
@@ -47,7 +51,7 @@ namespace API.Controllers
             return Ok(new { success = true, data = list });
         }
 
-        // New endpoint: equipment status for a room
+        //Equipment Status For A Room
         [HttpGet("room/{roomId}/equipment")]
         public async Task<IActionResult> GetEquipmentByRoom(string roomId)
         {
@@ -57,7 +61,7 @@ namespace API.Controllers
             return Ok(new { success = true, data = items });
         }
 
-        // New report endpoint: building managers
+        //Get Building Managers
         [HttpGet("managers")]
         public async Task<IActionResult> GetManagersReport()
         {
@@ -75,13 +79,21 @@ namespace API.Controllers
             var bytes = _exportService.CreateExcel(wb =>
             {
                 var ws = wb.Worksheets.Add("AvailableRooms");
-                ws.Cell(1, 1).Value = "RoomID";
-                ws.Cell(1, 2).Value = "RoomName";
-                ws.Cell(1, 3).Value = "RoomType";
-                ws.Cell(1, 4).Value = "Capacity";
-                ws.Cell(1, 5).Value = "Occupied";
-                ws.Cell(1, 6).Value = "AvailableBeds";
-                ws.Cell(1, 7).Value = "Price";
+                ws.Cell(1, 1).Value = "Ma phong";
+                ws.Cell(1, 2).Value = "Ten phong";
+                ws.Cell(1, 3).Value = "Loai phong";
+                ws.Cell(1, 4).Value = "Suc chua";
+                ws.Cell(1, 5).Value = "Dang o";
+                ws.Cell(1, 6).Value = "Giuong trong";
+                ws.Cell(1, 7).Value = "Gia";
+
+                // header style
+                var headerRange = ws.Range(1, 1, 1, 7);
+                headerRange.Style.Font.Bold = true;
+                headerRange.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.FromHtml("#D9E1F2");
+                headerRange.Style.Alignment.Horizontal = ClosedXML.Excel.XLAlignmentHorizontalValues.Center;
+                headerRange.Style.Border.OutsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
+                headerRange.Style.Border.InsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
 
                 int r = 2;
                 foreach (var room in rooms)
@@ -96,10 +108,12 @@ namespace API.Controllers
                     r++;
                 }
 
+                ws.Range(1,1,r-1,7).Style.Border.OutsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
+                ws.Range(1,1,r-1,7).Style.Border.InsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
                 ws.Columns().AdjustToContents();
             });
 
-            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "available_rooms.xlsx");
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Available_Rooms.xlsx");
         }
 
         // Export expired contracts as Excel
@@ -115,12 +129,20 @@ namespace API.Controllers
             var bytes = _exportService.CreateExcel(wb =>
             {
                 var ws = wb.Worksheets.Add("ExpiredContracts");
-                ws.Cell(1, 1).Value = "ContractID";
-                ws.Cell(1, 2).Value = "StudentID";
-                ws.Cell(1, 3).Value = "StudentName";
-                ws.Cell(1, 4).Value = "RoomID";
-                ws.Cell(1, 5).Value = "EndDate";
-                ws.Cell(1, 6).Value = "ContractStatus";
+                ws.Cell(1, 1).Value = "Ma HD";
+                ws.Cell(1, 2).Value = "Ma sinh vien";
+                ws.Cell(1, 3).Value = "Ten sinh vien";
+                ws.Cell(1, 4).Value = "Ma phong";
+                ws.Cell(1, 5).Value = "Ten phong";
+                ws.Cell(1, 6).Value = "Ngay ket thuc";
+                ws.Cell(1, 7).Value = "Trang thai";
+
+                var headerRange = ws.Range(1,1,1,7);
+                headerRange.Style.Font.Bold = true;
+                headerRange.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.FromHtml("#FCE4D6");
+                headerRange.Style.Alignment.Horizontal = ClosedXML.Excel.XLAlignmentHorizontalValues.Center;
+                headerRange.Style.Border.OutsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
+                headerRange.Style.Border.InsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
 
                 int r = 2;
                 foreach (var c in list)
@@ -129,15 +151,18 @@ namespace API.Controllers
                     ws.Cell(r, 2).Value = c.StudentID;
                     ws.Cell(r, 3).Value = c.StudentName;
                     ws.Cell(r, 4).Value = c.RoomID;
-                    ws.Cell(r, 5).Value = c.EndDate == DateOnly.MinValue ? string.Empty : c.EndDate.ToString("yyyy-MM-dd");
-                    ws.Cell(r, 6).Value = c.ContractStatus;
+                    ws.Cell(r, 5).Value = c.RoomName;
+                    ws.Cell(r, 6).Value = c.EndDate == DateOnly.MinValue ? string.Empty : c.EndDate.ToString("yyyy-MM-dd");
+                    ws.Cell(r, 7).Value = c.ContractStatus;
                     r++;
                 }
 
+                ws.Range(1,1,r-1,7).Style.Border.OutsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
+                ws.Range(1,1,r-1,7).Style.Border.InsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
                 ws.Columns().AdjustToContents();
             });
 
-            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "expired_contracts.xlsx");
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Expired_Contracts.xlsx");
         }
 
         // Export student contracts as Excel
@@ -149,13 +174,21 @@ namespace API.Controllers
             var bytes = _exportService.CreateExcel(wb =>
             {
                 var ws = wb.Worksheets.Add("StudentContracts");
-                ws.Cell(1, 1).Value = "ContractID";
-                ws.Cell(1, 2).Value = "StudentID";
-                ws.Cell(1, 3).Value = "StudentName";
-                ws.Cell(1, 4).Value = "RoomID";
-                ws.Cell(1, 5).Value = "StartDate";
-                ws.Cell(1, 6).Value = "EndDate";
-                ws.Cell(1, 7).Value = "ContractStatus";
+                ws.Cell(1, 1).Value = "Ma HD";
+                ws.Cell(1, 2).Value = "Ma sinh vien";
+                ws.Cell(1, 3).Value = "Ten sinh vien";
+                ws.Cell(1, 4).Value = "Ma phong";
+                ws.Cell(1, 5).Value = "Ten phong";
+                ws.Cell(1, 6).Value = "Ngay bat dau";
+                ws.Cell(1, 7).Value = "Ngay ket thuc";
+                ws.Cell(1, 8).Value = "Trang thai";
+
+                var headerRange = ws.Range(1,1,1,8);
+                headerRange.Style.Font.Bold = true;
+                headerRange.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.FromHtml("#D9EAD3");
+                headerRange.Style.Alignment.Horizontal = ClosedXML.Excel.XLAlignmentHorizontalValues.Center;
+                headerRange.Style.Border.OutsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
+                headerRange.Style.Border.InsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
 
                 int r = 2;
                 foreach (var c in list)
@@ -164,16 +197,19 @@ namespace API.Controllers
                     ws.Cell(r, 2).Value = c.StudentID;
                     ws.Cell(r, 3).Value = c.StudentName;
                     ws.Cell(r, 4).Value = c.RoomID;
-                    ws.Cell(r, 5).Value = c.StartDate.ToString("yyyy-MM-dd");
-                    ws.Cell(r, 6).Value = c.EndDate?.ToString("yyyy-MM-dd") ?? string.Empty;
-                    ws.Cell(r, 7).Value = c.ContractStatus;
+                    ws.Cell(r, 5).Value = c.RoomName;
+                    ws.Cell(r, 6).Value = c.StartDate.ToString("yyyy-MM-dd");
+                    ws.Cell(r, 7).Value = c.EndDate?.ToString("yyyy-MM-dd") ?? string.Empty;
+                    ws.Cell(r, 8).Value = c.ContractStatus;
                     r++;
                 }
 
+                ws.Range(1,1,r-1,8).Style.Border.OutsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
+                ws.Range(1,1,r-1,8).Style.Border.InsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
                 ws.Columns().AdjustToContents();
             });
 
-            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"contracts_{studentId}.xlsx");
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Contracts_{studentId}.xlsx");
         }
 
         // Export priority students as Excel
@@ -185,11 +221,19 @@ namespace API.Controllers
             var bytes = _exportService.CreateExcel(wb =>
             {
                 var ws = wb.Worksheets.Add("PriorityStudents");
-                ws.Cell(1, 1).Value = "StudentID";
-                ws.Cell(1, 2).Value = "FullName";
+                ws.Cell(1, 1).Value = "Ma sinh vien";
+                ws.Cell(1, 2).Value = "Ho ten";
                 ws.Cell(1, 3).Value = "Email";
-                ws.Cell(1, 4).Value = "PhoneNumber";
-                ws.Cell(1, 5).Value = "PriorityID";
+                ws.Cell(1, 4).Value = "SDT";
+                ws.Cell(1, 5).Value = "Ma uu tien";
+                ws.Cell(1, 6).Value = "Ten uu tien";
+
+                var headerRange = ws.Range(1,1,1,6);
+                headerRange.Style.Font.Bold = true;
+                headerRange.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.FromHtml("#FFF2CC");
+                headerRange.Style.Alignment.Horizontal = ClosedXML.Excel.XLAlignmentHorizontalValues.Center;
+                headerRange.Style.Border.OutsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
+                headerRange.Style.Border.InsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
 
                 int r = 2;
                 foreach (var s in students)
@@ -199,13 +243,16 @@ namespace API.Controllers
                     ws.Cell(r, 3).Value = s.Email;
                     ws.Cell(r, 4).Value = s.PhoneNumber;
                     ws.Cell(r, 5).Value = s.PriorityID;
+                    ws.Cell(r, 6).Value = s.Priority?.PriorityDescription ?? string.Empty;
                     r++;
                 }
 
+                ws.Range(1,1,r-1,6).Style.Border.OutsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
+                ws.Range(1,1,r-1,6).Style.Border.InsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
                 ws.Columns().AdjustToContents();
             });
 
-            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "priority_students.xlsx");
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Priority_students.xlsx");
         }
 
         // Export room equipment as Excel
@@ -217,10 +264,18 @@ namespace API.Controllers
             var bytes = _exportService.CreateExcel(wb =>
             {
                 var ws = wb.Worksheets.Add("RoomEquipment");
-                ws.Cell(1, 1).Value = "EquipmentID";
-                ws.Cell(1, 2).Value = "EquipmentName";
-                ws.Cell(1, 3).Value = "Status";
-                ws.Cell(1, 4).Value = "RoomID";
+                ws.Cell(1, 1).Value = "Ma thiet bi";
+                ws.Cell(1, 2).Value = "Ten thiet bi";
+                ws.Cell(1, 3).Value = "Trang thai";
+                ws.Cell(1, 4).Value = "Ma phong";
+                ws.Cell(1, 5).Value = "Ten phong";
+
+                var headerRange = ws.Range(1,1,1,5);
+                headerRange.Style.Font.Bold = true;
+                headerRange.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.FromHtml("#D1E7DD");
+                headerRange.Style.Alignment.Horizontal = ClosedXML.Excel.XLAlignmentHorizontalValues.Center;
+                headerRange.Style.Border.OutsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
+                headerRange.Style.Border.InsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
 
                 int r = 2;
                 foreach (var e in items)
@@ -229,13 +284,16 @@ namespace API.Controllers
                     ws.Cell(r, 2).Value = e.EquipmentName;
                     ws.Cell(r, 3).Value = e.Status;
                     ws.Cell(r, 4).Value = e.RoomID;
+                    ws.Cell(r, 5).Value = e.RoomName;
                     r++;
                 }
 
+                ws.Range(1,1,r-1,5).Style.Border.OutsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
+                ws.Range(1,1,r-1,5).Style.Border.InsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
                 ws.Columns().AdjustToContents();
             });
 
-            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"room_{roomId}_equipment.xlsx");
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Room_{roomId}_equipment.xlsx");
         }
 
         // Export managers as Excel
@@ -247,12 +305,20 @@ namespace API.Controllers
             var bytes = _exportService.CreateExcel(wb =>
             {
                 var ws = wb.Worksheets.Add("Managers");
-                ws.Cell(1, 1).Value = "ManagerID";
-                ws.Cell(1, 2).Value = "FullName";
+                ws.Cell(1, 1).Value = "Ma quan ly";
+                ws.Cell(1, 2).Value = "Ho ten";
                 ws.Cell(1, 3).Value = "Email";
-                ws.Cell(1, 4).Value = "PhoneNumber";
-                ws.Cell(1, 5).Value = "Address";
-                ws.Cell(1, 6).Value = "BuildingsCount";
+                ws.Cell(1, 4).Value = "SDT";
+                ws.Cell(1, 5).Value = "Dia chi";
+                ws.Cell(1, 6).Value = "So toa nha";
+                ws.Cell(1, 7).Value = "Ten toa nha"; 
+
+                var headerRange = ws.Range(1,1,1,7);
+                headerRange.Style.Font.Bold = true;
+                headerRange.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.FromHtml("#CFE2F3");
+                headerRange.Style.Alignment.Horizontal = ClosedXML.Excel.XLAlignmentHorizontalValues.Center;
+                headerRange.Style.Border.OutsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
+                headerRange.Style.Border.InsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
 
                 int r = 2;
                 foreach (var m in managers)
@@ -263,13 +329,19 @@ namespace API.Controllers
                     ws.Cell(r, 4).Value = m.PhoneNumber;
                     ws.Cell(r, 5).Value = m.Address;
                     ws.Cell(r, 6).Value = m.Buildings?.Count() ?? 0;
+
+                    var buildingNames = m.Buildings?.Select(b => b.BuildingName).ToArray() ?? Array.Empty<string>();
+                    ws.Cell(r, 7).Value = string.Join(", ", buildingNames);
+
                     r++;
                 }
 
+                ws.Range(1,1,r-1,7).Style.Border.OutsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
+                ws.Range(1,1,r-1,7).Style.Border.InsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
                 ws.Columns().AdjustToContents();
             });
 
-            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "managers.xlsx");
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Managers.xlsx");
         }
     }
 }

@@ -38,6 +38,7 @@ namespace API.Services.Implements
                 StudentID = c.StudentID,
                 StudentName = c.Student?.FullName ?? string.Empty,
                 RoomID = c.RoomID,
+                RoomName = c.Room?.RoomName ?? string.Empty,
                 EndDate = c.EndDate ?? DateOnly.MinValue,
                 ContractStatus = c.ContractStatus
             });
@@ -55,6 +56,7 @@ namespace API.Services.Implements
                 StudentID = c.StudentID,
                 StudentName = c.Student?.FullName ?? string.Empty,
                 RoomID = c.RoomID,
+                RoomName = c.Room?.RoomName ?? string.Empty,
                 StartDate = c.StartDate,
                 EndDate = c.EndDate,
                 ContractStatus = c.ContractStatus
@@ -79,7 +81,8 @@ namespace API.Services.Implements
                     EquipmentID = e.EquipmentID,
                     EquipmentName = e.EquipmentName,
                     Status = e.Status ?? string.Empty,
-                    RoomID = e.RoomID
+                    RoomID = e.RoomID,
+                    RoomName = room.RoomName
                 });
             }
 
@@ -92,7 +95,8 @@ namespace API.Services.Implements
                 EquipmentID = e.EquipmentID,
                 EquipmentName = e.EquipmentName,
                 Status = e.Status ?? string.Empty,
-                RoomID = e.RoomID
+                RoomID = e.RoomID,
+                RoomName = altRoom.RoomName
             });
         }
 
