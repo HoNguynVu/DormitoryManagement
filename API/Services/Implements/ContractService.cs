@@ -1,6 +1,7 @@
 ﻿using API.Services.Helpers;
 using API.Services.Interfaces;
 using API.UnitOfWorks;
+using BusinessObject.DTOs.ContractDTOs;
 using BusinessObject.Entities;
 
 namespace API.Services.Implements
@@ -201,23 +202,51 @@ namespace API.Services.Implements
             }
         }
 
-        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<Contract>)> GetExpiringContractByManager(int daysUntilExpiration, string managerId)
+        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<ExpiringContractDTO>)> GetExpiringContractByManager(int daysUntilExpiration, string managerId)
         {
-            DateOnly dateOnly = DateOnly.FromDateTime(DateTime.Now.AddDays(daysUntilExpiration));
+            // 1. Chuẩn bị ngày
+            DateOnly fromDate = DateOnly.FromDateTime(DateTime.Now);
+            DateOnly endDate = DateOnly.FromDateTime(DateTime.Now.AddDays(daysUntilExpiration));
+
             try
             {
-                var contracts = await _uow.Contracts.GetExpiringContractsByManagerIdAsync(dateOnly, managerId);
-                return (true, "Success", 200, contracts);
+                // 2. Lấy dữ liệu từ Repo
+                var contracts = await _uow.Contracts.GetExpiringContractsByManagerIdAsync(fromDate, endDate, managerId);
+
+                // 3. Mapping (Sử dụng LINQ Select)
+                var dtoList = contracts.Select(c => new ExpiringContractDTO
+                {
+                    ContractID = c.ContractID,
+                    StudentID = c.StudentID,
+                    ExpirationDate = c.EndDate.HasValue ? c.EndDate.Value.ToDateTime(new TimeOnly(0, 0)) : DateTime.MinValue,
+                    StudentName = c.Student != null ? c.Student.FullName : "N/A",
+                    StudentEmail = c.Student != null ? c.Student.Email : "N/A",
+                    RoomID = c.RoomID,
+                    RoomName = c.Room != null ? c.Room.RoomName : "N/A"
+                }).ToList();
+
+                return (true, "Success", 200, dtoList);
             }
             catch (Exception ex)
             {
-                return (false, $"Error retrieving expiring contracts: {ex.Message}", 500, Enumerable.Empty<Contract>());
+                // Log lỗi (Serilog...)
+                return (false, $"Error retrieving expiring contracts: {ex.Message}", 500, Enumerable.Empty<ExpiringContractDTO>());
             }
         }
 
-        //public async Task<(bool Success, string Message, int StatusCode, int numContracts)> GetExpiringContractCountByManager(int daysUntilExpiration, string managerID)
-        //{
-        //    DateOnly dateOnly = DateOnly.FromDateTime(DateTime.Now.AddDays(daysUntilExpiration));
-        //}
+        public async Task<(bool Success, string Message, int StatusCode, int numContracts)> CountExpiringContractsByManager(int daysUntilExpiration, string managerID)
+        {
+            DateOnly fromDate = DateOnly.FromDateTime(DateTime.Now);
+            DateOnly endDate = DateOnly.FromDateTime(DateTime.Now.AddDays(daysUntilExpiration));
+            try
+            {
+                int count = await _uow.Contracts.CountExpiringContractsByManagerIdAsync(fromDate, endDate, managerID);
+                return (true, "Success", 200, count);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Error retrieving expiring contract count: {ex.Message}", 500, 0);
+            }
+        }
     }
 }
