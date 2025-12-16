@@ -8,5 +8,6 @@ namespace API.Services.Interfaces
         Task<(bool Success, string Message, int StatusCode)> TerminateContractNowAsync(string studentId);
 
         Task<(bool Success, string Message, int StatusCode)> ConfirmContractExtensionAsync(string contractId, int monthsAdded);
+        Task<(bool Success, string Message, int StatusCode, IEnumerable<Contract>)> GetExpiringContractByManager(int daysUntilExpiration, string managerId);
     }
 }

@@ -65,5 +65,19 @@ namespace DataAccess.Repository
                 .Where(c => c.EndDate != null && c.EndDate < olderThan && c.ContractStatus == "Active")
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<Contract>> GetExpiringContractsByManagerIdAsync(DateOnly beforeDate, string managerId)
+        {
+            return await _dbSet
+                .Include(c => c.Student)
+                .Include(c => c.Room).ThenInclude(r => r.Building)
+                .Include(c => c.Room).ThenInclude(r => r.RoomType)
+                .Where(c => c.EndDate != null 
+                            && c.EndDate <= beforeDate 
+                            && c.ContractStatus == "Active"
+                            && c.Room.Building.ManagerID == managerId)
+                .ToListAsync();
+        }
+
     }
 }

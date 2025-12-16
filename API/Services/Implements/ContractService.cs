@@ -200,5 +200,24 @@ namespace API.Services.Implements
                 return (false, $"Error confirming extension: {ex.Message}", 500);
             }
         }
+
+        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<Contract>)> GetExpiringContractByManager(int daysUntilExpiration, string managerId)
+        {
+            DateOnly dateOnly = DateOnly.FromDateTime(DateTime.Now.AddDays(daysUntilExpiration));
+            try
+            {
+                var contracts = await _uow.Contracts.GetExpiringContractsByManagerIdAsync(dateOnly, managerId);
+                return (true, "Success", 200, contracts);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Error retrieving expiring contracts: {ex.Message}", 500, Enumerable.Empty<Contract>());
+            }
+        }
+
+        //public async Task<(bool Success, string Message, int StatusCode, int numContracts)> GetExpiringContractCountByManager(int daysUntilExpiration, string managerID)
+        //{
+        //    DateOnly dateOnly = DateOnly.FromDateTime(DateTime.Now.AddDays(daysUntilExpiration));
+        //}
     }
 }
