@@ -14,6 +14,7 @@ namespace BusinessObject.DTOs.ConfirmDTOs
         public string RoomType { get; set; } = string.Empty;      // Loại phòng 
         public DateOnly StartDate { get; set; }      // Ngày bắt đầu ở
         public DateOnly EndDate { get; set; }        // Ngày kết thúc
+        public decimal DepositAmount { get; set; }  // Số tiền đã đóng
         public decimal RoomFeePerMonth { get; set; } // Giá phòng hàng tháng
     }
 }

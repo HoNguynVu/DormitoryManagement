@@ -1,8 +1,10 @@
-﻿using MailKit.Net.Smtp;
+﻿using API.Services.Interfaces;
+using BusinessObject.DTOs.ConfirmDTOs;
+using Google.Apis.Auth.OAuth2;
+using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;
-using Google.Apis.Auth.OAuth2;
-using API.Services.Interfaces;
+using System.Globalization;
 namespace API.Services.Implements
 {
     public class EmailService : IEmailService
@@ -38,6 +40,35 @@ namespace API.Services.Implements
             await SendEmailAsync(emailMessage);
         }
 
+        public async Task SendRegistrationPaymentEmailAsync(DormRegistrationSuccessDto dto)
+        {
+            var culture = new CultureInfo("vi-VN");
+            var message = new MimeMessage();
+            message.To.Add(new MailboxAddress(dto.StudentName, dto.StudentEmail));
+            message.Subject = $"[KTX] Xác nhận thanh toán phí đăng ký phòng {dto.RoomNumber}";
+
+            var bodyBuilder = new BodyBuilder();
+            bodyBuilder.HtmlBody = $@"
+            <div style='font-family: Arial, sans-serif; color: #333;'>
+                <h2 style='color: #0056b3;'>XÁC NHẬN THANH TOÁN ĐĂNG KÝ PHÒNG</h2>
+                <p>Chào bạn <strong>{dto.StudentName}</strong>,</p>
+                <p>Chúng tôi đã nhận được khoản thanh toán phí đăng ký của bạn. Chúc mừng bạn đã chính thức trở thành cư dân của KTX.</p>
+            
+                <table style='width: 100%; border-collapse: collapse; margin: 20px 0;'>
+                    <tr style='background-color: #f2f2f2;'><td style='padding: 10px;'>Mã hợp đồng:</td><td style='padding: 10px;'><strong>{dto.ContractCode}</strong></td></tr>
+                    <tr><td style='padding: 10px;'>Phòng/Tòa:</td><td style='padding: 10px;'>{dto.RoomNumber} - {dto.BuildingName}</td></tr>
+                    <tr style='background-color: #f2f2f2;'><td style='padding: 10px;'>Loại phòng:</td><td style='padding: 10px;'>{dto.RoomType}</td></tr>
+                    <tr><td style='padding: 10px;'>Thời gian bắt đầu:</td><td style='padding: 10px;'>{dto.StartDate:dd/MM/yyyy}</td></tr>
+                    <tr style='background-color: #e8f4fd;'><td style='padding: 10px; font-weight: bold;'>Số tiền đã đóng:</td><td style='padding: 10px; font-weight: bold; color: #d9534f;'>{dto.DepositAmount.ToString("N0", culture)} VNĐ</td></tr>
+                </table>
+
+                <p>Vui lòng mang theo CCCD và email này đến văn phòng quản lý để nhận chìa khóa khi đến nhận phòng.</p>
+                <p>Trân trọng,<br>Ban Quản lý KTX.</p>
+            </div>";
+
+            message.Body = bodyBuilder.ToMessageBody();
+            await SendEmailAsync(message);
+        }
         private async Task SendEmailAsync(MimeMessage emailMessage)
         {
             var credential = GoogleCredential
