@@ -131,6 +131,71 @@ namespace API.Services.Implements
             await SendEmailAsync(message);
         }
 
+        public async Task SendUtilityPaymentEmailAsync(UtilityPaymentSuccessDto dto)
+        {
+            var culture = new CultureInfo("vi-VN");
+            var message = new MimeMessage();
+            message.To.Add(new MailboxAddress(dto.StudentName, dto.StudentEmail));
+            message.Subject = $"[Hóa Đơn] Xác nhận thanh toán điện nước tháng {dto.BillingMonth}";
+
+            var bodyBuilder = new BodyBuilder();
+            // HTML tạo bảng chi tiết giống hóa đơn
+            bodyBuilder.HtmlBody = $@"
+            <div style='font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px;'>
+                <div style='text-align: center; border-bottom: 2px solid #0056b3; padding-bottom: 10px; margin-bottom: 20px;'>
+                    <h2 style='margin: 0; color: #0056b3;'>BIÊN LAI ĐIỆN NƯỚC</h2>
+                    <p style='margin: 5px 0;'>Tháng: {dto.BillingMonth}</p>
+                </div>
+
+                <p><strong>Phòng:</strong> {dto.RoomNumber} - {dto.BuildingName}</p>
+                <p><strong>Người thanh toán:</strong> {dto.StudentName}</p>
+                <p><strong>Ngày thanh toán:</strong> {dto.PaymentDate:dd/MM/yyyy HH:mm}</p>
+                <p><strong>Mã hóa đơn:</strong> {dto.ReceiptID}</p>
+
+                <table style='width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px;'>
+                    <thead style='background-color: #f8f9fa;'>
+                        <tr>
+                            <th style='border: 1px solid #ddd; padding: 8px; text-align: left;'>Dịch vụ</th>
+                            <th style='border: 1px solid #ddd; padding: 8px; text-align: center;'>Chỉ số đầu</th>
+                            <th style='border: 1px solid #ddd; padding: 8px; text-align: center;'>Chỉ số cuối</th>
+                            <th style='border: 1px solid #ddd; padding: 8px; text-align: center;'>Sử dụng</th>
+                            <th style='border: 1px solid #ddd; padding: 8px; text-align: right;'>Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style='border: 1px solid #ddd; padding: 8px;'>Điện</td>
+                            <td style='border: 1px solid #ddd; padding: 8px; text-align: center;'>{dto.ElectricIndexOld}</td>
+                            <td style='border: 1px solid #ddd; padding: 8px; text-align: center;'>{dto.ElectricIndexNew}</td>
+                            <td style='border: 1px solid #ddd; padding: 8px; text-align: center;'>{dto.ElectricUsage}</td>
+                            <td style='border: 1px solid #ddd; padding: 8px; text-align: right;'>{dto.ElectricAmount.ToString("N0", culture)}</td>
+                        </tr>
+                        <tr>
+                            <td style='border: 1px solid #ddd; padding: 8px;'>Nước</td>
+                            <td style='border: 1px solid #ddd; padding: 8px; text-align: center;'>{dto.WaterIndexOld}</td>
+                            <td style='border: 1px solid #ddd; padding: 8px; text-align: center;'>{dto.WaterIndexNew}</td>
+                            <td style='border: 1px solid #ddd; padding: 8px; text-align: center;'>{dto.WaterUsage}</td>
+                            <td style='border: 1px solid #ddd; padding: 8px; text-align: right;'>{dto.WaterAmount.ToString("N0", culture)}</td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan='4' style='border: 1px solid #ddd; padding: 8px; text-align: right; font-weight: bold;'>TỔNG CỘNG</td>
+                            <td style='border: 1px solid #ddd; padding: 8px; text-align: right; font-weight: bold; color: #d9534f; font-size: 16px;'>
+                                {dto.TotalAmount.ToString("N0", culture)} VNĐ
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <p style='margin-top: 30px; font-style: italic; font-size: 12px; text-align: center; color: #777;'>
+                    Đây là email tự động, vui lòng không trả lời.<br>Ban Quản lý KTX.
+                </p>
+            </div>";
+
+            message.Body = bodyBuilder.ToMessageBody();
+            await SendEmailAsync(message);
+        }
 
         private async Task SendEmailAsync(MimeMessage emailMessage)
         {

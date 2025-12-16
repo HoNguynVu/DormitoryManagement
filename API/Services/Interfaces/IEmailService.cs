@@ -10,5 +10,7 @@ namespace API.Services.Interfaces
         Task SendRenewalPaymentEmailAsync(DormRenewalSuccessDto dto);
 
         Task SendInsurancePaymentEmailAsync(HealthInsurancePurchaseDto dto);
+        Task SendUtilityPaymentEmailAsync(UtilityPaymentSuccessDto dto);
+
     }
 }
