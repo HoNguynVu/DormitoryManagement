@@ -65,46 +65,6 @@ namespace API.Controllers
             return Ok(new { success = true, data = managers });
         }
 
-        // Export managers as CSV
-        [HttpGet("managers/export")]
-        public async Task<IActionResult> ExportManagersCsv()
-        {
-            var managers = await _buildingManagerService.GetAllManagersAsync();
-            var sb = new StringBuilder();
-            sb.AppendLine("ManagerID,FullName,Email,PhoneNumber,Address,BuildingsCount");
-            foreach (var m in managers)
-            {
-                var buildingsCount = m.Buildings?.Count() ?? 0;
-                var line = $"\"{m.ManagerID}\",\"{m.FullName}\",\"{m.Email}\",\"{m.PhoneNumber}\",\"{m.Address}\",{buildingsCount}";
-                sb.AppendLine(line);
-            }
-
-            var bytes = _exportService.CreateCsv(sb.ToString());
-            return File(bytes, "text/csv", "managers_report.csv");
-        }
-
-        // Export expired contracts as CSV
-        [HttpGet("expired-contracts/export")]
-        public async Task<IActionResult> ExportExpiredContractsCsv([FromQuery] string? beforeDate)
-        {
-            DateOnly cutoff;
-            if (string.IsNullOrWhiteSpace(beforeDate)) cutoff = DateOnly.FromDateTime(DateTime.UtcNow);
-            else if (!DateOnly.TryParse(beforeDate, out cutoff)) return BadRequest(new { success = false, message = "Invalid date format (YYYY-MM-DD)" });
-
-            var list = await _reportService.GetExpiredContractsAsync(cutoff);
-            var sb = new StringBuilder();
-            sb.AppendLine("ContractID,StudentID,StudentName,RoomID,EndDate,ContractStatus");
-            foreach (var c in list)
-            {
-                var end = c.EndDate == DateOnly.MinValue ? string.Empty : c.EndDate.ToString("yyyy-MM-dd");
-                var line = $"\"{c.ContractID}\",\"{c.StudentID}\",\"{c.StudentName}\",\"{c.RoomID}\",{end},\"{c.ContractStatus}\"";
-                sb.AppendLine(line);
-            }
-
-            var bytes = _exportService.CreateCsv(sb.ToString());
-            return File(bytes, "text/csv", "expired_contracts_report.csv");
-        }
-
         // Export available rooms as Excel
         [HttpGet("export/available-rooms")]
         public async Task<IActionResult> ExportAvailableRoomsExcel([FromQuery] string? buildingId, [FromQuery] string? roomTypeId)
