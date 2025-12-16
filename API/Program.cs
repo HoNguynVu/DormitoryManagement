@@ -62,6 +62,7 @@ builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IMaintenanceService, MaintenanceService>();
 builder.Services.AddScoped<IUtilityBillService, UtilityBillService>();
 builder.Services.AddScoped<IBuildingManagerService, BuildingManagerService>();
+builder.Services.AddScoped<IExportService, ExportService>(); // Register IExportService
 
 // Đọc config từ appsettings.json
 builder.Services.Configure<ZaloPaySettings>(builder.Configuration.GetSection("ZaloPay"));
