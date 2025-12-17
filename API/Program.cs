@@ -68,6 +68,9 @@ builder.Services.AddScoped<IExportService, ExportService>(); // Register IExport
 builder.Services.Configure<ZaloPaySettings>(builder.Configuration.GetSection("ZaloPay"));
 
 builder.Services.AddHttpClient();
+builder.Services.AddSignalR();
+builder.Services.AddHostedService<API.BackgroundServices.ContractExpirationWorker>();
+
 
 //Repositories
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
