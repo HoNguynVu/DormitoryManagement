@@ -15,9 +15,9 @@ namespace DataAccess.Repository
         public ReceiptRepository(DormitoryDbContext context) : base(context)
         {
         }
-        public async Task<Receipt?> GetReceiptByTypeAndRelatedIdAsync(string paymentType, string releatedId)
+        public async Task<Receipt?> GetReceiptByTypeAndRelatedIdAsync(string paymentType, string relatedId)
         {
-            return await _dbSet.FirstOrDefaultAsync(r => r.PaymentType == paymentType && r.RelatedObjectID == releatedId);
+            return await _dbSet.FirstOrDefaultAsync(r => r.PaymentType == paymentType && r.RelatedObjectID == relatedId);
         }
     }
 }

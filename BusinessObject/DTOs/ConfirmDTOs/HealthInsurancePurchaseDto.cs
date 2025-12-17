@@ -12,6 +12,5 @@ namespace BusinessObject.DTOs.ConfirmDTOs
         public DateOnly CoverageStartDate { get; set; } // Ngày hiệu lực
         public DateOnly CoverageEndDate { get; set; }  // Ngày hết hạn
         public decimal Cost { get; set; }            // Số tiền đã đóng
-        public string Status { get; set; } = "Paid"; // Trạng thái
     }
 }

@@ -1,6 +1,8 @@
-﻿using API.Services.Helpers;
+﻿using API.Services.Common;
+using API.Services.Helpers;
 using API.Services.Interfaces;
 using API.UnitOfWorks;
+using BusinessObject.DTOs.ConfirmDTOs;
 using BusinessObject.DTOs.ContractDTOs;
 using BusinessObject.Entities;
 
@@ -9,9 +11,13 @@ namespace API.Services.Implements
     public class ContractService : IContractService
     {
         private readonly IContractUow _uow;
-        public ContractService(IContractUow contractUow)
+        private readonly IEmailService _emailService;
+        private readonly ILogger<IContractService> _logger;
+        public ContractService(IContractUow contractUow,IEmailService emailService, ILogger<IContractService> logger)
         {
             _uow = contractUow;
+            _emailService = emailService;
+            _logger = logger;
         }
 
         public async Task<(bool Success, string Message, int StatusCode, Contract? Data)> GetCurrentContractAsync(string studentId)
@@ -192,7 +198,33 @@ namespace API.Services.Implements
                 // 5. Cập nhật và Lưu xuống DB
                 _uow.Contracts.Update(contract);
                 await _uow.CommitAsync();
+                // 6 . Gửi email xác nhận 
 
+                var receipt = await _uow.Receipts.GetReceiptByTypeAndRelatedIdAsync(PaymentConstants.TypeRenew, contract.ContractID);
+                if (receipt == null)
+                {
+                    return (false, "Associated receipt not found.", 404);
+                }
+                var emailDto = new DormRenewalSuccessDto
+                {
+                    StudentEmail = contract.Student?.Email ?? "N/A",
+                    StudentName = contract.Student?.FullName ?? "N/A",
+                    ContractCode = contract.ContractID,
+                    BuildingName = contract.Room?.Building?.BuildingName ?? "N/A",
+                    RoomNumber = contract.Room?.RoomName ?? "N/A",
+                    OldEndDate = contract.EndDate.HasValue ? contract.EndDate.Value.AddMonths(-monthsAdded) : DateOnly.MinValue,
+                    NewStartDate = contract.EndDate.HasValue ? contract.EndDate.Value.AddMonths(-monthsAdded).AddDays(1) : DateOnly.MinValue,
+                    NewEndDate = contract.EndDate ?? DateOnly.MinValue,
+                    TotalAmountPaid = receipt.Amount
+                };
+                try
+                {
+                    await _emailService.SendRenewalPaymentEmailAsync(emailDto);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Lỗi gửi mail BHYT cho SV {contract.Student?.StudentID}");
+                }
                 return (true, $"Contract extended successfully by {monthsAdded} months. New EndDate: {contract.EndDate}", 200);
             }
             catch (Exception ex)
