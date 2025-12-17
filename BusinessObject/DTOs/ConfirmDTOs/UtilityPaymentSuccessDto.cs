@@ -12,7 +12,7 @@ namespace BusinessObject.DTOs.ConfirmDTOs
         public string BuildingName { get; set; } = string.Empty;
         public string RoomNumber { get; set; } = string.Empty;
         public string BillingMonth { get; set; } = string.Empty;  // Tháng thanh toán 
-        public DateOnly PaymentDate { get; set; }    // Ngày thanh toán
+        public DateTime PaymentDate { get; set; }    // Ngày thanh toán
 
         // Chỉ số điện
         public int ElectricIndexOld { get; set; }    // Chỉ số đầu
