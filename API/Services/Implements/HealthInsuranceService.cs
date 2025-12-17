@@ -2,6 +2,7 @@
 using API.Services.Helpers;
 using API.Services.Interfaces;
 using API.UnitOfWorks;
+using BusinessObject.DTOs.ConfirmDTOs;
 using BusinessObject.Entities;
 
 namespace API.Services.Implements
@@ -9,9 +10,13 @@ namespace API.Services.Implements
     public class HealthInsuranceService : IHealthInsuranceService
     {
         private readonly IHealthInsuranceUow _uow;
-        public HealthInsuranceService(IHealthInsuranceUow uow)
+        private readonly IEmailService _emailService;
+        private readonly ILogger<IHealthInsuranceService> _logger;
+        public HealthInsuranceService(IHealthInsuranceUow uow,IEmailService emailService,ILogger<IHealthInsuranceService> logger)
         {
             _uow = uow;
+            _emailService = emailService;
+            _logger = logger;
         }
 
         public async Task<(bool Success, string Message, int StatusCode)> RegisterHealthInsuranceAsync(string studentId, string registrationPlace)
@@ -141,6 +146,24 @@ namespace API.Services.Implements
                 _uow.HealthInsurances.Update(insurance);
                 // 4. Lưu và Commit
                 await _uow.CommitAsync();
+
+                var emailDto = new HealthInsurancePurchaseDto
+                {
+                    StudentName = insurance.Student.FullName,
+                    StudentEmail = insurance.Student.Email,
+                    InsurancePeriod = $"{insurance.StartDate.Year} - {insurance.EndDate.Year}",
+                    CoverageStartDate = insurance.StartDate,
+                    CoverageEndDate = insurance.EndDate,
+                    Cost = insurance.Cost
+                };
+                try
+                {
+                    await _emailService.SendInsurancePaymentEmailAsync(emailDto);
+                }
+                catch (Exception emailEx)
+                {
+                    _logger.LogError($"Failed to send insurance confirmation email: {emailEx.Message}");
+                }
                 return (true, $"Insurance activated successfully. Valid from {insurance.StartDate} to {insurance.EndDate}", 200);
             }
             catch (Exception ex)
