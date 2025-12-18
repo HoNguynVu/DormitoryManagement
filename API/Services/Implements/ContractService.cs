@@ -157,7 +157,7 @@ namespace API.Services.Implements
             }
         }
 
-        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<SummaryContractDto>)> GetContractFiltered(string? keyword,string? buildingName, string? status)
+        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<SummaryContractDto> dto)> GetContractFiltered(string? keyword,string? buildingName, string? status)
         {
             var result = new List<SummaryContractDto>();
             await _uow.BeginTransactionAsync();
