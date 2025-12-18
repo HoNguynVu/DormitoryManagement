@@ -10,7 +10,7 @@ namespace BusinessObject.DTOs.ConfirmDTOs
     {
         public string ContractCode { get; set; } = string.Empty;    // Mã hợp đồng
         public string BuildingName { get; set; } = string.Empty;    // Tên tòa nhà 
-        public string RoomNumber { get; set; } = string.Empty;  // Số phòng 
+        public string RoomName { get; set; } = string.Empty;  // Số phòng 
         public string RoomType { get; set; } = string.Empty;      // Loại phòng 
         public DateOnly StartDate { get; set; }      // Ngày bắt đầu ở
         public DateOnly EndDate { get; set; }        // Ngày kết thúc

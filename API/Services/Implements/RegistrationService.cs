@@ -130,7 +130,7 @@ namespace API.Services.Implements
                     StudentName = student.FullName,
                     ContractCode = newContract.ContractID,
                     BuildingName = newContract.Room.Building.BuildingName,
-                    RoomNumber = newContract.Room.RoomName,
+                    RoomName = newContract.Room.RoomName,
                     RoomType = newContract.Room?.RoomType?.TypeName ?? "",
                     StartDate = newContract.StartDate,
                     EndDate = newContract.EndDate.Value,

@@ -12,7 +12,7 @@ namespace BusinessObject.DTOs.ContractDTOs
         public string StudentID { get; set; } = string.Empty;
         public string StudentName { get; set; } = string.Empty;
         
-        public string RoomNumber { get; set; } = string.Empty;
+        public string RoomName { get; set; } = string.Empty;
         public string BuildingName { get; set; } = string.Empty;
         public DateOnly StartDate { get; set; }
         public DateOnly EndDate { get; set; }
