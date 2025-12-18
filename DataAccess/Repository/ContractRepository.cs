@@ -90,5 +90,44 @@ namespace DataAccess.Repository
                             && c.Room.Building.ManagerID == managerId)
                 .CountAsync();
         }
+
+        public async Task<IEnumerable<Contract>> GetContractsFilteredAsync(string? keyword, string? buildingId, string? status)
+        {
+            // 1. Kh?i t?o Query
+            var query = _context.Contracts
+                .Include(c => c.Student) 
+                .Include(c => c.Room).ThenInclude(r => r.Building) 
+                .Include(c => c.Room).ThenInclude(r => r.RoomType) 
+                .AsNoTracking()
+                .AsQueryable();
+
+            // 2. X? lý Keyword (Tìm ki?m ?a n?ng: MSSV, Tên SV, Tên Phòng)
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                string key = keyword.Trim().ToLower();
+                query = query.Where(c =>
+                    c.StudentID.ToLower().Contains(key) ||
+                    (c.Student.FullName != null && c.Student.FullName.ToLower().Contains(key)) ||
+                    (c.Room.RoomName != null && c.Room.RoomName.ToLower().Contains(key))
+                );
+            }
+
+            // 3. L?c theo Tòa (Building)
+            if (!string.IsNullOrEmpty(buildingId))
+            {
+                query = query.Where(c => c.Room.BuildingID == buildingId);
+            }
+
+            // 4. L?c theo Tr?ng thái (Status)
+            if (!string.IsNullOrEmpty(status))
+            {
+                query = query.Where(c => c.ContractStatus == status);
+            }
+
+            // 5. S?p x?p và th?c thi
+            return await query
+                .OrderByDescending(c => c.StartDate) // M?i nh?t lên ??u
+                .ToListAsync();
+        }
     }
 }

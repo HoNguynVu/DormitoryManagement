@@ -157,6 +157,31 @@ namespace API.Services.Implements
             }
         }
 
+        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<SummaryContractDto>)> GetContractFiltered(string? keyword,string? buildingName, string? status)
+        {
+            var result = new List<SummaryContractDto>();
+            await _uow.BeginTransactionAsync();
+            try
+            {
+                var contracts = await _uow.Contracts.GetContractsFilteredAsync(keyword, buildingName, status);
+                result = contracts.Select(c => new SummaryContractDto
+                {
+                    ContractID = c.ContractID,
+                    StudentID = c.StudentID,
+                    StudentName = c.Student != null ? c.Student.FullName : "N/A",
+                    RoomNumber = c.Room != null ? c.Room.RoomName : "N/A",
+                    BuildingName = c.Room != null && c.Room.Building != null ? c.Room.Building.BuildingName : "N/A",
+                    StartDate = c.StartDate,
+                    EndDate = c.EndDate.HasValue ? c.EndDate.Value : DateOnly.MinValue,
+                    Status = c.ContractStatus
+                }).ToList();
+                return (true, "Success", 200, result);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Error retrieving contracts: {ex.Message}", 500, Enumerable.Empty<SummaryContractDto>());
+            }
+        }
         public async Task<(bool Success, string Message, int StatusCode)> ConfirmContractExtensionAsync(string contractId, int monthsAdded)
         {
             // 1. Validation
