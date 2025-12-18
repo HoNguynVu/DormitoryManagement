@@ -129,5 +129,17 @@ namespace DataAccess.Repository
                 .OrderByDescending(c => c.StartDate) // M?i nh?t lên ??u
                 .ToListAsync();
         }
+
+        public async Task<Contract?> GetDetailContractAsync(string contractId)
+        {
+            return await _dbSet
+                .Include(c => c.Student)
+                .Include(c => c.Room)
+                    .ThenInclude(r => r.Building)
+                .Include(c => c.Room)
+                    .ThenInclude(r => r.RoomType)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.ContractID == contractId);
+        }
     }
 }

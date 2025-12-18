@@ -299,6 +299,49 @@ namespace API.Services.Implements
             }
         }
 
+        public async Task<(bool Success, string Message, int StatusCode, DetailContractDto dto)> GetDetailContract(string contractId)
+        {
+            if (string.IsNullOrEmpty(contractId))
+            {
+                return (false, "Contract ID is required.", 400, new DetailContractDto());
+            }
+            var  result = new DetailContractDto();
+            await _uow.BeginTransactionAsync();
+            try
+            {
+                var contract = await _uow.Contracts.GetDetailContractAsync( contractId);
+                if (contract == null)
+                {
+                    return (false, "Contract not found.", 404, result);
+                }
+                var daysremaining = contract.EndDate.HasValue ? (contract.EndDate.Value.ToDateTime(new TimeOnly(0, 0)) - DateTime.Now).Days : 0;
+                result = new DetailContractDto
+                {
+                    ContractID = contract.ContractID,
+                    Status = contract.ContractStatus,
+                    DaysRemaining = daysremaining,
+                    StartDate = contract.StartDate,
+                    EndDate = contract.EndDate.HasValue ? contract.EndDate.Value : DateOnly.MinValue,
+
+                    StudentID = contract.StudentID,
+                    StudentName = contract.Student != null ? contract.Student.FullName : "N/A",
+                    StudentPhone = contract.Student != null ? contract.Student.PhoneNumber : "N/A",
+                    StudentEmail = contract.Student != null ? contract.Student.Email : "N/A",
+
+                    RoomName = contract.Room != null ? contract.Room.RoomName : "N/A",
+                    BuildingName = contract.Room != null && contract.Room.Building != null ? contract.Room.Building.BuildingName : "N/A",
+                    RoomTypeName = contract.Room != null && contract.Room.RoomType != null ? contract.Room.RoomType.TypeName : "N/A",
+                    MaxCapacity = contract.Room != null && contract.Room.RoomType != null ? contract.Room.RoomType.Capacity : 0,
+                    RoomPrice = contract.Room != null && contract.Room.RoomType != null ? contract.Room.RoomType.Price : 0
+                };
+                return (true, "Success", 200, result);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Error retrieving contract details: {ex.Message}", 500, result);
+            }
+        }
+
 
         public async Task<(bool Success, string Message, int StatusCode, IEnumerable<ExpiringContractDTO>)> GetExpiringContractByManager(int daysUntilExpiration, string managerId)
         {
