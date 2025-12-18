@@ -327,5 +327,41 @@ namespace API.Services.Implements
             }
             return (true, "Password has been reset successfully.", 200);
         }
+        public async Task<(bool Success, string Message, int StatusCode)> LogOut(string refreshTokenValue)
+        {
+            var refreshToken = await _authUow.RefreshTokens.GetRefreshToken(refreshTokenValue);
+            if (refreshToken == null || refreshToken.RevokedAt != null)
+            {
+                return (false, "Invalid or inactive refresh token.", 400);
+            }
+            refreshToken.RevokedAt = DateTime.UtcNow;
+            await _authUow.BeginTransactionAsync();
+            try
+            {
+                _authUow.RefreshTokens.Update(refreshToken);
+                await _authUow.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await _authUow.RollbackAsync();
+                return (false, $"Database error during logout: {ex.Message}", 500);
+            }
+            return (true, "Logged out successfully.", 200);
+        }
+        public async Task<(bool Success, string Message, int StatusCode, string? AccessToken)> GetAccessToken(string refreshTokenValue)
+        {
+            var refreshToken = await _authUow.RefreshTokens.GetRefreshToken(refreshTokenValue);
+            if (refreshToken == null || refreshToken.RevokedAt != null || refreshToken.ExpiresAt <= DateTime.UtcNow)
+            {
+                return (false, "Invalid or expired refresh token.", 400, null);
+            }
+            var user = await _authUow.Accounts.GetByIdAsync(refreshToken.AccountID);
+            if (user == null)
+            {
+                return (false, "Account associated with the refresh token does not exist.", 404, null);
+            }
+            var newAccessToken = GenerateJwtToken(user);
+            return (true, "Access token generated successfully.", 200, newAccessToken);
+        }
     }
 }

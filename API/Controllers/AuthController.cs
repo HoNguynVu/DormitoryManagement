@@ -86,6 +86,32 @@ namespace API.Controllers
             }
             return StatusCode(result.StatusCode, new { message = result.Message });
         }
+
+        [HttpPost("Refresh")]
+        public async Task<IActionResult> RefreshToken(string refreshToken)
+        {
+            var result = await _authService.GetAccessToken(refreshToken);
+            if (result.Success)
+            {
+                return StatusCode(result.StatusCode, new
+                {
+                    message = result.Message,
+                    accessToken = result.AccessToken
+                });
+            }
+            return StatusCode(result.StatusCode, new { message = result.Message });
+        }
+
+        [HttpPost("Logout")]
+        public async Task<IActionResult> Logout(string refreshToken)
+        {
+            var result = await _authService.LogOut(refreshToken);
+            if (result.Success)
+            {
+                return StatusCode(result.StatusCode, new { message = result.Message });
+            }
+            return StatusCode(result.StatusCode, new { message = result.Message });
+        }
     }
 
 }
