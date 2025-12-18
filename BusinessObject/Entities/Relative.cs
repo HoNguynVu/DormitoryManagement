@@ -21,6 +21,7 @@ namespace BusinessObject.Entities
         [StringLength(100)]
         public string Occupation { get; set; }
 
-        
+        [StringLength(100)]
+        public string Relationship { get; set; }
     }
 }
