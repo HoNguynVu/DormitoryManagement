@@ -48,6 +48,7 @@ builder.Services.AddScoped<IHealthInsuranceUow>(sp => sp.GetRequiredService<Unit
 builder.Services.AddScoped<IMaintenanceUow>(sp => sp.GetRequiredService<UnitOfWork>());
 builder.Services.AddScoped<IUtilityBillUow>(sp => sp.GetRequiredService<UnitOfWork>());
 builder.Services.AddScoped<IBuildingUow>(sp => sp.GetRequiredService<UnitOfWork>());
+builder.Services.AddScoped<IPublicInformationUow>(sp => sp.GetRequiredService<UnitOfWork>());
 
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -63,6 +64,7 @@ builder.Services.AddScoped<IMaintenanceService, MaintenanceService>();
 builder.Services.AddScoped<IUtilityBillService, UtilityBillService>();
 builder.Services.AddScoped<IBuildingManagerService, BuildingManagerService>();
 builder.Services.AddScoped<IExportService, ExportService>(); // Register IExportService
+builder.Services.AddScoped<IPublicInformationService, PublicInformationService>();
 
 // Đọc config từ appsettings.json
 builder.Services.Configure<ZaloPaySettings>(builder.Configuration.GetSection("ZaloPay"));
