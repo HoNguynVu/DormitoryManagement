@@ -11,6 +11,7 @@ namespace API.Services.Interfaces
         Task<(bool Success, string Message, int StatusCode, IEnumerable<SummaryContractDto>)> GetContractFiltered(string? keyword, string? buildingName,string? status);
 
         Task<(bool Success, string Message, int StatusCode)> ConfirmContractExtensionAsync(string contractId, int monthsAdded);
+        Task<(bool Success, string Message, int StatusCode)> RejectRenewalAsync(RejectRenewalDto dto);
         Task<(bool Success, string Message, int StatusCode, IEnumerable<ExpiringContractDTO>)> GetExpiringContractByManager(int daysUntilExpiration, string managerId);
         Task<(bool Success, string Message, int StatusCode, int numContracts)> CountExpiringContractsByManager(int daysUntilExpiration, string managerID);
     }

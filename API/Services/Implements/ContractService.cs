@@ -182,6 +182,46 @@ namespace API.Services.Implements
                 return (false, $"Error retrieving contracts: {ex.Message}", 500, Enumerable.Empty<SummaryContractDto>());
             }
         }
+
+        public async Task<(bool Success, string Message, int StatusCode)> RejectRenewalAsync(RejectRenewalDto dto)
+        {
+            // 1. Validate Input
+            if (string.IsNullOrEmpty(dto.ReceiptId))
+                return (false, "Receipt ID is required.", 400);
+
+            // 2. Tìm hóa đơn
+            var receipt = await _uow.Receipts.GetByIdAsync(dto.ReceiptId);
+            if (receipt == null)
+                return (false, $"Renewal request {dto.ReceiptId}  not found.", 404);
+
+            // 3. Kiểm tra tính hợp lệ
+            // Chỉ được từ chối các hóa đơn đang chờ (Pending)
+            if (receipt.Status != "Pending")
+            {
+                return (false, $"Cannot reject. Current status is {receipt.Status}.", 400);
+            }
+
+            // Chỉ được từ chối đúng loại hóa đơn Gia hạn (Renewal)
+            if (receipt.PaymentType != PaymentConstants.TypeRenewal)
+            {
+                return (false, "This receipt is not a renewal request.", 400);
+            }
+
+            // 4. Xử lý từ chối
+            receipt.Status = "Cancelled"; // Hoặc "Rejected" tùy enum của bạn
+
+            // Ghi chú lý do vào nội dung hóa đơn để lưu vết
+            receipt.Content += $" | Rejected by Manager. Reason: {dto.Reason}";
+
+            // await _notificationService.SendAsync(receipt.StudentID, "Yêu cầu gia hạn bị từ chối: " + dto.Reason);
+
+            // 5. Lưu xuống DB
+            await _uow.BeginTransactionAsync();
+            _uow.Receipts.Update(receipt);
+            await _uow.CommitAsync();
+
+            return (true, "Renewal request rejected successfully.", 200);
+        }
         public async Task<(bool Success, string Message, int StatusCode)> ConfirmContractExtensionAsync(string contractId, int monthsAdded)
         {
             // 1. Validation
@@ -258,6 +298,7 @@ namespace API.Services.Implements
                 return (false, $"Error confirming extension: {ex.Message}", 500);
             }
         }
+
 
         public async Task<(bool Success, string Message, int StatusCode, IEnumerable<ExpiringContractDTO>)> GetExpiringContractByManager(int daysUntilExpiration, string managerId)
         {
