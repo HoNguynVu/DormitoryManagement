@@ -36,6 +36,17 @@ namespace API.Controllers
             }
             return StatusCode(result.StatusCode, new { message = result.Message });
         }
+        
+        [HttpPost("ResendOTPVerifyEmail")]
+        public async Task<IActionResult> ResendOTPVerifyEmail(string email)
+        {
+            var result = await _authService.ResendVerificationOtpAsync(email);
+            if (result.Success)
+            {
+                return StatusCode(result.StatusCode, new { message = result.Message });
+            }
+            return StatusCode(result.StatusCode, new { message = result.Message });
+        }
 
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
@@ -58,6 +69,17 @@ namespace API.Controllers
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest forgotPasswordRequest)
         {
             var result = await _authService.ForgotPasswordAsync(forgotPasswordRequest);
+            if (result.Success)
+            {
+                return StatusCode(result.StatusCode, new { message = result.Message });
+            }
+            return StatusCode(result.StatusCode, new { message = result.Message });
+        }
+
+        [HttpPost("ResendOTPResetPassword")]
+        public async Task<IActionResult> ResendOTPResetPassword(string email)
+        {
+            var result = await _authService.ResendResetOtpAsync(email);
             if (result.Success)
             {
                 return StatusCode(result.StatusCode, new { message = result.Message });
