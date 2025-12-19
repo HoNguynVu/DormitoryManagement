@@ -9,6 +9,7 @@ namespace BusinessObject.DTOs.AuthDTOs
     public class ResetPasswordRequest
     {
         public string email { get; set; } = null!;
+        public string otp { get; set; } = null!;
         public string password { get; set; } = null!;
     }
 }

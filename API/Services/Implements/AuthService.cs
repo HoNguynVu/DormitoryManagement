@@ -345,18 +345,6 @@ namespace API.Services.Implements
             {
                 return (false, "Incorrect OTP.", 400);
             }
-            otpRecord.IsActive = false; // Vô hiệu hóa OTP sau khi sử dụng
-            await _authUow.BeginTransactionAsync();
-            try
-            {
-                _authUow.OtpCodes.Update(otpRecord);
-                await _authUow.CommitAsync();
-            }
-            catch (Exception ex)
-            {
-                await _authUow.RollbackAsync();
-                return (false, $"Database error during email verification: {ex.Message}", 500);
-            }
             return (true, "OTP verified successfully.", 200);
         }
         public async Task<(bool Success, string Message, int StatusCode)> ResetPasswordAsync(ResetPasswordRequest resetPasswordRequest)
@@ -366,10 +354,25 @@ namespace API.Services.Implements
             {
                 return (false, "Account with this email does not exist.", 404);
             }
+            var otpRecord = await _authUow.OtpCodes.GetActiveOtp(user.UserId, "PasswordReset");
+            if (otpRecord == null)
+            {
+                return (false, "Invalid or inactive OTP.", 400);
+            }
+            if (otpRecord.ExpiresAt < DateTime.UtcNow)
+            {
+                return (false, "OTP has expired.", 400);
+            }
+            if (otpRecord.Code != resetPasswordRequest.otp)
+            {
+                return (false, "Incorrect OTP.", 400);
+            }
+            otpRecord.IsActive = false; 
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(resetPasswordRequest.password);
             await _authUow.BeginTransactionAsync();
             try
             {
+                _authUow.OtpCodes.Update(otpRecord);
                 _authUow.Accounts.Update(user);
                 await _authUow.CommitAsync();
             }

@@ -34,5 +34,10 @@ namespace DataAccess.Repository
                 .Include(s => s.Account)
                 .FirstOrDefaultAsync(s => s.StudentID == id);
         }
+        public async Task<Student?> GetStudentByAccountIdAsync(string accountId)
+        {
+            return await _dbSet
+                .FirstOrDefaultAsync(s => s.AccountID == accountId);
+        }
     }
 }

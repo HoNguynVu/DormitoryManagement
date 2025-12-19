@@ -13,9 +13,9 @@ namespace API.Controllers
             _publicInformationService = publicInformationService;
         }
         [HttpGet("Schools")]
-        public IActionResult GetSchools()
+        public async Task<IActionResult> GetSchools()
         {
-            var result = _publicInformationService.GetSchoolsAsync().Result;
+            var result = await _publicInformationService.GetSchoolsAsync();
             if (result.Success)
             {
                 return StatusCode(result.StatusCode, new { message = result.Message, schools = result.Schools });
@@ -23,9 +23,9 @@ namespace API.Controllers
             return StatusCode(result.StatusCode, new { message = result.Message });
         }
         [HttpGet("Priorities")]
-        public IActionResult GetPriorities()
+        public async Task<IActionResult> GetPriorities()
         {
-            var result = _publicInformationService.GetPrioritiesAsync().Result;
+            var result = await _publicInformationService.GetPrioritiesAsync();
             if (result.Success)
             {
                 return StatusCode(result.StatusCode, new { message = result.Message, priorities = result.Priorities });

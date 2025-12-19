@@ -49,6 +49,7 @@ builder.Services.AddScoped<IMaintenanceUow>(sp => sp.GetRequiredService<UnitOfWo
 builder.Services.AddScoped<IUtilityBillUow>(sp => sp.GetRequiredService<UnitOfWork>());
 builder.Services.AddScoped<IBuildingUow>(sp => sp.GetRequiredService<UnitOfWork>());
 builder.Services.AddScoped<IPublicInformationUow>(sp => sp.GetRequiredService<UnitOfWork>());
+builder.Services.AddScoped<IStudentUow>(sp => sp.GetRequiredService<UnitOfWork>());
 
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -65,6 +66,7 @@ builder.Services.AddScoped<IUtilityBillService, UtilityBillService>();
 builder.Services.AddScoped<IBuildingManagerService, BuildingManagerService>();
 builder.Services.AddScoped<IExportService, ExportService>(); // Register IExportService
 builder.Services.AddScoped<IPublicInformationService, PublicInformationService>();
+builder.Services.AddScoped<IStudentService, StudentService>();
 
 // Đọc config từ appsettings.json
 builder.Services.Configure<ZaloPaySettings>(builder.Configuration.GetSection("ZaloPay"));
@@ -108,7 +110,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseCors("AllowReactApp");
 app.UseAuthorization();
 
 app.MapControllers();
