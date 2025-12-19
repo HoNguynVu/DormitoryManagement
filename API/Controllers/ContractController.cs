@@ -83,5 +83,61 @@ namespace API.Controllers
             return Ok(new { message = result.Message });
         }
 
+        [HttpGet("detail/{contractId}")]
+        public async Task<IActionResult> GetDetailContract(string contractId)
+        {
+            var result = await _contractService.GetDetailContract(contractId);
+            if (!result.Success)
+            {
+                return StatusCode(result.StatusCode, new { message = result.Message });
+            }
+            return Ok(new
+            {
+                message = result.Message,
+                data = result.dto
+            });
+
+        }
+
+        [HttpGet("filtered")]
+        public async Task<IActionResult> GetContractFiltered([FromQuery] string? keyword, [FromQuery] string? buildingName, [FromQuery] string? status)
+        {
+            var result = await _contractService.GetContractFiltered(keyword, buildingName, status);
+            if (!result.Success)
+            {
+                return StatusCode(result.StatusCode, new { message = result.Message });
+            }
+            return Ok(new
+            {
+                message = result.Message,
+                data = result.dto
+            });
+        }
+        [HttpGet("overview")]
+        public async Task<IActionResult> GetContractOverview()
+        {
+            var result = await _contractService.GetOverviewContract();
+            if (!result.Success)
+            {
+                return StatusCode(result.StatusCode, new { message = result.Message });
+            }
+            return Ok(new
+            {
+                message = result.Message,
+                data = result.stat
+            });
+        }
+
+        [HttpPost("reject-renewal")]
+        public async Task<IActionResult> RejectRenewal([FromBody] RejectRenewalDto dto)
+        {
+            var result = await _contractService.RejectRenewalAsync(dto);
+            if (!result.Success)
+            {
+                return StatusCode(result.StatusCode, new { message = result.Message });
+            }
+            return Ok(new { message = result.Message });
+        }
+
     }
 }

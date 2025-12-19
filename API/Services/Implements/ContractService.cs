@@ -157,6 +157,91 @@ namespace API.Services.Implements
             }
         }
 
+        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<SummaryContractDto> dto)> GetContractFiltered(string? keyword,string? buildingName, string? status)
+        {
+            var result = new List<SummaryContractDto>();
+            await _uow.BeginTransactionAsync();
+            try
+            {
+                var contracts = await _uow.Contracts.GetContractsFilteredAsync(keyword, buildingName, status);
+                result = contracts.Select(c => new SummaryContractDto
+                {
+                    ContractID = c.ContractID,
+                    StudentID = c.StudentID,
+                    StudentName = c.Student != null ? c.Student.FullName : "N/A",
+                    RemainingDays = c.EndDate.HasValue ? (c.EndDate.Value.ToDateTime(new TimeOnly(0, 0)) - DateTime.Now).Days : 0,
+                    RoomName = c.Room != null ? c.Room.RoomName : "N/A",
+                    BuildingName = c.Room != null && c.Room.Building != null ? c.Room.Building.BuildingName : "N/A",
+                    StartDate = c.StartDate,
+                    EndDate = c.EndDate.HasValue ? c.EndDate.Value : DateOnly.MinValue,
+                    Status = c.ContractStatus
+                }).ToList();
+                return (true, "Success", 200, result);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Error retrieving contracts: {ex.Message}", 500, Enumerable.Empty<SummaryContractDto>());
+            }
+        }
+
+        public async Task<(bool Success, string Message, int StatusCode,Dictionary<string,int> stat)> GetOverviewContract()
+        {
+            var result = new Dictionary<string, int>();
+            await _uow.BeginTransactionAsync();
+            try
+            {
+                result =  await _uow.Contracts.CountContractsByStatusAsync();
+                var total = result.Values.Sum();
+                result["Total"] = total;
+                result["Active"] = result.ContainsKey("Active") ? result["Active"] : 0;
+                result["Expired"] = result.ContainsKey("Expired") ? result["Expired"] : 0;
+                return (true, "Success", 200, result);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Error retrieving contract statistics: {ex.Message}", 500, new Dictionary<string, int>());
+            }
+        }
+
+        public async Task<(bool Success, string Message, int StatusCode)> RejectRenewalAsync(RejectRenewalDto dto)
+        {
+            // 1. Validate Input
+            if (string.IsNullOrEmpty(dto.ReceiptId))
+                return (false, "Receipt ID is required.", 400);
+
+            // 2. Tìm hóa đơn
+            var receipt = await _uow.Receipts.GetByIdAsync(dto.ReceiptId);
+            if (receipt == null)
+                return (false, $"Renewal request {dto.ReceiptId}  not found.", 404);
+
+            // 3. Kiểm tra tính hợp lệ
+            // Chỉ được từ chối các hóa đơn đang chờ (Pending)
+            if (receipt.Status != "Pending")
+            {
+                return (false, $"Cannot reject. Current status is {receipt.Status}.", 400);
+            }
+
+            // Chỉ được từ chối đúng loại hóa đơn Gia hạn (Renewal)
+            if (receipt.PaymentType != PaymentConstants.TypeRenewal)
+            {
+                return (false, "This receipt is not a renewal request.", 400);
+            }
+
+            // 4. Xử lý từ chối
+            receipt.Status = "Cancelled"; // Hoặc "Rejected" tùy enum của bạn
+
+            // Ghi chú lý do vào nội dung hóa đơn để lưu vết
+            receipt.Content += $" | Rejected by Manager. Reason: {dto.Reason}";
+
+            // await _notificationService.SendAsync(receipt.StudentID, "Yêu cầu gia hạn bị từ chối: " + dto.Reason);
+
+            // 5. Lưu xuống DB
+            await _uow.BeginTransactionAsync();
+            _uow.Receipts.Update(receipt);
+            await _uow.CommitAsync();
+
+            return (true, "Renewal request rejected successfully.", 200);
+        }
         public async Task<(bool Success, string Message, int StatusCode)> ConfirmContractExtensionAsync(string contractId, int monthsAdded)
         {
             // 1. Validation
@@ -211,7 +296,7 @@ namespace API.Services.Implements
                     StudentName = contract.Student?.FullName ?? "N/A",
                     ContractCode = contract.ContractID,
                     BuildingName = contract.Room?.Building?.BuildingName ?? "N/A",
-                    RoomNumber = contract.Room?.RoomName ?? "N/A",
+                    RoomName = contract.Room?.RoomName ?? "N/A",
                     OldEndDate = contract.EndDate.HasValue ? contract.EndDate.Value.AddMonths(-monthsAdded) : DateOnly.MinValue,
                     NewStartDate = contract.EndDate.HasValue ? contract.EndDate.Value.AddMonths(-monthsAdded).AddDays(1) : DateOnly.MinValue,
                     NewEndDate = contract.EndDate ?? DateOnly.MinValue,
@@ -233,6 +318,50 @@ namespace API.Services.Implements
                 return (false, $"Error confirming extension: {ex.Message}", 500);
             }
         }
+
+        public async Task<(bool Success, string Message, int StatusCode, DetailContractDto dto)> GetDetailContract(string contractId)
+        {
+            if (string.IsNullOrEmpty(contractId))
+            {
+                return (false, "Contract ID is required.", 400, new DetailContractDto());
+            }
+            var  result = new DetailContractDto();
+            await _uow.BeginTransactionAsync();
+            try
+            {
+                var contract = await _uow.Contracts.GetDetailContractAsync( contractId);
+                if (contract == null)
+                {
+                    return (false, "Contract not found.", 404, result);
+                }
+                var daysremaining = contract.EndDate.HasValue ? (contract.EndDate.Value.ToDateTime(new TimeOnly(0, 0)) - DateTime.Now).Days : 0;
+                result = new DetailContractDto
+                {
+                    ContractID = contract.ContractID,
+                    Status = contract.ContractStatus,
+                    DaysRemaining = daysremaining,
+                    StartDate = contract.StartDate,
+                    EndDate = contract.EndDate.HasValue ? contract.EndDate.Value : DateOnly.MinValue,
+
+                    StudentID = contract.StudentID,
+                    StudentName = contract.Student != null ? contract.Student.FullName : "N/A",
+                    StudentPhone = contract.Student != null ? contract.Student.PhoneNumber : "N/A",
+                    StudentEmail = contract.Student != null ? contract.Student.Email : "N/A",
+
+                    RoomName = contract.Room != null ? contract.Room.RoomName : "N/A",
+                    BuildingName = contract.Room != null && contract.Room.Building != null ? contract.Room.Building.BuildingName : "N/A",
+                    RoomTypeName = contract.Room != null && contract.Room.RoomType != null ? contract.Room.RoomType.TypeName : "N/A",
+                    MaxCapacity = contract.Room != null && contract.Room.RoomType != null ? contract.Room.RoomType.Capacity : 0,
+                    RoomPrice = contract.Room != null && contract.Room.RoomType != null ? contract.Room.RoomType.Price : 0
+                };
+                return (true, "Success", 200, result);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Error retrieving contract details: {ex.Message}", 500, result);
+            }
+        }
+
 
         public async Task<(bool Success, string Message, int StatusCode, IEnumerable<ExpiringContractDTO>)> GetExpiringContractByManager(int daysUntilExpiration, string managerId)
         {

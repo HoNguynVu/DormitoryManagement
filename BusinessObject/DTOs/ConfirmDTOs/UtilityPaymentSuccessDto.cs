@@ -10,7 +10,7 @@ namespace BusinessObject.DTOs.ConfirmDTOs
     {
         public string ReceiptID { get; set; } = string.Empty;     // Mã hóa đơn
         public string BuildingName { get; set; } = string.Empty;
-        public string RoomNumber { get; set; } = string.Empty;
+        public string RoomName { get; set; } = string.Empty;
         public string BillingMonth { get; set; } = string.Empty;  // Tháng thanh toán 
         public DateTime PaymentDate { get; set; }    // Ngày thanh toán
 

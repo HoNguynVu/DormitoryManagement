@@ -49,6 +49,7 @@ builder.Services.AddScoped<IMaintenanceUow>(sp => sp.GetRequiredService<UnitOfWo
 builder.Services.AddScoped<IUtilityBillUow>(sp => sp.GetRequiredService<UnitOfWork>());
 builder.Services.AddScoped<IBuildingUow>(sp => sp.GetRequiredService<UnitOfWork>());
 builder.Services.AddScoped<IPublicInformationUow>(sp => sp.GetRequiredService<UnitOfWork>());
+builder.Services.AddScoped<IParameterUow>(sp => sp.GetRequiredService<UnitOfWork>());
 builder.Services.AddScoped<IStudentUow>(sp => sp.GetRequiredService<UnitOfWork>());
 
 builder.Services.AddScoped<EmailService>();
