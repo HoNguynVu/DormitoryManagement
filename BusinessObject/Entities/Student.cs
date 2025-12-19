@@ -24,10 +24,6 @@ namespace BusinessObject.Entities
         [StringLength(255)]
         public string CitizenIDIssuePlace { get; set; }
 
-        // Override để map vào cột CurrentAddress trong SQL
-        [Column("CurrentAddress")]
-        public override string Address { get; set; }
-
         [Required]
         [StringLength(100)]
         public string Email { get; set; }

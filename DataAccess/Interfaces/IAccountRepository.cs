@@ -12,6 +12,7 @@ namespace DataAccess.Interfaces
         Task<Account?> GetAccountByUsername(string username);
         Task<Account?> GetAccountByOtp(string otp);
         Task<Account?> GetAccountByStudentId(string studentId);
+        Task<Account?> GetAccountByManagerId(string managerId);
         Task<Account?> GetAccountWithStudentAsync(string id);
     }
 }

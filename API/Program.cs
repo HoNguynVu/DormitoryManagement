@@ -48,6 +48,7 @@ builder.Services.AddScoped<IHealthInsuranceUow>(sp => sp.GetRequiredService<Unit
 builder.Services.AddScoped<IMaintenanceUow>(sp => sp.GetRequiredService<UnitOfWork>());
 builder.Services.AddScoped<IUtilityBillUow>(sp => sp.GetRequiredService<UnitOfWork>());
 builder.Services.AddScoped<IBuildingUow>(sp => sp.GetRequiredService<UnitOfWork>());
+builder.Services.AddScoped<IPublicInformationUow>(sp => sp.GetRequiredService<UnitOfWork>());
 builder.Services.AddScoped<IParameterUow>(sp => sp.GetRequiredService<UnitOfWork>());
 
 builder.Services.AddScoped<EmailService>();
@@ -63,13 +64,16 @@ builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IMaintenanceService, MaintenanceService>();
 builder.Services.AddScoped<IUtilityBillService, UtilityBillService>();
 builder.Services.AddScoped<IBuildingManagerService, BuildingManagerService>();
-builder.Services.AddScoped<IExportService, ExportService>();
-builder.Services.AddScoped<IParameterService, ParameterService>();// Register IExportService
+builder.Services.AddScoped<IExportService, ExportService>(); // Register IExportService
+builder.Services.AddScoped<IPublicInformationService, PublicInformationService>();
 
 // Đọc config từ appsettings.json
 builder.Services.Configure<ZaloPaySettings>(builder.Configuration.GetSection("ZaloPay"));
 
 builder.Services.AddHttpClient();
+builder.Services.AddSignalR();
+builder.Services.AddHostedService<API.BackgroundServices.ContractExpirationWorker>();
+
 
 //Repositories
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();

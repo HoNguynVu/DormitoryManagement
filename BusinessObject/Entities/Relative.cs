@@ -21,7 +21,7 @@ namespace BusinessObject.Entities
         [StringLength(100)]
         public string Occupation { get; set; }
 
-        [Column(TypeName = "date")]
-        public DateTime? DateOfBirth { get; set; }
+        [StringLength(100)]
+        public string Relationship { get; set; }
     }
 }

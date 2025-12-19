@@ -22,6 +22,13 @@ namespace DataAccess.Repository
                 .Select(s => s.Account)
                 .FirstOrDefaultAsync();
         }
+        public async Task<Account?> GetAccountByManagerId(string managerId)
+        {
+            return await _context.BuildingManagers
+                .Where(m => m.ManagerID == managerId)
+                .Select(m => m.Account)
+                .FirstOrDefaultAsync();
+        }
         public async Task<Account?> GetAccountWithStudentAsync(string id)
         {
             return await _dbSet
