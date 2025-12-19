@@ -35,6 +35,7 @@ public partial class Room
     public bool IsUnderMaintenance { get; set; }
 
     public bool IsBeingCleaned { get; set; }
+    public string Genre { get; set; } = null!;
 
     [ForeignKey("BuildingID")]
     [InverseProperty("Rooms")]
