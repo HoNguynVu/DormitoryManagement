@@ -101,7 +101,8 @@ namespace API.Services.Implements
                 PhoneNumber = registerRequest.PhoneNumber,
                 SchoolID = registerRequest.SchoolId,
                 PriorityID = registerRequest.PriorityId,
-                Email = registerRequest.Email
+                Email = registerRequest.Email,
+                Gender = registerRequest.Gender
             };
 
             // 📌 Tạo OTP verify email
