@@ -113,6 +113,20 @@ namespace API.Controllers
                 data = result.dto
             });
         }
+        [HttpGet("overview")]
+        public async Task<IActionResult> GetContractOverview()
+        {
+            var result = await _contractService.GetOverviewContract();
+            if (!result.Success)
+            {
+                return StatusCode(result.StatusCode, new { message = result.Message });
+            }
+            return Ok(new
+            {
+                message = result.Message,
+                data = result.stat
+            });
+        }
 
         [HttpPost("reject-renewal")]
         public async Task<IActionResult> RejectRenewal([FromBody] RejectRenewalDto dto)

@@ -184,6 +184,25 @@ namespace API.Services.Implements
             }
         }
 
+        public async Task<(bool Success, string Message, int StatusCode,Dictionary<string,int> stat)> GetOverviewContract()
+        {
+            var result = new Dictionary<string, int>();
+            await _uow.BeginTransactionAsync();
+            try
+            {
+                result =  await _uow.Contracts.CountContractsByStatusAsync();
+                var total = result.Values.Sum();
+                result["Total"] = total;
+                result["Active"] = result.ContainsKey("Active") ? result["Active"] : 0;
+                result["Expired"] = result.ContainsKey("Expired") ? result["Expired"] : 0;
+                return (true, "Success", 200, result);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Error retrieving contract statistics: {ex.Message}", 500, new Dictionary<string, int>());
+            }
+        }
+
         public async Task<(bool Success, string Message, int StatusCode)> RejectRenewalAsync(RejectRenewalDto dto)
         {
             // 1. Validate Input

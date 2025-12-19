@@ -141,5 +141,15 @@ namespace DataAccess.Repository
                 .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.ContractID == contractId);
         }
+
+        public async Task<Dictionary<string, int>> CountContractsByStatusAsync()
+        {
+            var result = await _dbSet
+                .GroupBy(c => c.ContractStatus)
+                .Select(g => new { Status = g.Key, Count = g.Count() })
+                .AsNoTracking()
+                .ToListAsync();
+            return result.ToDictionary(x => x.Status, x => x.Count);
+        }
     }
 }
