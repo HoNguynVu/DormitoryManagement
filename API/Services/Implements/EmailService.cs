@@ -45,7 +45,7 @@ namespace API.Services.Implements
             var culture = new CultureInfo("vi-VN");
             var message = new MimeMessage();
             message.To.Add(new MailboxAddress(dto.StudentName, dto.StudentEmail));
-            message.Subject = $"[KTX] Xác nhận thanh toán phí đăng ký phòng {dto.RoomNumber}";
+            message.Subject = $"[KTX] Xác nhận thanh toán phí đăng ký phòng {dto.RoomName}";
 
             var bodyBuilder = new BodyBuilder();
             bodyBuilder.HtmlBody = $@"
@@ -56,7 +56,7 @@ namespace API.Services.Implements
             
                 <table style='width: 100%; border-collapse: collapse; margin: 20px 0;'>
                     <tr style='background-color: #f2f2f2;'><td style='padding: 10px;'>Mã hợp đồng:</td><td style='padding: 10px;'><strong>{dto.ContractCode}</strong></td></tr>
-                    <tr><td style='padding: 10px;'>Phòng/Tòa:</td><td style='padding: 10px;'>{dto.RoomNumber} - {dto.BuildingName}</td></tr>
+                    <tr><td style='padding: 10px;'>Phòng/Tòa:</td><td style='padding: 10px;'>{dto.RoomName} - {dto.BuildingName}</td></tr>
                     <tr style='background-color: #f2f2f2;'><td style='padding: 10px;'>Loại phòng:</td><td style='padding: 10px;'>{dto.RoomType}</td></tr>
                     <tr><td style='padding: 10px;'>Thời gian bắt đầu:</td><td style='padding: 10px;'>{dto.StartDate:dd/MM/yyyy}</td></tr>
                     <tr style='background-color: #e8f4fd;'><td style='padding: 10px; font-weight: bold;'>Số tiền đã đóng:</td><td style='padding: 10px; font-weight: bold; color: #d9534f;'>{dto.DepositAmount.ToString("N0", culture)} VNĐ</td></tr>
@@ -88,7 +88,7 @@ namespace API.Services.Implements
                     <p><strong>Thông tin gia hạn:</strong></p>
                     <ul>
                         <li>Mã hợp đồng: {dto.ContractCode}</li>
-                        <li>Phòng hiện tại: {dto.RoomNumber} ({dto.BuildingName})</li>
+                        <li>Phòng hiện tại: {dto.RoomName} ({dto.BuildingName})</li>
                         <li>Thời gian gia hạn: <strong>{dto.NewStartDate:dd/MM/yyyy}</strong> đến <strong>{dto.NewEndDate:dd/MM/yyyy}</strong></li>
                         <li>Tổng tiền thanh toán: <span style='color: #d9534f; font-weight: bold; font-size: 16px;'>{dto.TotalAmountPaid.ToString("N0", culture)} VNĐ</span></li>
                     </ul>
@@ -147,7 +147,7 @@ namespace API.Services.Implements
                     <p style='margin: 5px 0;'>Tháng: {dto.BillingMonth}</p>
                 </div>
 
-                <p><strong>Phòng:</strong> {dto.RoomNumber} - {dto.BuildingName}</p>
+                <p><strong>Phòng:</strong> {dto.RoomName} - {dto.BuildingName}</p>
                 <p><strong>Người thanh toán:</strong> {dto.StudentName}</p>
                 <p><strong>Ngày thanh toán:</strong> {dto.PaymentDate:dd/MM/yyyy HH:mm}</p>
                 <p><strong>Mã hóa đơn:</strong> {dto.ReceiptID}</p>

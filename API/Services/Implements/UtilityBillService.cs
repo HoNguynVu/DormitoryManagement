@@ -152,7 +152,7 @@ namespace API.Services.Implements
 
                     ReceiptID = receipt.ReceiptID,
                     BuildingName = bill.Room.Building.BuildingName,
-                    RoomNumber = bill.Room.RoomName,
+                    RoomName = bill.Room.RoomName,
                     BillingMonth = $"{bill.Month}/{bill.Year}",
                     PaymentDate = receipt.PrintTime,
 
