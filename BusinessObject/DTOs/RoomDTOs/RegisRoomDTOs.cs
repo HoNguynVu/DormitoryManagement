@@ -13,6 +13,7 @@ namespace BusinessObject.DTOs.RoomDTOs
         public string RoomType { get; set; } = string.Empty;
         public decimal Price { get; set; }
         public int Capacity { get; set; }
+        public string Gender { get; set; } = string.Empty;
         public int CurrentOccupancy { get; set; }
         public int RegisteredOccupancy { get; set; }
     }

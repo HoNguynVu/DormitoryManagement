@@ -35,6 +35,7 @@ namespace BusinessObject.Entities
 
         [StringLength(128)]
         public string PriorityID { get; set; }
+        public string Gender { get; set; }
         [ForeignKey("PriorityID")]
         public Priority Priority { get; set; }
 

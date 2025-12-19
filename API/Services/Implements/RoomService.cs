@@ -34,7 +34,8 @@ namespace API.Services.Implements
                         Price = room.RoomType?.Price ?? 0,
                         Capacity = room.Capacity,
                         CurrentOccupancy = room.CurrentOccupancy,
-                        RegisteredOccupancy = pendingCount
+                        RegisteredOccupancy = pendingCount, 
+                        Gender = room.Gender
                     });
                 }
 
