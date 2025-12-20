@@ -135,6 +135,7 @@ namespace API.Services.Implements
             {
                 // For room change payment, just mark receipt as paid
                 // No additional business logic needed as room change was already executed
+                //return await _contractService.ConfirmRefundAsync(receipt.RelatedObjectID);
                 return (true, "Room change payment confirmed successfully.", 200);
             });
         }

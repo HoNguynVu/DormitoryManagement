@@ -13,6 +13,7 @@ namespace BusinessObject.Config
         public string Key2 { get; set; } = string.Empty;
         public string CreateOrderUrl { get; set; } = string.Empty;
         public string CallbackUrl { get; set; } = string.Empty;
+        public string FrontEndUrl { get; set; } = string.Empty;
 
     }
 }

@@ -285,7 +285,7 @@ namespace API.Services.Implements
                 await _uow.CommitAsync();
                 // 6 . Gửi email xác nhận 
 
-                var receipt = await _uow.Receipts.GetReceiptByTypeAndRelatedIdAsync(PaymentConstants.TypeRenew, contract.ContractID);
+                var receipt = await _uow.Receipts.GetReceiptByTypeAndRelatedIdAsync(PaymentConstants.TypeRenewal, contract.ContractID);
                 if (receipt == null)
                 {
                     return (false, "Associated receipt not found.", 404);
@@ -537,30 +537,8 @@ namespace API.Services.Implements
                     }
                 }
 
-                // 8. Update contract
-                activeContract.RoomID = request.NewRoomId;
-                _uow.Contracts.Update(activeContract);
 
-                // 9. Update old room occupancy
-                if (oldRoom.CurrentOccupancy > 0)
-                {
-                    oldRoom.CurrentOccupancy -= 1;
-                }
-                if (oldRoom.CurrentOccupancy < oldRoom.Capacity && oldRoom.RoomStatus == "Full")
-                {
-                    oldRoom.RoomStatus = "Available";
-                }
-                _uow.Rooms.Update(oldRoom);
-
-                // 10. Update new room occupancy
-                newRoom.CurrentOccupancy += 1;
-                if (newRoom.CurrentOccupancy >= newRoom.Capacity)
-                {
-                    newRoom.RoomStatus = "Full";
-                }
-                _uow.Rooms.Update(newRoom);
-
-                // 11. Create receipt if there's price adjustment
+                // 8. Create receipt if there's price adjustment
                 if (priceAdjustment != 0)
                 {
                     var receipt = new Receipt
@@ -581,10 +559,10 @@ namespace API.Services.Implements
                 await _uow.CommitAsync();
 
                 string responseMessage = priceAdjustment > 0
-                    ? $"Đổi phòng thành công. Sinh viên cần thanh toán thêm {priceAdjustment:N0} VND."
+                    ? $"Yêu cầu đổi phòng đã được chấp nhận. Sinh viên cần thanh toán thêm {priceAdjustment:N0} VND."
                     : priceAdjustment < 0
-                        ? $"Đổi phòng thành công. Hoàn tiền {Math.Abs(priceAdjustment):N0} VND cho sinh viên."
-                        : "Đổi phòng thành công.";
+                        ? $"Yêu cầu đổi phòng đã được chấp nhận. Hoàn tiền {Math.Abs(priceAdjustment):N0} VND cho sinh viên."
+                        : "Yêu cầu đổi phòng đã được chấp nhận";
 
                 return (true, responseMessage, 200);
             }
@@ -623,16 +601,42 @@ namespace API.Services.Implements
                 {
                     return (false, "This receipt is not a refund receipt.", 400);
                 }
-
-                // 3. Check if already confirmed
-                if (receipt.Status == "RefundCompleted")
+                
+                // 3.
+                var student = await _uow.Students.GetByIdAsync(receipt.StudentID);
+                if (student == null)
                 {
-                    return (false, "This refund has already been completed.", 409);
+                    return (false, "Student not found.", 404);
                 }
 
-                // 4. Update receipt status and content
-                receipt.Status = "RefundCompleted";
-                
+                var activeContract = await _uow.Contracts.GetActiveContractByStudentId(student.StudentID);
+                if (activeContract == null)
+                {
+                    return (false, "Associated contract not found.", 404);
+                }
+                // 8. Update contract
+                //activeContract.RoomID = request.;
+                //_uow.Contracts.Update(activeContract);
+
+                //// 9. Update old room occupancy
+                //if (oldRoom.CurrentOccupancy > 0)
+                //{
+                //    oldRoom.CurrentOccupancy -= 1;
+                //}
+                //if (oldRoom.CurrentOccupancy < oldRoom.Capacity && oldRoom.RoomStatus == "Full")
+                //{
+                //    oldRoom.RoomStatus = "Available";
+                //}
+                //_uow.Rooms.Update(oldRoom);
+
+                //10.Update new room occupancy
+                //newRoom.CurrentOccupancy += 1;
+                //if (newRoom.CurrentOccupancy >= newRoom.Capacity)
+                //{
+                //    newRoom.RoomStatus = "Full";
+                //}
+                //_uow.Rooms.Update(newRoom);
+
                 // Update content with refund confirmation info
                 var confirmationNote = $" | Đã hoàn tiền qua {request.RefundMethod}";
                 if (!string.IsNullOrEmpty(request.TransactionReference))
