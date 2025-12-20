@@ -118,10 +118,17 @@ namespace API.Services.Implements
                 ContractStatus = "Active",
                 EndDate = DateOnly.FromDateTime(DateTime.UtcNow).AddMonths(6)
             };
+            var room = await _registrationUow.Rooms.GetByIdAsync(registration.RoomID);
+            if (room == null)
+            {
+                return (false, "Room not found.", 404);
+            }
             await _registrationUow.BeginTransactionAsync();
             try
             {
                 registration.Status = "Confirmed";
+                room.CurrentOccupancy += 1;
+                _registrationUow.Rooms.Update(room);        
                 _registrationUow.RegistrationForms.Update(registration);
                 _registrationUow.Contracts.Add(newContract);
                 await _registrationUow.CommitAsync();

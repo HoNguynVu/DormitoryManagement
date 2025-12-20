@@ -285,7 +285,7 @@ namespace API.Services.Implements
                 await _uow.CommitAsync();
                 // 6 . Gửi email xác nhận 
 
-                var receipt = await _uow.Receipts.GetReceiptByTypeAndRelatedIdAsync(PaymentConstants.TypeRenew, contract.ContractID);
+                var receipt = await _uow.Receipts.GetReceiptByTypeAndRelatedIdAsync(PaymentConstants.TypeRenewal, contract.ContractID);
                 if (receipt == null)
                 {
                     return (false, "Associated receipt not found.", 404);
