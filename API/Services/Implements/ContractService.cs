@@ -98,7 +98,7 @@ namespace API.Services.Implements
                     StudentID = studentId,
                     RelatedObjectID = activeContract.ContractID,
                     Amount = totalAmount,
-                    PaymentType = "Renewal",
+                    PaymentType = PaymentConstants.TypeRenewal,
                     Status = "Pending",
                     PrintTime = DateTime.Now,
                     Content = $"Renewal fee for {monthsToExtend} months for contract {activeContract.ContractID}"

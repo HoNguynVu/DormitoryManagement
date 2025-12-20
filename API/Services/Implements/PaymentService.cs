@@ -131,7 +131,7 @@ namespace API.Services.Implements
             }
 
             // Kiểm tra đúng loại hóa đơn gia hạn không 
-            if (receipt.PaymentType != "RenewalContract")
+            if (receipt.PaymentType != PaymentConstants.TypeRenewal)
             {
                 return (400, new PaymentLinkDTO { IsSuccess = false, Message = "Invalid receipt type. Expected Renewal." });
             }
