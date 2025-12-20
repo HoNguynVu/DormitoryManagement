@@ -98,7 +98,7 @@ namespace API.Services.Implements
                 _paymentUow.Receipts.Add(receipt);
                 _paymentUow.Payments.Add(payment);
                 await _paymentUow.CommitAsync();
-                return (200, new PaymentLinkDTO { IsSuccess = true, PaymentUrl = orderUrl, Message = "ZaloPay payment link created successfully." });
+                return (200, new PaymentLinkDTO { IsSuccess = true, PaymentId = appTransId, PaymentUrl = orderUrl, Message = "ZaloPay payment link created successfully." });
             }
             catch (Exception ex)
             {
@@ -477,8 +477,5 @@ namespace API.Services.Implements
                 return (0, $"Lỗi hệ thống xử lý : {ex.Message}");
             }
         }
-
-        
-
     }
 }
