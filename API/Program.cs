@@ -114,6 +114,22 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+builder.Services.Configure<ZaloPaySettings>(builder.Configuration.GetSection("ZaloPaySettings"));
+
+builder.Services.AddSingleton(VnPaySettings =>
+{
+    var config = builder.Configuration.GetSection("ZaloPaySettings");
+    return new ZaloPaySettings
+    {
+        AppId = config["AppId"] ?? string.Empty,
+        Key1 = config["Key1"] ?? string.Empty,
+        Key2 = config["Key2"] ?? string.Empty,
+        CreateOrderUrl = config["CreateOrderUrl"] ?? string.Empty,
+        CallbackUrl = config["CallbackUrl"] ?? string.Empty,
+        FrontEndUrl = config["FrontEndUrl"] ?? string.Empty
+    };
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
