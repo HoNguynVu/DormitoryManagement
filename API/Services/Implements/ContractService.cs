@@ -615,27 +615,36 @@ namespace API.Services.Implements
                     return (false, "Associated contract not found.", 404);
                 }
                 // 8. Update contract
-                //activeContract.RoomID = request.;
-                //_uow.Contracts.Update(activeContract);
-
-                //// 9. Update old room occupancy
-                //if (oldRoom.CurrentOccupancy > 0)
-                //{
-                //    oldRoom.CurrentOccupancy -= 1;
-                //}
-                //if (oldRoom.CurrentOccupancy < oldRoom.Capacity && oldRoom.RoomStatus == "Full")
-                //{
-                //    oldRoom.RoomStatus = "Available";
-                //}
-                //_uow.Rooms.Update(oldRoom);
+                activeContract.RoomID = request.ReceiptId;
+                _uow.Contracts.Update(activeContract);
+                var oldRoom = await _uow.Rooms.GetByIdAsync(activeContract.RoomID);
+                if (oldRoom == null)
+                    {
+                    return (false, "Old room data is missing.", 422);
+                }
+                var newRoom = await _uow.Rooms.GetByIdAsync(request.NewRoomId);
+                if (newRoom == null)
+                {
+                    return (false, "New room not found.", 404);
+                }
+                // 9. Update old room occupancy
+                if (oldRoom.CurrentOccupancy > 0)
+                {
+                    oldRoom.CurrentOccupancy -= 1;
+                }
+                if (oldRoom.CurrentOccupancy < oldRoom.Capacity && oldRoom.RoomStatus == "Full")
+                {
+                    oldRoom.RoomStatus = "Available";
+                }
+                _uow.Rooms.Update(oldRoom);
 
                 //10.Update new room occupancy
-                //newRoom.CurrentOccupancy += 1;
-                //if (newRoom.CurrentOccupancy >= newRoom.Capacity)
-                //{
-                //    newRoom.RoomStatus = "Full";
-                //}
-                //_uow.Rooms.Update(newRoom);
+                newRoom.CurrentOccupancy += 1;
+                if (newRoom.CurrentOccupancy >= newRoom.Capacity)
+                {
+                    newRoom.RoomStatus = "Full";
+                }
+                _uow.Rooms.Update(newRoom);
 
                 // Update content with refund confirmation info
                 var confirmationNote = $" | Đã hoàn tiền qua {request.RefundMethod}";
