@@ -83,6 +83,45 @@ namespace API.Controllers
             return Ok(new { message = result.Message });
         }
 
+        // POST: api/contracts/change-room
+        // Trưởng tòa thực hiện đổi phòng cho sinh viên
+        [HttpPost("change-room")]
+        public async Task<IActionResult> ChangeRoom([FromBody] ChangeRoomRequestDto request)
+        {
+            if (request == null)
+            {
+                return BadRequest(new { success = false, message = "Request body is required." });
+            }
+
+            var result = await _contractService.ChangeRoomAsync(request);
+
+            if (!result.Success)
+            {
+                return StatusCode(result.StatusCode, new { success = false, message = result.Message });
+            }
+
+            return Ok(new { success = true, message = result.Message });
+        }
+
+        // POST: api/contracts/confirm-refund
+        // Trưởng tòa xác nhận đã hoàn tiền cho sinh viên
+        [HttpPost("confirm-refund")]
+        public async Task<IActionResult> ConfirmRefund([FromBody] ConfirmRefundDto request)
+        {
+            if (request == null)
+            {
+                return BadRequest(new { success = false, message = "Request body is required." });
+            }
+
+            var result = await _contractService.ConfirmRefundAsync(request);
+
+            if (!result.Success)
+            {
+                return StatusCode(result.StatusCode, new { success = false, message = result.Message });
+            }
+
+            return Ok(new { success = true, message = result.Message });
+        }
         [HttpGet("detail/{contractId}")]
         public async Task<IActionResult> GetDetailContract(string contractId)
         {
