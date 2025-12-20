@@ -225,16 +225,16 @@ namespace API.Services.Implements
             }
             return (true, "A new OTP has been sent to your email.", 200);
         }
-        public async Task<(bool Success, string Message, int StatusCode, string accessToken, string refreshToken, string userId)> LoginAsync(LoginRequest loginRequest)
+        public async Task<(bool Success, string Message, int StatusCode, string accessToken, string refreshToken, string userId, bool hasActiveContract)> LoginAsync(LoginRequest loginRequest)
         {
             var user = await _authUow.Accounts.GetAccountByUsername(loginRequest.Email);
             
             if (user == null || !BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.PasswordHash))
-                return (false, "Invalid email or password.", 401, null, null, null);
+                return (false, "Invalid email or password.", 401, null, null, null, false);
             var student = await _authUow.Students.GetStudentByEmailAsync(loginRequest.Email);
             if (student == null)
             {
-                return (false, "Student profile not found for this account.", 500, null, null, null);
+                return (false, "Student profile not found for this account.", 500, null, null, null, false);
             }
 
             if (!user.IsEmailVerified)
@@ -249,11 +249,11 @@ namespace API.Services.Implements
                 catch (Exception ex)
                 {
                     await _authUow.RollbackAsync();
-                    return (false, $"Database error during registration: {ex.Message}", 500, null, null, null);
+                    return (false, $"Database error during registration: {ex.Message}", 500, null, null, null, false);
 
                 }
                 
-                return (false, "Your email is not verified yet. Please register again", 401, null, null, null);
+                return (false, "Your email is not verified yet. Please register again", 401, null, null, null, false);
             }  
             var accessToken = GenerateJwtToken(user);
             RefreshToken refreshToken = CreateRefreshToken(user.UserId);
@@ -269,11 +269,11 @@ namespace API.Services.Implements
             catch (Exception ex)
             {
                 await _authUow.RollbackAsync();
-                return (false, $"Database error during login: {ex.Message}", 500, null, null, null);
+                return (false, $"Database error during login: {ex.Message}", 500, null, null, null, false);
             }
-           
+            bool hasActiveContract = await _authUow.Contracts.GetActiveContractByStudentId(student.StudentID) != null;
             var message = $"Welcome back, {student.FullName}!";
-            return (true, message, 200, accessToken, refreshToken.Token, user.UserId);
+            return (true, message, 200, accessToken, refreshToken.Token, user.UserId, hasActiveContract);
         }
         public async Task<(bool Success, string Message, int StatusCode)> ForgotPasswordAsync(ForgotPasswordRequest forgotPasswordRequest)
         {

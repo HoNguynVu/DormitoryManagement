@@ -18,7 +18,7 @@ namespace DataAccess.Repository
 
         public async Task<int> CountRegistrationFormsByRoomId(string roomId)
         {
-            var threshold = DateTime.UtcNow.AddMinutes(-10);
+            var threshold = DateTime.UtcNow.AddMinutes(-20);
 
             return await _dbSet
                 .CountAsync(f => f.RoomID == roomId &&
@@ -28,7 +28,7 @@ namespace DataAccess.Repository
 
         public async Task<Dictionary<string, int>> CountPendingFormsByRoomAsync()
         {
-            var threshold = DateTime.UtcNow.AddMinutes(-15);
+            var threshold = DateTime.UtcNow.AddMinutes(-25);
 
             var query = await _dbSet
                 .Where(f => f.Status == "Pending" && f.RegistrationTime >= threshold)

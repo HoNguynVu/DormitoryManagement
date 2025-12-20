@@ -26,6 +26,10 @@ namespace API.Services.Implements
                 foreach (var room in rooms)
                 {
                     int pendingCount = pendingCountsDict.GetValueOrDefault(room.RoomID, 0);
+                    if (room.Capacity == room.CurrentOccupancy)
+                    {
+                        continue; 
+                    }
                     regisRoomDTOs.Add(new RegisRoomDTOs
                     {
                         RoomId = room.RoomID,

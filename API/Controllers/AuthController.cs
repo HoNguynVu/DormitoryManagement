@@ -59,7 +59,8 @@ namespace API.Controllers
                     message = result.Message,
                     accessToken = result.accessToken,
                     refreshToken = result.refreshToken,
-                    userId = result.userId
+                    userId = result.userId,
+                    hasActiveContract = result.hasActiveContract
                 });
             }
             return StatusCode(result.StatusCode, new { message = result.Message });

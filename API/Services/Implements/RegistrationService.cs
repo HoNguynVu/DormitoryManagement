@@ -19,7 +19,7 @@ namespace API.Services.Implements
             _emailService = emailService;
             _logger = logger;
         }
-        public async Task<(bool Success, string Message, int StatusCode)> CreateRegistrationForm(RegistrationFormRequest registrationForm)
+        public async Task<(bool Success, string Message, int StatusCode)> CreateRegistrationForm(RegistrationFormRequest registrationForm) 
         {
             var contract = await _registrationUow.Contracts.GetActiveContractByStudentId(registrationForm.StudentId);
             if (contract != null)
@@ -32,12 +32,22 @@ namespace API.Services.Implements
                 int studentsInRoom = await _registrationUow.Contracts.CountContractsByRoomIdAndStatus(registrationForm.RoomId, "Active");
                 int pendingForms = await _registrationUow.RegistrationForms.CountRegistrationFormsByRoomId(registrationForm.RoomId);
                 int occupancy = studentsInRoom + pendingForms;
-
+                var student =  await _registrationUow.Students.GetByIdAsync(registrationForm.StudentId);
                 var room = await _registrationUow.Rooms.GetByIdAsync(registrationForm.RoomId);
                 if (room == null)
                 {
                     await _registrationUow.RollbackAsync(); 
                     return (false, "Room not found.", 404);
+                }
+                if (student == null)
+                {
+                    await _registrationUow.RollbackAsync();
+                    return (false, "Student not found.", 404);
+                }
+                if (room.Gender != student.Gender)
+                {
+                    await _registrationUow.RollbackAsync();
+                    return (false, "Student's Gender is not suitable", 400);
                 }
                 int capacity = room.Capacity;
 
