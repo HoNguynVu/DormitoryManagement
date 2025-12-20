@@ -129,6 +129,16 @@ namespace API.Services.Implements
             });
         }
 
+        private async Task<(bool Success, string Message, int StatusCode)> HandleRoomChangeSuccessPayment(string appTransId, string zpTransId)
+        {
+            return await ExecutePaymentTransaction(appTransId, zpTransId, async (receipt) =>
+            {
+                // For room change payment, just mark receipt as paid
+                // No additional business logic needed as room change was already executed
+                return (true, "Room change payment confirmed successfully.", 200);
+            });
+        }
+
         // Hàm Generic xử lý chung cho mọi loại thanh toán
         private async Task<(bool Success, string Message, int StatusCode)> ExecutePaymentTransaction(
             string appTransId,

@@ -35,9 +35,16 @@ namespace API.Controllers
         }
 
         [HttpPost("create-zalopay-link/health-insurance/{insuranceId}")]
-        public async Task<IActionResult> CreateZaloPayLinkForUtility(string insuranceId)
+        public async Task<IActionResult> CreateZaloPayLinkForHealthInsurance(string insuranceId)
         {
             var (statusCode, dto) = await _paymentService.CreateZaloPayLinkForHealthInsurance(insuranceId);
+            return StatusCode(statusCode, dto);
+        }
+
+        [HttpPost("create-zalopay-link/room-change/{receiptId}")]
+        public async Task<IActionResult> CreateZaloPayLinkForRoomChange(string receiptId)
+        {
+            var (statusCode, dto) = await _paymentService.CreateZaloPayLinkForRoomChange(receiptId);
             return StatusCode(statusCode, dto);
         }
 
