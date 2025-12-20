@@ -15,10 +15,10 @@ namespace API.Controllers
             _roomService = roomService;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAllRoomsForRegistration()
+        [HttpPost("registration")]
+        public async Task<IActionResult> GetAllRoomsForRegistration([FromBody] RoomFilterDto filter)
         {
-            var (success, message, statusCode, rooms) = await _roomService.GetRoomForRegistration();
+            var (success, message, statusCode, rooms) = await _roomService.GetRoomForRegistration(filter);
 
             if (success)
             {

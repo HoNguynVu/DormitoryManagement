@@ -15,26 +15,33 @@ namespace API.Services.Implements
             _roomUow = roomUow;
         }
 
-        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<RegisRoomDTOs>)> GetRoomForRegistration()
+        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<RegisRoomDTOs>)> GetRoomForRegistration(RoomFilterDto filter)
         {
             try
             {
-                var rooms = await _roomUow.Rooms.GetAllRoomsWithTypesAsync();
+                var spec = RoomSpecifications.ByFilter(filter);
+                var rooms = await _roomUow.Rooms.FindBySpecificationAsync(spec);
                 var pendingCountsDict = await _roomUow.RegistrationForms.CountPendingFormsByRoomAsync();
                 var regisRoomDTOs = new List<RegisRoomDTOs>();
 
                 foreach (var room in rooms)
                 {
                     int pendingCount = pendingCountsDict.GetValueOrDefault(room.RoomID, 0);
+                    if (room.Capacity == room.CurrentOccupancy)
+                    {
+                        continue; 
+                    }
                     regisRoomDTOs.Add(new RegisRoomDTOs
                     {
                         RoomId = room.RoomID,
                         RoomName = room.RoomName,
                         RoomType = room.RoomType?.TypeName ?? "Unknown",
+                        BuildingName = room.Building?.BuildingName ?? "Unknown",
                         Price = room.RoomType?.Price ?? 0,
                         Capacity = room.Capacity,
                         CurrentOccupancy = room.CurrentOccupancy,
-                        RegisteredOccupancy = pendingCount
+                        RegisteredOccupancy = pendingCount, 
+                        Gender = room.Gender
                     });
                 }
 

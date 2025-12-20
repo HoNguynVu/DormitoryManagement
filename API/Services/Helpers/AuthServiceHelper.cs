@@ -37,7 +37,7 @@ namespace API.Services.Implements
         {
             var claims = new List<Claim>
             {
-                 new Claim("userid", user.UserId),
+                 new Claim("accountId", user.UserId),
                 new Claim("username", user.Username),
                 new Claim("role", user.Role) // Vai trò người dùng
             }; // Tạo danh sách claims

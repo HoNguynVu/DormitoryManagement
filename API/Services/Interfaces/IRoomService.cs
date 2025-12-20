@@ -5,7 +5,7 @@ namespace API.Services.Interfaces
 {
     public interface IRoomService
     {
-        Task<(bool Success, string Message, int StatusCode, IEnumerable<RegisRoomDTOs>)> GetRoomForRegistration();
+        Task<(bool Success, string Message, int StatusCode, IEnumerable<RegisRoomDTOs>)> GetRoomForRegistration(RoomFilterDto filter);
 
         Task<(bool Success, string Message, int StatusCode, RoomResponseDto?)> CreateRoomAsync(CreateRoomRequest request);
 

@@ -48,6 +48,10 @@ builder.Services.AddScoped<IHealthInsuranceUow>(sp => sp.GetRequiredService<Unit
 builder.Services.AddScoped<IMaintenanceUow>(sp => sp.GetRequiredService<UnitOfWork>());
 builder.Services.AddScoped<IUtilityBillUow>(sp => sp.GetRequiredService<UnitOfWork>());
 builder.Services.AddScoped<IBuildingUow>(sp => sp.GetRequiredService<UnitOfWork>());
+builder.Services.AddScoped<IPublicInformationUow>(sp => sp.GetRequiredService<UnitOfWork>());
+builder.Services.AddScoped<IParameterUow>(sp => sp.GetRequiredService<UnitOfWork>());
+builder.Services.AddScoped<IStudentUow>(sp => sp.GetRequiredService<UnitOfWork>());
+builder.Services.AddScoped<IRoomTypeUow>(sp => sp.GetRequiredService<UnitOfWork>());
 
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -63,11 +67,18 @@ builder.Services.AddScoped<IMaintenanceService, MaintenanceService>();
 builder.Services.AddScoped<IUtilityBillService, UtilityBillService>();
 builder.Services.AddScoped<IBuildingManagerService, BuildingManagerService>();
 builder.Services.AddScoped<IExportService, ExportService>(); // Register IExportService
+builder.Services.AddScoped<IPublicInformationService, PublicInformationService>();
+builder.Services.AddScoped<IStudentService, StudentService>();
+builder.Services.AddScoped<IBuildingService, BuildingService>();
+builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
 
 // Đọc config từ appsettings.json
 builder.Services.Configure<ZaloPaySettings>(builder.Configuration.GetSection("ZaloPay"));
 
 builder.Services.AddHttpClient();
+builder.Services.AddSignalR();
+builder.Services.AddHostedService<API.BackgroundServices.ContractExpirationWorker>();
+
 
 //Repositories
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
@@ -103,7 +114,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseCors("AllowReactApp");
 app.UseAuthorization();
 
 app.MapControllers();

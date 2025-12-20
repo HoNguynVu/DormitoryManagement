@@ -2,6 +2,7 @@
 using API.Services.Helpers;
 using API.Services.Interfaces;
 using API.UnitOfWorks;
+using BusinessObject.DTOs.ConfirmDTOs;
 using BusinessObject.DTOs.RegisDTOs;
 using BusinessObject.Entities;
 
@@ -10,11 +11,15 @@ namespace API.Services.Implements
     public class RegistrationService : IRegistrationService
     {
         private readonly IRegistrationUow _registrationUow;
-        public RegistrationService(IRegistrationUow registrationUow)
+        private readonly IEmailService _emailService;
+        private readonly ILogger<IRegistrationService> _logger;
+        public RegistrationService(IRegistrationUow registrationUow, IEmailService emailService, ILogger<IRegistrationService> logger)
         {
             _registrationUow = registrationUow;
+            _emailService = emailService;
+            _logger = logger;
         }
-        public async Task<(bool Success, string Message, int StatusCode)> CreateRegistrationForm(RegistrationFormRequest registrationForm)
+        public async Task<(bool Success, string Message, int StatusCode)> CreateRegistrationForm(RegistrationFormRequest registrationForm) 
         {
             var contract = await _registrationUow.Contracts.GetActiveContractByStudentId(registrationForm.StudentId);
             if (contract != null)
@@ -27,12 +32,22 @@ namespace API.Services.Implements
                 int studentsInRoom = await _registrationUow.Contracts.CountContractsByRoomIdAndStatus(registrationForm.RoomId, "Active");
                 int pendingForms = await _registrationUow.RegistrationForms.CountRegistrationFormsByRoomId(registrationForm.RoomId);
                 int occupancy = studentsInRoom + pendingForms;
-
+                var student =  await _registrationUow.Students.GetByIdAsync(registrationForm.StudentId);
                 var room = await _registrationUow.Rooms.GetByIdAsync(registrationForm.RoomId);
                 if (room == null)
                 {
                     await _registrationUow.RollbackAsync(); 
                     return (false, "Room not found.", 404);
+                }
+                if (student == null)
+                {
+                    await _registrationUow.RollbackAsync();
+                    return (false, "Student not found.", 404);
+                }
+                if (room.Gender != student.Gender)
+                {
+                    await _registrationUow.RollbackAsync();
+                    return (false, "Student's Gender is not suitable", 400);
                 }
                 int capacity = room.Capacity;
 
@@ -110,6 +125,37 @@ namespace API.Services.Implements
                 _registrationUow.RegistrationForms.Update(registration);
                 _registrationUow.Contracts.Add(newContract);
                 await _registrationUow.CommitAsync();
+
+                // Gửi email xác nhận
+                var student = await _registrationUow.Students.GetByIdAsync(registration.StudentID);
+                if (student == null)
+                    return (false, "Student not found.", 404);
+                var receipt = await _registrationUow.Receipts.GetReceiptByTypeAndRelatedIdAsync(PaymentConstants.TypeRegis,newContract.ContractID);
+                if (receipt == null)
+                    return (false, "Receipt not found.", 404);
+                decimal depositAmount = receipt != null ? receipt.Amount : 0;
+                var emailDto = new DormRegistrationSuccessDto
+                {
+                    StudentEmail = student.Email,
+                    StudentName = student.FullName,
+                    ContractCode = newContract.ContractID,
+                    BuildingName = newContract.Room.Building.BuildingName,
+                    RoomName = newContract.Room.RoomName,
+                    RoomType = newContract.Room?.RoomType?.TypeName ?? "",
+                    StartDate = newContract.StartDate,
+                    EndDate = newContract.EndDate.Value,
+                    DepositAmount = depositAmount,
+                    RoomFeePerMonth = newContract.Room.RoomType.Price
+                };
+
+                try
+                {
+                    await _emailService.SendRegistrationPaymentEmailAsync(emailDto);
+                }
+                catch (Exception emailEx)
+                {
+                    _logger.LogError(emailEx, "Failed to send dorm registration success email to {Email}", student.Email); 
+                }
                 return (true, "Payment confirmed and contract created successfully.", 200);
             }
             catch (Exception ex)

@@ -7,6 +7,8 @@ using API.Services.Helpers;
 using API.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using API.Services.Common;
+using BusinessObject.DTOs.ConfirmDTOs;
+using System.Collections.Immutable;
 
 namespace API.Services.Implements
 {
@@ -14,10 +16,14 @@ namespace API.Services.Implements
     {
         private readonly IUtilityBillUow _utilityBillUow;
         private readonly IHubContext<NotificationHub> _hubContext;
-        public UtilityBillService(IUtilityBillUow utilityBillUow, IHubContext<NotificationHub> hubContext)
+        private readonly IEmailService _emailService;
+        private readonly ILogger<IUtilityBillService> _logger;
+        public UtilityBillService(IUtilityBillUow utilityBillUow, IHubContext<NotificationHub> hubContext,IEmailService emailService,ILogger<IUtilityBillService> logger)
         {
             _utilityBillUow = utilityBillUow;
             _hubContext = hubContext;
+            _emailService = emailService;
+            _logger = logger;
         }
 
         private string NotiMessage(int month, int year)
@@ -126,12 +132,59 @@ namespace API.Services.Implements
             {
                 _utilityBillUow.UtilityBills.Update(bill);
                 await _utilityBillUow.CommitAsync();
+                var receipt = await _utilityBillUow.Receipts.GetReceiptByTypeAndRelatedIdAsync(PaymentConstants.TypeUtility,billId);
+                if (receipt == null) 
+                {
+                    return (false, "Receipt not found", 404);
+                }
+                var student = await _utilityBillUow.Students.GetByIdAsync(receipt.Student.StudentID);
+                if (student == null) {
+                    return (false, "Student not found", 404);
+                }
+                var parameter = await _utilityBillUow.Parameters.GetActiveParameterAsync();
+                if (parameter == null) {
+                    return (false, "Parameter not found", 404);
+                }
+                var emailDto = new UtilityPaymentSuccessDto
+                {
+                    StudentName = student.FullName,
+                    StudentEmail = student.Email,
+
+                    ReceiptID = receipt.ReceiptID,
+                    BuildingName = bill.Room.Building.BuildingName,
+                    RoomName = bill.Room.RoomName,
+                    BillingMonth = $"{bill.Month}/{bill.Year}",
+                    PaymentDate = receipt.PrintTime,
+
+                    // Mapping chỉ số ĐIỆN
+                    ElectricIndexOld = bill.ElectricityOldIndex,
+                    ElectricIndexNew = bill.ElectricityNewIndex,
+                    ElectricUsage = bill.ElectricityUsage,
+                    ElectricAmount = bill.ElectricityUsage*parameter.DefaultElectricityPrice,
+
+                    // Mapping chỉ số NƯỚC
+                    WaterIndexOld = bill.WaterOldIndex,
+                    WaterIndexNew = bill.WaterNewIndex,
+                    WaterUsage = bill.WaterUsage,
+                    WaterAmount = bill.WaterUsage*parameter.DefaultWaterPrice,
+
+                    // Tổng tiền
+                    TotalAmount = bill.Amount
+                };
+                try
+                {
+                    await _emailService.SendUtilityPaymentEmailAsync(emailDto);
+                }
+                catch
+                {
+                    _logger.LogError($"Failed to send utility payment email to {student.Email} for BillID: {bill.BillID}");
+                }
+                return (true, "Payment confirmed successfully", 200);
             }
             catch (Exception ex)
             {
                 return (false, $"Failed to confirm payment: {ex.Message}", 500);
             }
-            return (true, "Payment confirmed successfully", 200);
         }
         public async Task<(bool Success, string Message, int StatusCode, IEnumerable<UtilityBill> list)> GetBillsByAccountIdAsync(string accountId)
         {

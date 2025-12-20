@@ -95,11 +95,14 @@ namespace API.Services.Implements
                 StudentID = registerRequest.StudentId,
                 AccountID = newAccount.UserId,
                 FullName = registerRequest.FullName,
+                Address = registerRequest.Address,
                 CitizenID = registerRequest.CitizenId,
+                CitizenIDIssuePlace = registerRequest.CitizenIdIssuePlace,
                 PhoneNumber = registerRequest.PhoneNumber,
                 SchoolID = registerRequest.SchoolId,
                 PriorityID = registerRequest.PriorityId,
-                Email = registerRequest.Email
+                Email = registerRequest.Email,
+                Gender = registerRequest.Gender
             };
 
             // 📌 Tạo OTP verify email
@@ -172,16 +175,66 @@ namespace API.Services.Implements
             }
             return (true, "Email verified successfully.", 200);
         }
-        public async Task<(bool Success, string Message, int StatusCode, string accessToken, string refreshToken, string userId)> LoginAsync(LoginRequest loginRequest)
+        public async Task<(bool Success, string Message, int StatusCode)> ResendVerificationOtpAsync(string email)
+        {
+            var user = await _authUow.Accounts.GetAccountByUsername(email);
+            if (user == null)
+            {
+                return (false, "Account with this email does not exist.", 404);
+            }
+            if (user.IsEmailVerified)
+            {
+                return (false, "Email is already verified.", 400);
+            }
+            // ❗ Xử lý OTP cũ (nếu có) → set IsActive = false
+            var oldOtp = await _authUow.OtpCodes.GetActiveOtp(user.UserId, "EmailVerify");
+            if (oldOtp != null)
+            {
+                oldOtp.IsActive = false;
+                _authUow.OtpCodes.Update(oldOtp);
+            }
+            // 📌 Tạo OTP mới
+            var otp = new OtpCode
+            {
+                OtpID = "OTP-" + IdGenerator.GenerateUniqueSuffix(),
+                AccountID = user.UserId,
+                Code = GenerateOTP(),     // ví dụ 6 số
+                Purpose = "PasswordReset",
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(10),
+                IsActive = true
+            };
+            await _authUow.BeginTransactionAsync();
+            try
+            {
+                _authUow.OtpCodes.Add(otp);
+                await _authUow.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await _authUow.RollbackAsync();
+                return (true, $"Database error during OTP resend: {ex.Message}", 500);
+            }
+            try
+            {
+                await _emailService.SendVericationEmail(email, otp.Code);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Failed to send OTP email: {ex.Message}", 500);
+            }
+            return (true, "A new OTP has been sent to your email.", 200);
+        }
+        public async Task<(bool Success, string Message, int StatusCode, string accessToken, string refreshToken, string userId, bool hasActiveContract)> LoginAsync(LoginRequest loginRequest)
         {
             var user = await _authUow.Accounts.GetAccountByUsername(loginRequest.Email);
             
             if (user == null || !BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.PasswordHash))
-                return (false, "Invalid email or password.", 401, null, null, null);
+                return (false, "Invalid email or password.", 401, null, null, null, false);
             var student = await _authUow.Students.GetStudentByEmailAsync(loginRequest.Email);
             if (student == null)
             {
-                return (false, "Student profile not found for this account.", 500, null, null, null);
+                return (false, "Student profile not found for this account.", 500, null, null, null, false);
             }
 
             if (!user.IsEmailVerified)
@@ -196,11 +249,11 @@ namespace API.Services.Implements
                 catch (Exception ex)
                 {
                     await _authUow.RollbackAsync();
-                    return (false, $"Database error during registration: {ex.Message}", 500, null, null, null);
+                    return (false, $"Database error during registration: {ex.Message}", 500, null, null, null, false);
 
                 }
                 
-                return (false, "Your email is not verified yet. Please register again", 401, null, null, null);
+                return (false, "Your email is not verified yet. Please register again", 401, null, null, null, false);
             }  
             var accessToken = GenerateJwtToken(user);
             RefreshToken refreshToken = CreateRefreshToken(user.UserId);
@@ -216,11 +269,11 @@ namespace API.Services.Implements
             catch (Exception ex)
             {
                 await _authUow.RollbackAsync();
-                return (false, $"Database error during login: {ex.Message}", 500, null, null, null);
+                return (false, $"Database error during login: {ex.Message}", 500, null, null, null, false);
             }
-           
+            bool hasActiveContract = await _authUow.Contracts.GetActiveContractByStudentId(student.StudentID) != null;
             var message = $"Welcome back, {student.FullName}!";
-            return (true, message, 200, accessToken, refreshToken.Token, user.UserId);
+            return (true, message, 200, accessToken, refreshToken.Token, user.UserId, hasActiveContract);
         }
         public async Task<(bool Success, string Message, int StatusCode)> ForgotPasswordAsync(ForgotPasswordRequest forgotPasswordRequest)
         {
@@ -292,18 +345,6 @@ namespace API.Services.Implements
             {
                 return (false, "Incorrect OTP.", 400);
             }
-            otpRecord.IsActive = false; // Vô hiệu hóa OTP sau khi sử dụng
-            await _authUow.BeginTransactionAsync();
-            try
-            {
-                _authUow.OtpCodes.Update(otpRecord);
-                await _authUow.CommitAsync();
-            }
-            catch (Exception ex)
-            {
-                await _authUow.RollbackAsync();
-                return (false, $"Database error during email verification: {ex.Message}", 500);
-            }
             return (true, "OTP verified successfully.", 200);
         }
         public async Task<(bool Success, string Message, int StatusCode)> ResetPasswordAsync(ResetPasswordRequest resetPasswordRequest)
@@ -313,10 +354,25 @@ namespace API.Services.Implements
             {
                 return (false, "Account with this email does not exist.", 404);
             }
+            var otpRecord = await _authUow.OtpCodes.GetActiveOtp(user.UserId, "PasswordReset");
+            if (otpRecord == null)
+            {
+                return (false, "Invalid or inactive OTP.", 400);
+            }
+            if (otpRecord.ExpiresAt < DateTime.UtcNow)
+            {
+                return (false, "OTP has expired.", 400);
+            }
+            if (otpRecord.Code != resetPasswordRequest.otp)
+            {
+                return (false, "Incorrect OTP.", 400);
+            }
+            otpRecord.IsActive = false; 
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(resetPasswordRequest.password);
             await _authUow.BeginTransactionAsync();
             try
             {
+                _authUow.OtpCodes.Update(otpRecord);
                 _authUow.Accounts.Update(user);
                 await _authUow.CommitAsync();
             }
@@ -326,6 +382,92 @@ namespace API.Services.Implements
                 return (false, $"Database error during password reset: {ex.Message}", 500);
             }
             return (true, "Password has been reset successfully.", 200);
+        }
+        public async Task<(bool Success, string Message, int StatusCode)> ResendResetOtpAsync(string email)
+        {
+            var user = await _authUow.Accounts.GetAccountByUsername(email);
+            if (user == null)
+            {
+                return (false, "Account with this email does not exist.", 404);
+            }
+            if (user.IsEmailVerified)
+            {
+                return (false, "Email is already verified.", 400);
+            }
+            // ❗ Xử lý OTP cũ (nếu có) → set IsActive = false
+            var oldOtp = await _authUow.OtpCodes.GetActiveOtp(user.UserId, "EmailVerify");
+            if (oldOtp != null)
+            {
+                oldOtp.IsActive = false;
+                _authUow.OtpCodes.Update(oldOtp);
+            }
+            // 📌 Tạo OTP mới
+            var otp = new OtpCode
+            {
+                OtpID = "OTP-" + IdGenerator.GenerateUniqueSuffix(),
+                AccountID = user.UserId,
+                Code = GenerateOTP(),     // ví dụ 6 số
+                Purpose = "EmailVerify",
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(10),
+                IsActive = true
+            };
+            await _authUow.BeginTransactionAsync();
+            try
+            {
+                _authUow.OtpCodes.Add(otp);
+                await _authUow.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await _authUow.RollbackAsync();
+                return (true, $"Database error during OTP resend: {ex.Message}", 500);
+            }
+            try
+            {
+                await _emailService.SendVericationEmail(email, otp.Code);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Failed to send OTP email: {ex.Message}", 500);
+            }
+            return (true, "A new OTP has been sent to your email.", 200);
+        }
+        public async Task<(bool Success, string Message, int StatusCode)> LogOut(string refreshTokenValue)
+        {
+            var refreshToken = await _authUow.RefreshTokens.GetRefreshToken(refreshTokenValue);
+            if (refreshToken == null || refreshToken.RevokedAt != null)
+            {
+                return (false, "Invalid or inactive refresh token.", 400);
+            }
+            refreshToken.RevokedAt = DateTime.UtcNow;
+            await _authUow.BeginTransactionAsync();
+            try
+            {
+                _authUow.RefreshTokens.Update(refreshToken);
+                await _authUow.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await _authUow.RollbackAsync();
+                return (false, $"Database error during logout: {ex.Message}", 500);
+            }
+            return (true, "Logged out successfully.", 200);
+        }
+        public async Task<(bool Success, string Message, int StatusCode, string? AccessToken)> GetAccessToken(string refreshTokenValue)
+        {
+            var refreshToken = await _authUow.RefreshTokens.GetRefreshToken(refreshTokenValue);
+            if (refreshToken == null || refreshToken.RevokedAt != null || refreshToken.ExpiresAt <= DateTime.UtcNow)
+            {
+                return (false, "Invalid or expired refresh token.", 400, null);
+            }
+            var user = await _authUow.Accounts.GetByIdAsync(refreshToken.AccountID);
+            if (user == null)
+            {
+                return (false, "Account associated with the refresh token does not exist.", 404, null);
+            }
+            var newAccessToken = GenerateJwtToken(user);
+            return (true, "Access token generated successfully.", 200, newAccessToken);
         }
     }
 }

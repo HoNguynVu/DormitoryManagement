@@ -9,5 +9,6 @@ namespace API.UnitOfWorks
         IRefreshTokenRepository RefreshTokens { get; }
         IOtpRepository OtpCodes { get; }
         IStudentRepository Students { get; }
+        IContractRepository Contracts { get; }
     }
 }

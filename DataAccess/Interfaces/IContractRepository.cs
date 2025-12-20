@@ -17,5 +17,9 @@ namespace DataAccess.Interfaces
         Task<IEnumerable<Contract>> GetExpiredContractsAsync(DateOnly olderThan);
         Task<IEnumerable<Contract>> GetExpiringContractsByManagerIdAsync(DateOnly fromDate, DateOnly beforeDate, string managerId);
         Task<int> CountExpiringContractsByManagerIdAsync(DateOnly fromDate, DateOnly beforeDate, string managerId);
+
+        Task<IEnumerable<Contract>> GetContractsFilteredAsync(string? keyword, string? buildingId, string? status);
+        Task<Contract?> GetDetailContractAsync(string contractId);
+        Task<Dictionary<string, int>> CountContractsByStatusAsync();
     }
 }

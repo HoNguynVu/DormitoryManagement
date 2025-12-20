@@ -10,5 +10,6 @@ namespace DataAccess.Interfaces
     public interface IStudentRepository : IGenericRepository<Student>
     {
         Task<Student?> GetStudentByEmailAsync(string email);
+        Task<Student?> GetStudentByAccountIdAsync(string accountId);
     }
 }

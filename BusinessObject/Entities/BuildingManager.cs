@@ -35,9 +35,6 @@ public partial class BuildingManager : Person
     [StringLength(100)]
     public string Email { get; set; } = null!;
 
-    [StringLength(500)]
-    public string? Address { get; set; }
-
     // Navigation Properties
     [InverseProperty("Manager")]
     public virtual ICollection<Building> Buildings { get; set; } = new List<Building>();
