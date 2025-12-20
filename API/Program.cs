@@ -51,6 +51,7 @@ builder.Services.AddScoped<IBuildingUow>(sp => sp.GetRequiredService<UnitOfWork>
 builder.Services.AddScoped<IPublicInformationUow>(sp => sp.GetRequiredService<UnitOfWork>());
 builder.Services.AddScoped<IParameterUow>(sp => sp.GetRequiredService<UnitOfWork>());
 builder.Services.AddScoped<IStudentUow>(sp => sp.GetRequiredService<UnitOfWork>());
+builder.Services.AddScoped<IRoomTypeUow>(sp => sp.GetRequiredService<UnitOfWork>());
 
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -68,6 +69,8 @@ builder.Services.AddScoped<IBuildingManagerService, BuildingManagerService>();
 builder.Services.AddScoped<IExportService, ExportService>(); // Register IExportService
 builder.Services.AddScoped<IPublicInformationService, PublicInformationService>();
 builder.Services.AddScoped<IStudentService, StudentService>();
+builder.Services.AddScoped<IBuildingService, BuildingService>();
+builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
 
 // Đọc config từ appsettings.json
 builder.Services.Configure<ZaloPaySettings>(builder.Configuration.GetSection("ZaloPay"));

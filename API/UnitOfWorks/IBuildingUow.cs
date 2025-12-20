@@ -6,5 +6,6 @@ namespace API.UnitOfWorks
     {
         public IBuildingManagerRepository BuildingManagers { get; }
         public IRoomRepository Rooms { get; }
+        public IBuildingRepository Buildings { get; }
     }
 }

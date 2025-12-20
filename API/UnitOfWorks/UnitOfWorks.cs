@@ -10,7 +10,7 @@ namespace API.UnitOfWorks
 {
     public class UnitOfWork : IAuthUow, IRegistrationUow, IViolationUow, IRoomUow,
         IContractUow, IPaymentUow , IHealthInsuranceUow, IParameterUow, IUtilityBillUow, IMaintenanceUow, IBuildingUow,
-        IPublicInformationUow, IStudentUow
+        IPublicInformationUow, IStudentUow, IRoomTypeUow
     {
         private readonly DormitoryDbContext _context;
         private IDbContextTransaction? _transaction;
@@ -35,6 +35,7 @@ namespace API.UnitOfWorks
         public IMaintenanceRepository Maintenances { get; }
         public IEquipmentRepository Equipments { get; }
         public IBuildingManagerRepository BuildingManagers { get; }
+        public IBuildingRepository Buildings { get; }
         public UnitOfWork(DormitoryDbContext context, IDbContextTransaction? dbContextTransaction)
         {
             _context = context;
@@ -61,6 +62,7 @@ namespace API.UnitOfWorks
             BuildingManagers = new BuildingManagerRepository(_context);
             Priorities = new PriorityRepository(_context);
             Schools = new SchoolRepository(_context);
+            Buildings = new BuildingRepository(_context);
         }
 
         public async Task BeginTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)

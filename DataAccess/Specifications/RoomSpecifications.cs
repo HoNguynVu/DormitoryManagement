@@ -26,16 +26,10 @@ namespace DataAccess.Specifications
                 spec = spec.AndAlso(r => r.RoomTypeID == roomTypeId);
             }
 
-            if (filter.MinCapacity.HasValue)
+            if (filter.Price.HasValue)
             {
-                var min = filter.MinCapacity.Value;
-                spec = spec.AndAlso(r => r.Capacity >= min);
-            }
-
-            if (filter.MaxCapacity.HasValue)
-            {
-                var max = filter.MaxCapacity.Value;
-                spec = spec.AndAlso(r => r.Capacity <= max);
+                var price = filter.Price.Value;
+                spec = spec.AndAlso(r => r.RoomType.Price >= price);
             }
 
             return spec;
