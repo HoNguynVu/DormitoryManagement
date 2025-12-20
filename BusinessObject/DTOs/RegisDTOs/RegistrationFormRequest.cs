@@ -8,7 +8,7 @@ namespace BusinessObject.DTOs.RegisDTOs
 {
     public class RegistrationFormRequest
     {
-        public string StudentId { get; set; } = null!;
+        public string AccountId { get; set; } = null!;
         public string RoomId { get; set; } = null!;
     }
 }

@@ -19,12 +19,17 @@ namespace API.Services.Implements
             _emailService = emailService;
             _logger = logger;
         }
-        public async Task<(bool Success, string Message, int StatusCode)> CreateRegistrationForm(RegistrationFormRequest registrationForm) 
+        public async Task<(bool Success, string Message, int StatusCode, string? registrationId)> CreateRegistrationForm(RegistrationFormRequest registrationForm) 
         {
-            var contract = await _registrationUow.Contracts.GetActiveContractByStudentId(registrationForm.StudentId);
+            var student = await _registrationUow.Students.GetStudentByAccountIdAsync(registrationForm.AccountId);
+            if (student == null)
+            {
+                return (false, "Student not found.", 404, null);
+            }
+            var contract = await _registrationUow.Contracts.GetActiveContractByStudentId(student.StudentID);
             if (contract != null)
             {
-                return (false, "Student already has an active contract.", 400);
+                return (false, "Student already has an active contract.", 400, null);
             }
             await _registrationUow.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
             try
@@ -32,35 +37,30 @@ namespace API.Services.Implements
                 int studentsInRoom = await _registrationUow.Contracts.CountContractsByRoomIdAndStatus(registrationForm.RoomId, "Active");
                 int pendingForms = await _registrationUow.RegistrationForms.CountRegistrationFormsByRoomId(registrationForm.RoomId);
                 int occupancy = studentsInRoom + pendingForms;
-                var student =  await _registrationUow.Students.GetByIdAsync(registrationForm.StudentId);
                 var room = await _registrationUow.Rooms.GetByIdAsync(registrationForm.RoomId);
                 if (room == null)
                 {
                     await _registrationUow.RollbackAsync(); 
-                    return (false, "Room not found.", 404);
+                    return (false, "Room not found.", 404, null);
                 }
-                if (student == null)
-                {
-                    await _registrationUow.RollbackAsync();
-                    return (false, "Student not found.", 404);
-                }
+                
                 if (room.Gender != student.Gender)
                 {
                     await _registrationUow.RollbackAsync();
-                    return (false, "Student's Gender is not suitable", 400);
+                    return (false, "Student's Gender is not suitable", 400, null);
                 }
                 int capacity = room.Capacity;
 
                 if (occupancy >= capacity)
                 {
                     await _registrationUow.RollbackAsync();
-                    return (false, "Room is already full.", 409);
+                    return (false, "Room is already full.", 409, null);
                 }
 
                 var form = new RegistrationForm
                 {
                     FormID = "RF-" + IdGenerator.GenerateUniqueSuffix(),
-                    StudentID = registrationForm.StudentId,
+                    StudentID = student.StudentID,
                     RoomID = registrationForm.RoomId,
                     RegistrationTime = DateTime.UtcNow,
                     Status = "Pending"
@@ -68,12 +68,12 @@ namespace API.Services.Implements
 
                 _registrationUow.RegistrationForms.Add(form);
                 await _registrationUow.CommitAsync();
-                return (true, "Registration form created successfully, you have 10 mins to confirms payment.", 201);
+                return (true, "Registration form created successfully, you have 10 mins to confirms payment.", 201, form.FormID);
             }
             catch (Exception ex)
             {
                 await _registrationUow.RollbackAsync();
-                return (false, $"Failed to create registration form: {ex.Message}", 500);
+                return (false, $"Failed to create registration form: {ex.Message}", 500, null);
 
             }
         }

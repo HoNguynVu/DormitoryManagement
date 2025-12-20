@@ -1,8 +1,9 @@
-﻿using API.Hubs;
+﻿using API.BackgroundServices; // Thêm namespace này
+using API.Hubs;
 using API.Services.Implements;
 using API.Services.Interfaces;
 using API.UnitOfWorks;
-using BusinessObject.Config;
+using BusinessObject.Config; // Namespace chứa class ZaloPaySettings
 using DataAccess.Interfaces;
 using DataAccess.Models;
 using DataAccess.Repository;
@@ -13,31 +14,38 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// 1. Cấu hình CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
         policy
-            .WithOrigins("http://localhost:5173") // đúng địa chỉ FE
+            .WithOrigins("http://localhost:5173") // Địa chỉ React
             .SetIsOriginAllowedToAllowWildcardSubdomains()
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials());
 });
 
+// 2. Load Configuration
 builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
     .AddEnvironmentVariables();
 
+// 3. Database Context
 builder.Services.AddDbContext<DormitoryDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DormitoryDB")));
-// Add services to the container.
 
+// 4. Core Services
 builder.Services.AddControllers();
-builder.Services.AddSignalR();
+builder.Services.AddSignalR(); // Chỉ gọi 1 lần ở đây
+builder.Services.AddHttpClient();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
-//Unit of Work
+// 5. Unit of Work
 builder.Services.AddScoped<UnitOfWork>(sp => new UnitOfWork(sp.GetRequiredService<DormitoryDbContext>(), null));
+// Map các Interface UoW vào Implementation cụ thể
 builder.Services.AddScoped<IAuthUow>(sp => sp.GetRequiredService<UnitOfWork>());
 builder.Services.AddScoped<IRegistrationUow>(sp => sp.GetRequiredService<UnitOfWork>());
 builder.Services.AddScoped<IContractUow>(sp => sp.GetRequiredService<UnitOfWork>());
@@ -53,8 +61,8 @@ builder.Services.AddScoped<IParameterUow>(sp => sp.GetRequiredService<UnitOfWork
 builder.Services.AddScoped<IStudentUow>(sp => sp.GetRequiredService<UnitOfWork>());
 builder.Services.AddScoped<IRoomTypeUow>(sp => sp.GetRequiredService<UnitOfWork>());
 
-builder.Services.AddScoped<EmailService>();
-builder.Services.AddScoped<IEmailService, EmailService>();
+// 6. Business Services
+builder.Services.AddScoped<IEmailService, EmailService>(); // Sửa lại: Không cần AddScoped<EmailService> riêng
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IRegistrationService, RegistrationService>();
 builder.Services.AddScoped<IViolationService, ViolationService>();
@@ -66,27 +74,29 @@ builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IMaintenanceService, MaintenanceService>();
 builder.Services.AddScoped<IUtilityBillService, UtilityBillService>();
 builder.Services.AddScoped<IBuildingManagerService, BuildingManagerService>();
-builder.Services.AddScoped<IExportService, ExportService>(); // Register IExportService
+builder.Services.AddScoped<IExportService, ExportService>();
 builder.Services.AddScoped<IPublicInformationService, PublicInformationService>();
 builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<IBuildingService, BuildingService>();
 builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
 
-// Đọc config từ appsettings.json
-builder.Services.Configure<ZaloPaySettings>(builder.Configuration.GetSection("ZaloPay"));
-
-builder.Services.AddHttpClient();
-builder.Services.AddSignalR();
-builder.Services.AddHostedService<API.BackgroundServices.ContractExpirationWorker>();
-
-
-//Repositories
+// 7. Repositories (Nếu UoW đã bao gồm Repo thì có thể không cần dòng này, nhưng giữ lại nếu code cũ cần)
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IViolationRepository, ViolationRepository>();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
+// 8. Background Services
+builder.Services.AddHostedService<ContractExpirationWorker>();
+
+// ============================================================
+// 9. CẤU HÌNH ZALOPAY (SỬA LỖI TẠI ĐÂY)
+// ============================================================
+builder.Services.Configure<ZaloPaySettings>(builder.Configuration.GetSection("ZaloPaySettings"));
+
+// Đăng ký IOptions<ZaloPaySettings>
+
+
+
+// 10. Authentication (JWT)
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -114,11 +124,14 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// UseCors phải đặt trước UseAuthorization
 app.UseCors("AllowReactApp");
+
+app.UseAuthentication(); // Thêm dòng này để kích hoạt JWT
 app.UseAuthorization();
 
 app.MapControllers();
-
 app.MapHub<NotificationHub>("/notificationHub");
 
 app.Run();
