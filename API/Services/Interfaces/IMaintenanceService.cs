@@ -10,6 +10,11 @@ namespace API.Services.Interfaces
         // Lấy danh sách (cho SV xem lịch sử hoặc Manager xem tất cả)
         Task<(bool Success, string Message, int StatusCode, object? Data)> GetRequestsAsync(string? studentId, string? status);
 
+        // Cập nhật trạng thái yêu cầu sửa chữa
         Task<(bool Success, string Message, int StatusCode)> UpdateStatusAsync(UpdateMaintenanceStatusDto dto);
+
+
+
+
     }
 }
