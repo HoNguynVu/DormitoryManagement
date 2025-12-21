@@ -1,4 +1,5 @@
 ﻿using BusinessObject.Entities;
+using DataAccess.Repository;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,10 +8,9 @@ using System.Threading.Tasks;
 
 namespace DataAccess.Interfaces
 {
-    public interface IEquipmentRepository
+    public interface IEquipmentRepository : IGenericRepository<Equipment>
     {
-        Task<Equipment?> GetEquipmentByIdAsync(string equipmentId);
-        void UpdateEquipment(Equipment equipment);
-        void AddEquipment(Equipment equipment);
+
+        Task<IEnumerable<Equipment>> GetEquipmentsByRoomIdAsync(string roomId);
     }
 }

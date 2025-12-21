@@ -35,7 +35,7 @@ namespace API.Services.Implements
 
                 if (!string.IsNullOrEmpty(dto.EquipmentId))
                 {
-                    var equipment = await _uow.Equipments.GetEquipmentByIdAsync(dto.EquipmentId);
+                    var equipment = await _uow.Equipments.GetByIdAsync(dto.EquipmentId);
 
                     // 1. Kiểm tra thiết bị có tồn tại không
                     if (equipment == null)
@@ -47,7 +47,7 @@ namespace API.Services.Implements
 
                     // 3. Cập nhật trạng thái thiết bị -> "Under Maintenance" 
                     equipment.Status = "Under Maintenance";
-                    _uow.Equipments.UpdateEquipment(equipment);
+                    _uow.Equipments.Update(equipment);
                 }
 
                 // Tạo Entity mới
