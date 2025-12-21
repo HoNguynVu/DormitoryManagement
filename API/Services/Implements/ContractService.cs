@@ -87,7 +87,9 @@ namespace API.Services.Implements
                 decimal? price = activeContract.Room?.RoomType?.Price;
                 if (price == null)
                     return (false, "Room type price data is missing, cannot calculate fee.", 422);
-                decimal totalAmount = price.Value * (decimal)monthsToExtend;
+                
+
+                decimal totalAmount = (monthsToExtend==12) ? price.Value : price.Value*0.5m; // giá phòng theo năm
 
                 await _uow.BeginTransactionAsync();
 
