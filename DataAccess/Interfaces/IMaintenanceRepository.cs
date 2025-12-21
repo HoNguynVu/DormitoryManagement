@@ -13,7 +13,9 @@ namespace DataAccess.Interfaces
 
         void Update(MaintenanceRequest request);
 
-        Task<IEnumerable<MaintenanceRequest>> GetMaintenanceFilteredAsync(string? studentId, string? status);
+        Task<IEnumerable<MaintenanceRequest>> GetMaintenanceByStudentIdAsync(string studentId);
         Task<MaintenanceRequest?> GetMaintenanceByIdAsync(string maintenanceId);
+
+
     }
 }

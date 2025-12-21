@@ -1,5 +1,7 @@
-﻿using DataAccess.Interfaces;
+﻿using BusinessObject.Entities;
+using DataAccess.Interfaces;
 using DataAccess.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,26 +10,15 @@ using System.Threading.Tasks;
 
 namespace DataAccess.Repository
 {
-    public class EquipmentRepository : IEquipmentRepository
+    public class EquipmentRepository : GenericRepository<Equipment>, IEquipmentRepository
     {
-        private readonly DormitoryDbContext _context;
-        public EquipmentRepository(DormitoryDbContext context)
+        public EquipmentRepository(DormitoryDbContext context) : base(context)
         {
-            _context = context;
         }
 
-        public async Task<BusinessObject.Entities.Equipment?> GetEquipmentByIdAsync(string equipmentId)
+        public async Task<IEnumerable<Equipment>> GetEquipmentsByRoomIdAsync(string roomId)
         {
-            return await _context.Equipment.FindAsync(equipmentId);
-        }
-
-        public void UpdateEquipment(BusinessObject.Entities.Equipment equipment)
-        {
-            _context.Equipment.Update(equipment);
-        }
-        public void AddEquipment(BusinessObject.Entities.Equipment equipment)
-        {
-            _context.Equipment.Add(equipment);
+            return await _dbSet.Where(r => r.RoomID == roomId ).ToListAsync();
         }
     }
 }

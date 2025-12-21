@@ -2,6 +2,7 @@
 using API.Services.Helpers;
 using API.Services.Interfaces;
 using API.UnitOfWorks;
+using BusinessObject.DTOs.ContractDTOs;
 using BusinessObject.DTOs.MaintenanceDTOs;
 using BusinessObject.Entities;
 
@@ -34,7 +35,7 @@ namespace API.Services.Implements
 
                 if (!string.IsNullOrEmpty(dto.EquipmentId))
                 {
-                    var equipment = await _uow.Equipments.GetEquipmentByIdAsync(dto.EquipmentId);
+                    var equipment = await _uow.Equipments.GetByIdAsync(dto.EquipmentId);
 
                     // 1. Kiểm tra thiết bị có tồn tại không
                     if (equipment == null)
@@ -46,7 +47,7 @@ namespace API.Services.Implements
 
                     // 3. Cập nhật trạng thái thiết bị -> "Under Maintenance" 
                     equipment.Status = "Under Maintenance";
-                    _uow.Equipments.UpdateEquipment(equipment);
+                    _uow.Equipments.Update(equipment);
                 }
 
                 // Tạo Entity mới
@@ -72,17 +73,31 @@ namespace API.Services.Implements
             }
         }
 
-        public async Task<(bool Success, string Message, int StatusCode, object? Data)> GetRequestsAsync(string? studentId, string? status)
-        {
+        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<SummaryMaintenanceDto> dto)> GetRequestsByStudentIdAsync(string studentId)
+        {   
             try
             {
-                // Gọi Repository để lấy dữ liệu (đã Include Room và Student trong Repo)
-                var requests = await _uow.Maintenances.GetMaintenanceFilteredAsync(studentId,status);
-                return (true, "Lấy danh sách thành công.", 200, requests);
+                
+                var requests = await _uow.Maintenances.GetMaintenanceByStudentIdAsync(studentId);
+                if (requests == null || !requests.Any())
+                {
+                    return (true, "Không tìm thấy yêu cầu nào.", 200, Enumerable.Empty<SummaryMaintenanceDto>());
+                }
+                var result = requests.Select(m => new SummaryMaintenanceDto
+                {
+                    MaintenanceID = m.RequestID,
+                    RoomName = m.Room.RoomName,
+                    StudentName = m.Student.FullName,
+                    EquipmentName = m.Equipment.EquipmentName,
+                    Description = m.Description,
+                    Status = m.Status,
+                    MaintenanceDate = DateOnly.FromDateTime(m.RequestDate)
+                }).ToList();
+                return (true, "Lấy danh sách thành công.", 200, result);
             }
             catch (Exception ex)
             {
-                return (false, $"Lỗi truy vấn: {ex.Message}", 500, null);
+                return (false, $"Lỗi truy vấn: {ex.Message}", 500, Enumerable.Empty<SummaryMaintenanceDto>());
             }
         }
 
@@ -152,5 +167,19 @@ namespace API.Services.Implements
             }
         }
 
+        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<SummaryMaintenanceDto> dto)> GetMaintenanceFiltered(string? keyword, string? status, string? equipmentName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<(bool Success, string Message, int StatusCode, DetailMaintenanceDto dto)> GetMaintenanceDetail(string maintenanceId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<(bool Success, string Message, int StatusCode, Dictionary<string, int> list)> GetOverviewMaintenance()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

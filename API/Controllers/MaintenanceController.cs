@@ -30,10 +30,10 @@ namespace API.Controllers
             return StatusCode(result.StatusCode, new { message = result.Message });
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetRequests([FromQuery] string? studentId, [FromQuery] string? status)
+        [HttpGet("studentId/{studentId}")]
+        public async Task<IActionResult> GetRequestByStudentId([FromQuery] string studentId)
         {
-            var result = await _maintenanceService.GetRequestsAsync(studentId, status);
+            var result = await _maintenanceService.GetRequestsByStudentIdAsync(studentId);
 
             if (!result.Success)
             {
@@ -44,7 +44,7 @@ namespace API.Controllers
             return Ok(new
             {
                 message = result.Message,
-                data = result.Data
+                data = result.dto
             });
         }
 
