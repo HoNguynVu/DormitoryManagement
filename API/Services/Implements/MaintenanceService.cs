@@ -2,6 +2,7 @@
 using API.Services.Helpers;
 using API.Services.Interfaces;
 using API.UnitOfWorks;
+using BusinessObject.DTOs.ContractDTOs;
 using BusinessObject.DTOs.MaintenanceDTOs;
 using BusinessObject.Entities;
 
@@ -152,5 +153,19 @@ namespace API.Services.Implements
             }
         }
 
+        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<SummaryMaintenanceDto> dto)> GetMaintenanceFiltered(string? keyword, string? status, string? equipmentName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<(bool Success, string Message, int StatusCode, DetailMaintenanceDto dto)> GetMaintenanceDetail(string maintenanceId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<(bool Success, string Message, int StatusCode, Dictionary<string, int> list)> GetOverviewMaintenance()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

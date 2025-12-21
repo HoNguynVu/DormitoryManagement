@@ -1,4 +1,5 @@
-﻿using BusinessObject.DTOs.MaintenanceDTOs;
+﻿using BusinessObject.DTOs.ContractDTOs;
+using BusinessObject.DTOs.MaintenanceDTOs;
 
 namespace API.Services.Interfaces
 {
@@ -14,7 +15,9 @@ namespace API.Services.Interfaces
         Task<(bool Success, string Message, int StatusCode)> UpdateStatusAsync(UpdateMaintenanceStatusDto dto);
 
 
-
+        Task<(bool Success, string Message, int StatusCode, IEnumerable<SummaryMaintenanceDto> dto)> GetMaintenanceFiltered(string? keyword, string? status,string? equipmentName);
+        Task<(bool Success, string Message, int StatusCode, DetailMaintenanceDto dto)> GetMaintenanceDetail(string maintenanceId);
+        Task<(bool Success, string Message, int StatusCode, Dictionary<string,int> list)> GetOverviewMaintenance();
 
     }
 }
