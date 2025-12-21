@@ -25,10 +25,10 @@ namespace BusinessObject.Entities
         [ForeignKey("RoomID")]
         public virtual Room Room { get; set; }
 
-        public string? EquipmentID { get; set; }
+        public string EquipmentID { get; set; }
 
         [ForeignKey("EquipmentID")]
-        public virtual Equipment? Equipment { get; set; }
+        public virtual Equipment Equipment { get; set; }
 
         [Required]
         [StringLength(500)]
