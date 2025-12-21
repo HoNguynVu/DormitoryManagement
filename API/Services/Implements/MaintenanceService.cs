@@ -73,12 +73,12 @@ namespace API.Services.Implements
             }
         }
 
-        public async Task<(bool Success, string Message, int StatusCode, object? Data)> GetRequestsAsync(string? studentId, string? status)
+        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<SummaryMaintenanceDto> dto)> GetRequestsByStudentIdAsync(string studentId)
         {
             try
             {
-                // Gọi Repository để lấy dữ liệu (đã Include Room và Student trong Repo)
-                var requests = await _uow.Maintenances.GetMaintenanceFilteredAsync(studentId,status);
+                
+                var requests = await _uow.Maintenances.GetMaintenanceByStudentIdAsync(studentId);
                 return (true, "Lấy danh sách thành công.", 200, requests);
             }
             catch (Exception ex)
