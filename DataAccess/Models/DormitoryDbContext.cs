@@ -180,8 +180,6 @@ namespace DataAccess.Models
             modelBuilder.Entity<RoomEquipment>(entity =>
             {
                 entity.HasKey(e => e.RoomEquipmentID);
-                entity.HasOne(d => d.Room).WithMany(p => p.RoomEquipments).HasForeignKey(d => d.RoomID).OnDelete(DeleteBehavior.Cascade);
-                entity.HasOne(d => d.Equipment).WithMany().HasForeignKey(d => d.EquipmentID).OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<RefreshToken>(entity =>
