@@ -70,6 +70,7 @@ namespace API.Services.Implements
                     destItem.Quantity += quantity;
                     _uow.RoomEquipments.Update(destItem);
                 }
+                return (true, "Cập nhật trạng thái thành công ( chưa lưu db ).", 200);
             }
             catch (Exception ex)
             {
