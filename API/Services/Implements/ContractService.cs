@@ -4,6 +4,7 @@ using API.Services.Interfaces;
 using API.UnitOfWorks;
 using BusinessObject.DTOs.ConfirmDTOs;
 using BusinessObject.DTOs.ContractDTOs;
+using BusinessObject.DTOs.EquipmentDTO;
 using BusinessObject.Entities;
 
 namespace API.Services.Implements
@@ -13,7 +14,7 @@ namespace API.Services.Implements
         private readonly IContractUow _uow;
         private readonly IEmailService _emailService;
         private readonly ILogger<IContractService> _logger;
-        public ContractService(IContractUow contractUow,IEmailService emailService, ILogger<IContractService> logger)
+        public ContractService(IContractUow contractUow, IEmailService emailService, ILogger<IContractService> logger)
         {
             _uow = contractUow;
             _emailService = emailService;
@@ -49,11 +50,11 @@ namespace API.Services.Implements
 
         public async Task<(bool Success, string Message, int StatusCode)> RequestRenewalAsync(string studentId, int monthsToExtend)
         {
-           
-             // Validation
-             if (string.IsNullOrEmpty(studentId))
+
+            // Validation
+            if (string.IsNullOrEmpty(studentId))
                 return (false, "Student ID is required.", 400);
-             if (monthsToExtend <= 0)
+            if (monthsToExtend <= 0)
                 return (false, "Extension duration must be greater than 0.", 400);
             try
             {
@@ -78,7 +79,7 @@ namespace API.Services.Implements
 
                 // Check violations
                 int violations = await _uow.Violations.CountViolationsByStudentId(studentId);
-                if (violations >= 3) 
+                if (violations >= 3)
                     return (false, $"Cannot renew. Too many violations ({violations}). Contact manager.", 400);
 
                 if (activeContract.Room == null)
@@ -87,16 +88,16 @@ namespace API.Services.Implements
                 decimal? price = activeContract.Room?.RoomType?.Price;
                 if (price == null)
                     return (false, "Room type price data is missing, cannot calculate fee.", 422);
-                
 
-                decimal totalAmount = (monthsToExtend==12) ? price.Value : price.Value*0.5m; // giá phòng theo năm
+
+                decimal totalAmount = (monthsToExtend == 12) ? price.Value : price.Value * 0.5m; // giá phòng theo năm
 
                 await _uow.BeginTransactionAsync();
 
                 // Add receipt
                 var newReceipt = new Receipt
                 {
-                    ReceiptID = "RE-"+IdGenerator.GenerateUniqueSuffix(),
+                    ReceiptID = "RE-" + IdGenerator.GenerateUniqueSuffix(),
                     StudentID = studentId,
                     RelatedObjectID = activeContract.ContractID,
                     Amount = totalAmount,
@@ -131,8 +132,8 @@ namespace API.Services.Implements
             await _uow.BeginTransactionAsync();
             try
             {
-                contract.ContractStatus = "Terminated"; 
-                contract.EndDate = DateOnly.FromDateTime(DateTime.Now);  
+                contract.ContractStatus = "Terminated";
+                contract.EndDate = DateOnly.FromDateTime(DateTime.Now);
                 _uow.Contracts.Update(contract);
 
                 // B. Trả lại slot cho phòng (Cập nhật Room)
@@ -147,7 +148,7 @@ namespace API.Services.Implements
                         contract.Room.RoomStatus = "Available";
                     }
 
-                    _uow.Rooms.Update(contract.Room); 
+                    _uow.Rooms.Update(contract.Room);
                 }
                 await _uow.CommitAsync();
                 return (true, "Contract terminated successfully due to violations.", 200);
@@ -159,7 +160,7 @@ namespace API.Services.Implements
             }
         }
 
-        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<SummaryContractDto> dto)> GetContractFiltered(string? keyword,string? buildingName, string? status)
+        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<SummaryContractDto> dto)> GetContractFiltered(string? keyword, string? buildingName, string? status)
         {
             var result = new List<SummaryContractDto>();
             await _uow.BeginTransactionAsync();
@@ -186,13 +187,13 @@ namespace API.Services.Implements
             }
         }
 
-        public async Task<(bool Success, string Message, int StatusCode,Dictionary<string,int> stat)> GetOverviewContract()
+        public async Task<(bool Success, string Message, int StatusCode, Dictionary<string, int> stat)> GetOverviewContract()
         {
             var result = new Dictionary<string, int>();
             await _uow.BeginTransactionAsync();
             try
             {
-                result =  await _uow.Contracts.CountContractsByStatusAsync();
+                result = await _uow.Contracts.CountContractsByStatusAsync();
                 var total = result.Values.Sum();
                 result["Total"] = total;
                 result["Active"] = result.ContainsKey("Active") ? result["Active"] : 0;
@@ -327,11 +328,10 @@ namespace API.Services.Implements
             {
                 return (false, "Contract ID is required.", 400, new DetailContractDto());
             }
-            var  result = new DetailContractDto();
-            await _uow.BeginTransactionAsync();
+            var result = new DetailContractDto();
             try
             {
-                var contract = await _uow.Contracts.GetDetailContractAsync( contractId);
+                var contract = await _uow.Contracts.GetDetailContractAsync(contractId);
                 if (contract == null)
                 {
                     return (false, "Contract not found.", 404, result);
@@ -489,7 +489,7 @@ namespace API.Services.Implements
                 {
                     // If due to dormitory issues, reduce old room fee by 50% for remaining days
                     decimal refund = (remainingDays * dailyOldPrice) * 0.5m;
-                    
+
                     if (monthlyDifference > 0)
                     {
                         // Upgrading to higher price room
@@ -603,7 +603,7 @@ namespace API.Services.Implements
                 {
                     return (false, "This receipt is not a refund receipt.", 400);
                 }
-                
+
                 // 3.
                 var student = await _uow.Students.GetByIdAsync(receipt.StudentID);
                 if (student == null)
@@ -621,7 +621,7 @@ namespace API.Services.Implements
                 _uow.Contracts.Update(activeContract);
                 var oldRoom = await _uow.Rooms.GetByIdAsync(activeContract.RoomID);
                 if (oldRoom == null)
-                    {
+                {
                     return (false, "Old room data is missing.", 422);
                 }
                 var newRoom = await _uow.Rooms.GetByIdAsync(request.NewRoomId);
@@ -659,7 +659,7 @@ namespace API.Services.Implements
                     confirmationNote += $" - Ghi chú: {request.ManagerNote}";
                 }
                 confirmationNote += $" - Xác nhận lúc: {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
-                
+
                 receipt.Content += confirmationNote;
 
                 _uow.Receipts.Update(receipt);
@@ -672,6 +672,60 @@ namespace API.Services.Implements
             {
                 await _uow.RollbackAsync();
                 return (false, $"Internal Server Error: {ex.Message}", 500);
+            }
+        }
+
+        public async Task<(bool Success, string Message, int StatusCode, ContractDetailByStudentDto? dto)> GetContractDetailByStudentAsync(string accountId)
+        {
+            try
+            {
+                // 1. Get Student
+                var student = await _uow.Students.GetStudentByAccountIdAsync(accountId);
+                if (student == null)
+                {
+                    return (false, "Student not found.", 404, null); // Trả về null thay vì new Dto()
+                }
+
+                // 2. Get Contract (Đảm bảo Repo đã Include Room, Building, Manager, Equipment)
+                var contract = await _uow.Contracts.GetLastContractByStudentIdAsync(student.StudentID);
+                if (contract == null)
+                {
+                    return (false, "No contract found for this student.", 404, null);
+                }
+
+                var dto = new ContractDetailByStudentDto
+                {
+                    ContractID = contract.ContractID,
+                    Status = contract.ContractStatus,
+                    StartDate = contract.StartDate,
+                    EndDate = contract.EndDate ?? DateOnly.MinValue,
+
+                    ManagerID = contract.Room?.Building?.ManagerID ?? "N/A",
+                    ManagerName = contract.Room?.Building?.Manager?.FullName ?? "N/A",
+                    ManagerEmail = contract.Room?.Building?.Manager?.Email ?? "N/A",
+                    ManagerPhone = contract.Room?.Building?.Manager?.PhoneNumber ?? "N/A",
+
+                    RoomName = contract.Room?.RoomName ?? "N/A",
+                    BuildingName = contract.Room?.Building?.BuildingName ?? "N/A",
+                    RoomTypeName = contract.Room?.RoomType?.TypeName ?? "N/A",
+                    RoomPrice = contract.Room?.RoomType?.Price ?? 0,
+
+                    Equipments = contract.Room?.Equipment?.Select(e => new EquipmentOfRoomDTO
+                    {
+                        EquipmentID = e.EquipmentID,
+                        EquipmentName = e.EquipmentName,
+                        Status = e.Status,
+                    }).ToList() ?? new List<EquipmentOfRoomDTO>()
+                };
+
+                return (true, "Success", 200, dto);
+            }
+            catch (Exception ex)
+            {
+                // TODO: Inject ILogger và log ex.Message ở đây (Server log)
+                // Console.WriteLine(ex.ToString()); 
+
+                return (false, $"Error retrieving contract details: {ex.Message}", 500, null);
             }
         }
     }

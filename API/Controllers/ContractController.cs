@@ -178,5 +178,19 @@ namespace API.Controllers
             return Ok(new { message = result.Message });
         }
 
+        [HttpGet("student-detail/{accountId}")]
+        public async Task<IActionResult> GetStudentContractDetail(string accountId)
+        {
+            var result = await _contractService.GetContractDetailByStudentAsync(accountId);
+            if (!result.Success)
+            {
+                return StatusCode(result.StatusCode, new { message = result.Message });
+            }
+            return Ok(new
+            {
+                message = result.Message,
+                data = result.dto
+            });
+        }
     }
 }
