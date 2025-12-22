@@ -10,7 +10,7 @@ namespace API.UnitOfWorks
 {
     public class UnitOfWork : IAuthUow, IRegistrationUow, IViolationUow, IRoomUow,
         IContractUow, IPaymentUow , IHealthInsuranceUow, IParameterUow, IUtilityBillUow, IMaintenanceUow, IBuildingUow,
-        IPublicInformationUow, IStudentUow, IRoomTypeUow
+        IPublicInformationUow, IStudentUow, IRoomTypeUow , IRoomEquipmentUow
     {
         private readonly DormitoryDbContext _context;
         private IDbContextTransaction? _transaction;

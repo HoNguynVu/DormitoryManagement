@@ -13,5 +13,6 @@ namespace DataAccess.Interfaces
         Task<bool> IsEquipmentInRoomAsync(string roomId, string equipmentId);
 
         Task<RoomEquipment?> GetGoodRoomEquipmentAsync(string roomId, string equipmentId);
+        Task<RoomEquipment?> GetRoomEquipmentByStatusAsync(string roomId, string equipmentId, string status);
     }
 }

@@ -38,5 +38,13 @@ namespace DataAccess.Repository
                 .Where(re => re.RoomID == roomId && re.EquipmentID == equipmentId && re.Status == "Good")
                 .FirstOrDefaultAsync();
         }
+        public async Task<RoomEquipment?> GetRoomEquipmentByStatusAsync(string roomId, string equipmentId, string status)
+        {
+            return await _dbSet
+                .Include(re => re.Equipment)
+                .Include(re => re.Room)
+                .Where(re => re.RoomID == roomId && re.EquipmentID == equipmentId && re.Status == status)
+                .FirstOrDefaultAsync();
+        }
     }
 }

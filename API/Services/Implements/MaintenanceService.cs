@@ -11,9 +11,11 @@ namespace API.Services.Implements
     public class MaintenanceService : IMaintenanceService
     {
         private readonly IMaintenanceUow _uow;
-        public MaintenanceService(IMaintenanceUow uow)
+        private readonly IRoomEquipmentService _roomEquipmentService;
+        public MaintenanceService(IMaintenanceUow uow, IRoomEquipmentService roomEquipmentService)
         {
             _uow = uow;
+            _roomEquipmentService = roomEquipmentService;
         }
         public async Task<(bool Success, string Message, int StatusCode)> CreateRequestAsync(CreateMaintenanceDto dto)
         {
@@ -34,29 +36,14 @@ namespace API.Services.Implements
                 }
                 if (!string.IsNullOrEmpty(dto.EquipmentId))
                 {
-                    var equipment = await _uow.Equipments.GetByIdAsync(dto.EquipmentId);
-
-                    // 1. Kiểm tra thiết bị có tồn tại không
-                    if (equipment == null)
-                        return (false, "Thiết bị không tồn tại.", 404);
-
-                    var roomEquipments = await _uow.RoomEquipments.GetEquipmentsByRoomIdAsync(contract.RoomID);
-                    if (roomEquipments == null || !roomEquipments.Any())
+                    try
                     {
-                        return (false, "Phòng của bạn không có thiết bị nào để yêu cầu bảo trì.", 400);
+                        await _roomEquipmentService.ChangeStatusAsync(contract.RoomID,dto.EquipmentId,1,"Good","Under Maintenance");
                     }
-
-                    // 2. Kiểm tra thiết bị có thuộc phòng của SV không 
-                    var isEquipmentInRoom = roomEquipments.Any(re => re.EquipmentID == dto.EquipmentId);
-                        return (false, "Thiết bị này không thuộc phòng của bạn.", 400);
-                    var goodItem = roomEquipments
-                        .FirstOrDefault(re => re.EquipmentID == dto.EquipmentId && re.Status == "Good");
-                    if (goodItem == null || goodItem.Quantity < 1)
+                    catch (Exception ex)
                     {
-                        return (false, "Phòng của bạn không có thiết bị này (hoặc đã hỏng hết rồi).", 400);
+                        return (false, ex.Message, 400);
                     }
-                    // 3. Cập nhật trạng thái thiết bị -> "Under Maintenance" 
-                    _uow.Equipments.Update(equipment);
                 }
 
                 // Tạo Entity mới
