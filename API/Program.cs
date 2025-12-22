@@ -61,6 +61,7 @@ builder.Services.AddScoped<IParameterUow>(sp => sp.GetRequiredService<UnitOfWork
 builder.Services.AddScoped<IStudentUow>(sp => sp.GetRequiredService<UnitOfWork>());
 builder.Services.AddScoped<IRoomTypeUow>(sp => sp.GetRequiredService<UnitOfWork>()); 
 
+
 // 6. Business Services
 builder.Services.AddScoped<IEmailService, EmailService>(); // Sửa lại: Không cần AddScoped<EmailService> riêng
 builder.Services.AddScoped<IAuthService, AuthService>();

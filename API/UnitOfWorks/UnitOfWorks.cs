@@ -35,6 +35,9 @@ namespace API.UnitOfWorks
         public IMaintenanceRepository Maintenances { get; }
         public IBuildingManagerRepository BuildingManagers { get; }
         public IBuildingRepository Buildings { get; }
+
+        public IRoomEquipmentRepository RoomEquipments { get; }
+        public IEquipmentRepository Equipments { get; }
         public UnitOfWork(DormitoryDbContext context, IDbContextTransaction? dbContextTransaction)
         {
             _context = context;
@@ -61,6 +64,8 @@ namespace API.UnitOfWorks
             Priorities = new PriorityRepository(_context);
             Schools = new SchoolRepository(_context);
             Buildings = new BuildingRepository(_context);
+            RoomEquipments = new RoomEquipmentRepository(_context);
+            Equipments = new EquipmentRepository(_context);
         }
 
         public async Task BeginTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)

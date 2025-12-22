@@ -32,7 +32,6 @@ namespace API.Services.Implements
                 {
                     return (false, "Sinh viên chưa có hợp đồng phòng hiệu lực, không thể gửi yêu cầu.", 403);
                 }
-
                 if (!string.IsNullOrEmpty(dto.EquipmentId))
                 {
                     var equipment = await _uow.Equipments.GetByIdAsync(dto.EquipmentId);
@@ -41,12 +40,22 @@ namespace API.Services.Implements
                     if (equipment == null)
                         return (false, "Thiết bị không tồn tại.", 404);
 
-                    // 2. Kiểm tra thiết bị có thuộc phòng của SV không 
-                    if (equipment.RoomID != contract.RoomID)
-                        return (false, "Thiết bị này không thuộc phòng của bạn.", 400);
+                    var roomEquipments = await _uow.RoomEquipments.GetEquipmentsByRoomIdAsync(contract.RoomID);
+                    if (roomEquipments == null || !roomEquipments.Any())
+                    {
+                        return (false, "Phòng của bạn không có thiết bị nào để yêu cầu bảo trì.", 400);
+                    }
 
+                    // 2. Kiểm tra thiết bị có thuộc phòng của SV không 
+                    var isEquipmentInRoom = roomEquipments.Any(re => re.EquipmentID == dto.EquipmentId);
+                        return (false, "Thiết bị này không thuộc phòng của bạn.", 400);
+                    var goodItem = roomEquipments
+                        .FirstOrDefault(re => re.EquipmentID == dto.EquipmentId && re.Status == "Good");
+                    if (goodItem == null || goodItem.Quantity < 1)
+                    {
+                        return (false, "Phòng của bạn không có thiết bị này (hoặc đã hỏng hết rồi).", 400);
+                    }
                     // 3. Cập nhật trạng thái thiết bị -> "Under Maintenance" 
-                    equipment.Status = "Under Maintenance";
                     _uow.Equipments.Update(equipment);
                 }
 
