@@ -45,7 +45,7 @@ public partial class Room
     public virtual ICollection<Contract> Contracts { get; set; } = new List<Contract>();
 
     [InverseProperty("Room")]
-    public virtual ICollection<Equipment> Equipment { get; set; } = new List<Equipment>();
+    public virtual ICollection<RoomEquipment> RoomEquipments { get; set; } = new List<RoomEquipment>();
 
     [InverseProperty("Room")]
     public virtual ICollection<RegistrationForm> RegistrationForms { get; set; } = new List<RegistrationForm>();

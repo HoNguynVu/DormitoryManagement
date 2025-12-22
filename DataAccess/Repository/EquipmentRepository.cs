@@ -1,7 +1,6 @@
 ﻿using BusinessObject.Entities;
 using DataAccess.Interfaces;
 using DataAccess.Models;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,11 +13,6 @@ namespace DataAccess.Repository
     {
         public EquipmentRepository(DormitoryDbContext context) : base(context)
         {
-        }
-
-        public async Task<IEnumerable<Equipment>> GetEquipmentsByRoomIdAsync(string roomId)
-        {
-            return await _dbSet.Where(r => r.RoomID == roomId ).ToListAsync();
         }
     }
 }

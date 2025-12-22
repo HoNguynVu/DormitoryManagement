@@ -1,5 +1,4 @@
 ﻿using BusinessObject.Entities;
-using DataAccess.Repository;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +9,5 @@ namespace DataAccess.Interfaces
 {
     public interface IEquipmentRepository : IGenericRepository<Equipment>
     {
-
-        Task<IEnumerable<Equipment>> GetEquipmentsByRoomIdAsync(string roomId);
     }
 }

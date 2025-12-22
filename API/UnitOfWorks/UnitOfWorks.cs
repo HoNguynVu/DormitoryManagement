@@ -10,7 +10,7 @@ namespace API.UnitOfWorks
 {
     public class UnitOfWork : IAuthUow, IRegistrationUow, IViolationUow, IRoomUow,
         IContractUow, IPaymentUow , IHealthInsuranceUow, IParameterUow, IUtilityBillUow, IMaintenanceUow, IBuildingUow,
-        IPublicInformationUow, IStudentUow, IRoomTypeUow
+        IPublicInformationUow, IStudentUow, IRoomTypeUow , IRoomEquipmentUow
     {
         private readonly DormitoryDbContext _context;
         private IDbContextTransaction? _transaction;
@@ -33,9 +33,11 @@ namespace API.UnitOfWorks
         public IPriorityRepository Priorities { get; } 
         public ISchoolRepository Schools { get; }
         public IMaintenanceRepository Maintenances { get; }
-        public IEquipmentRepository Equipments { get; }
         public IBuildingManagerRepository BuildingManagers { get; }
         public IBuildingRepository Buildings { get; }
+
+        public IRoomEquipmentRepository RoomEquipments { get; }
+        public IEquipmentRepository Equipments { get; }
         public UnitOfWork(DormitoryDbContext context, IDbContextTransaction? dbContextTransaction)
         {
             _context = context;
@@ -58,11 +60,12 @@ namespace API.UnitOfWorks
             Parameters = new ParameterRepository(_context);
             UtilityBills = new UtilityBillRepository(_context);
             Notifications = new NotificationRepository(_context);
-            Equipments = new EquipmentRepository(_context);
             BuildingManagers = new BuildingManagerRepository(_context);
             Priorities = new PriorityRepository(_context);
             Schools = new SchoolRepository(_context);
             Buildings = new BuildingRepository(_context);
+            RoomEquipments = new RoomEquipmentRepository(_context);
+            Equipments = new EquipmentRepository(_context);
         }
 
         public async Task BeginTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)

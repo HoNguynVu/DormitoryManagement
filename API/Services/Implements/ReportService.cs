@@ -74,12 +74,14 @@ namespace API.Services.Implements
                 if (room == null) return Enumerable.Empty<EquipmentStatusDto>();
 
                 // Load equipments via room navigation if available
-                var equipments = room.Equipment ?? Enumerable.Empty<BusinessObject.Entities.Equipment>();
+                var equipments = room.RoomEquipments?
+                    .Where(e => e.RoomID == room.RoomID) 
+                    ?? Enumerable.Empty<RoomEquipment>();
 
                 return equipments.Select(e => new EquipmentStatusDto
                 {
                     EquipmentID = e.EquipmentID,
-                    EquipmentName = e.EquipmentName,
+                    EquipmentName = e.Equipment.EquipmentName,
                     Status = e.Status ?? string.Empty,
                     RoomID = e.RoomID,
                     RoomName = room.RoomName
@@ -89,11 +91,12 @@ namespace API.Services.Implements
             // Fallback: try contractUow rooms
             var altRoom = await _contractUow.Rooms.GetByIdAsync(roomId);
             if (altRoom == null) return Enumerable.Empty<EquipmentStatusDto>();
-            var altEquipments = altRoom.Equipment ?? Enumerable.Empty<BusinessObject.Entities.Equipment>();
+
+            var altEquipments = altRoom.RoomEquipments ?? Enumerable.Empty<RoomEquipment>();
             return altEquipments.Select(e => new EquipmentStatusDto
             {
                 EquipmentID = e.EquipmentID,
-                EquipmentName = e.EquipmentName,
+                EquipmentName = e.Equipment.EquipmentName,
                 Status = e.Status ?? string.Empty,
                 RoomID = e.RoomID,
                 RoomName = altRoom.RoomName

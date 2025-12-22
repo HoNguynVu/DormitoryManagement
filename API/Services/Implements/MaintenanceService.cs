@@ -11,9 +11,11 @@ namespace API.Services.Implements
     public class MaintenanceService : IMaintenanceService
     {
         private readonly IMaintenanceUow _uow;
-        public MaintenanceService(IMaintenanceUow uow)
+        private readonly IRoomEquipmentService _roomEquipmentService;
+        public MaintenanceService(IMaintenanceUow uow, IRoomEquipmentService roomEquipmentService)
         {
             _uow = uow;
+            _roomEquipmentService = roomEquipmentService;
         }
         public async Task<(bool Success, string Message, int StatusCode)> CreateRequestAsync(CreateMaintenanceDto dto)
         {
@@ -32,22 +34,16 @@ namespace API.Services.Implements
                 {
                     return (false, "Sinh viên chưa có hợp đồng phòng hiệu lực, không thể gửi yêu cầu.", 403);
                 }
-
                 if (!string.IsNullOrEmpty(dto.EquipmentId))
                 {
-                    var equipment = await _uow.Equipments.GetByIdAsync(dto.EquipmentId);
-
-                    // 1. Kiểm tra thiết bị có tồn tại không
-                    if (equipment == null)
-                        return (false, "Thiết bị không tồn tại.", 404);
-
-                    // 2. Kiểm tra thiết bị có thuộc phòng của SV không 
-                    if (equipment.RoomID != contract.RoomID)
-                        return (false, "Thiết bị này không thuộc phòng của bạn.", 400);
-
-                    // 3. Cập nhật trạng thái thiết bị -> "Under Maintenance" 
-                    equipment.Status = "Under Maintenance";
-                    _uow.Equipments.Update(equipment);
+                    try
+                    {
+                        await _roomEquipmentService.ChangeStatusAsync(contract.RoomID,dto.EquipmentId,1,"Good","Under Maintenance");
+                    }
+                    catch (Exception ex)
+                    {
+                        return (false, ex.Message, 400);
+                    }
                 }
 
                 // Tạo Entity mới
@@ -122,11 +118,24 @@ namespace API.Services.Implements
                 // 3. Cập nhật thông tin chung
                 request.Status = dto.NewStatus;
                 request.ManagerNote = dto.ManagerNote;
-                if (dto.NewStatus == "Completed" && request.Equipment != null)
-                {
-                    request.Equipment.Status = "Good";
+                
+                try
+                {  
+                    if (dto.NewStatus == "In Progress" && request.EquipmentID != null)
+                    {
+                        await _roomEquipmentService.ChangeStatusAsync(request.RoomID, request.EquipmentID, 1, "Under Maintenance", "Being Repaired");
+                    }
+                    
+                    else if (dto.NewStatus == "Completed" && request.EquipmentID != null)
+                    {
+                        await _roomEquipmentService.ChangeStatusAsync(request.RoomID, request.EquipmentID, 1, "Being Repaired", "Good");
+                    }
                 }
-                // 4. Xử lý Logic khi trạng thái là "Completed" (Đã sửa xong)
+                catch (Exception ex)
+                {
+                    return (false, ex.Message, 400);
+                }
+                // 4. Xử lý Logic khi trạng thái là "Completed"
                 if (dto.NewStatus == "Completed")
                 {
                     request.ResolvedDate = DateTime.Now;
