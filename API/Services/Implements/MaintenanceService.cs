@@ -87,7 +87,8 @@ namespace API.Services.Implements
                     EquipmentName = m.Equipment.EquipmentName,
                     Description = m.Description,
                     Status = m.Status,
-                    MaintenanceDate = DateOnly.FromDateTime(m.RequestDate)
+                    IssueDate = DateOnly.FromDateTime(m.RequestDate),
+                    ResolvedDate = m.ResolvedDate.HasValue ? DateOnly.FromDateTime(m.ResolvedDate.Value) : null
                 }).ToList();
                 return (true, "Lấy danh sách thành công.", 200, result);
             }
@@ -178,17 +179,76 @@ namespace API.Services.Implements
 
         public async Task<(bool Success, string Message, int StatusCode, IEnumerable<SummaryMaintenanceDto> dto)> GetMaintenanceFiltered(string? keyword, string? status, string? equipmentName)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var requests = await _uow.Maintenances.GetMaintenanceFilteredAsync(keyword, status, equipmentName);
+                if (requests == null || !requests.Any())
+                {
+                    return (true, "Không tìm thấy yêu cầu nào.", 200, Enumerable.Empty<SummaryMaintenanceDto>());
+                }
+                var result = requests.Select(m => new SummaryMaintenanceDto
+                {
+                    MaintenanceID = m.RequestID,
+                    RoomName = m.Room.RoomName,
+                    StudentName = m.Student.FullName,
+                    EquipmentName = m.Equipment.EquipmentName,
+                    Description = m.Description,
+                    Status = m.Status,
+                    IssueDate = DateOnly.FromDateTime(m.RequestDate),
+                    ResolvedDate = m.ResolvedDate.HasValue ? DateOnly.FromDateTime(m.ResolvedDate.Value) : null
+                }).ToList();
+                return (true, "Lấy danh sách thành công.", 200, result);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Lỗi truy vấn: {ex.Message}", 500, Enumerable.Empty<SummaryMaintenanceDto>());
+            }
         }
 
-        public Task<(bool Success, string Message, int StatusCode, DetailMaintenanceDto dto)> GetMaintenanceDetail(string maintenanceId)
+        public async Task<(bool Success, string Message, int StatusCode, DetailMaintenanceDto dto)> GetMaintenanceDetail(string maintenanceId)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var request = await _uow.Maintenances.GetMaintenanceDetailAsync(maintenanceId);
+                if (request == null)
+                {
+                    return (false, "Yêu cầu bảo trì không tồn tại.", 404, null!);
+                }
+                var dto = new DetailMaintenanceDto
+                {
+                    MaintenanceID = request.RequestID,
+                    StudentName = request.Student.FullName,
+                    RoomName = request.Room.RoomName,
+                    EquipmentName = request.Equipment?.EquipmentName ?? "N/A",
+                    Description = request.Description,
+                    Status = request.Status,
+                    IssueDate = DateOnly.FromDateTime(request.RequestDate),
+                    ResolvedDate = request.ResolvedDate.HasValue ? DateOnly.FromDateTime(request.ResolvedDate.Value) : null,
+                    ManagerNote = request.ManagerNote,
+                    Amount = request.RepairCost
+                };
+                return (true, "Lấy chi tiết thành công.", 200, dto);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Lỗi truy vấn: {ex.Message}", 500, null!);
+            }
         }
 
-        public Task<(bool Success, string Message, int StatusCode, Dictionary<string, int> list)> GetOverviewMaintenance()
+        public async Task<(bool Success, string Message, int StatusCode, Dictionary<string, int> list)> GetOverviewMaintenance()
         {
-            throw new NotImplementedException();
+            try
+            {
+                var maintenances = await _uow.Maintenances.GetAllAsync();
+                var overview = maintenances
+                    .GroupBy(m => m.Status)
+                    .ToDictionary(g => g.Key, g => g.Count());
+                return (true, "Lấy tổng quan bảo trì thành công.", 200, overview);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Lỗi truy vấn: {ex.Message}", 500, new Dictionary<string, int>());
+            }
         }
     }
 }

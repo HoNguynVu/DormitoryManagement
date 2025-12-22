@@ -4,6 +4,7 @@ using DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(DormitoryDbContext))]
-    partial class DormitoryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251222182700_add table roomequipment")]
+    partial class addtableroomequipment
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -219,7 +222,6 @@ namespace DataAccess.Migrations
                         .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("CardNumber")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -227,27 +229,23 @@ namespace DataAccess.Migrations
                         .HasColumnType("decimal(18, 2)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasColumnType("datetime2");
 
                     b.Property<DateOnly>("EndDate")
                         .HasColumnType("date");
 
-                    b.Property<string>("HospitalID")
+                    b.Property<string>("InitialHospital")
                         .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<DateOnly>("StartDate")
                         .HasColumnType("date");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasDefaultValue("Pending");
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("StudentID")
                         .IsRequired()
@@ -256,27 +254,9 @@ namespace DataAccess.Migrations
 
                     b.HasKey("InsuranceID");
 
-                    b.HasIndex("HospitalID");
-
                     b.HasIndex("StudentID");
 
                     b.ToTable("HealthInsurances");
-                });
-
-            modelBuilder.Entity("BusinessObject.Entities.Hospital", b =>
-                {
-                    b.Property<string>("HospitalID")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
-                    b.Property<string>("HospitalName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("HospitalID");
-
-                    b.ToTable("Hospitals");
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.MaintenanceRequest", b =>
@@ -1020,20 +1000,12 @@ namespace DataAccess.Migrations
 
             modelBuilder.Entity("BusinessObject.Entities.HealthInsurance", b =>
                 {
-                    b.HasOne("BusinessObject.Entities.Hospital", "Hospital")
-                        .WithMany("Insurances")
-                        .HasForeignKey("HospitalID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("BusinessObject.Entities.Student", "Student")
                         .WithMany("HealthInsurances")
                         .HasForeignKey("StudentID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK_HealthInsurances_Students");
-
-                    b.Navigation("Hospital");
 
                     b.Navigation("Student");
                 });
@@ -1271,11 +1243,6 @@ namespace DataAccess.Migrations
             modelBuilder.Entity("BusinessObject.Entities.Equipment", b =>
                 {
                     b.Navigation("RoomEquipments");
-                });
-
-            modelBuilder.Entity("BusinessObject.Entities.Hospital", b =>
-                {
-                    b.Navigation("Insurances");
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.Priority", b =>

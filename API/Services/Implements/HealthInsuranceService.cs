@@ -55,7 +55,7 @@ namespace API.Services.Implements
                 {
                     InsuranceID = "HI-" + IdGenerator.GenerateUniqueSuffix(),
                     StudentID = studentId,
-                    InitialHospital = registrationPlace,
+                    //InitialHospital = registrationPlace, // đợi sửa
                     StartDate = DateOnly.FromDateTime(DateTime.Now),
                     EndDate = DateOnly.FromDateTime(DateTime.Now),
                     Cost = Cost.INSURANCE_COST_PER_YEAR,

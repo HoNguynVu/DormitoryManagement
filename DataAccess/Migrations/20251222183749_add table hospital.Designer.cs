@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(DormitoryDbContext))]
-    [Migration("20251222163100_add table roomequipment")]
-    partial class addtableroomequipment
+    [Migration("20251222183749_add table hospital")]
+    partial class addtablehospital
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -222,6 +222,7 @@ namespace DataAccess.Migrations
                         .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("CardNumber")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -229,23 +230,27 @@ namespace DataAccess.Migrations
                         .HasColumnType("decimal(18, 2)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<DateOnly>("EndDate")
                         .HasColumnType("date");
 
-                    b.Property<string>("InitialHospital")
+                    b.Property<string>("HospitalID")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<DateOnly>("StartDate")
                         .HasColumnType("date");
 
                     b.Property<string>("Status")
                         .IsRequired()
+                        .ValueGeneratedOnAdd()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasDefaultValue("Pending");
 
                     b.Property<string>("StudentID")
                         .IsRequired()
@@ -254,9 +259,27 @@ namespace DataAccess.Migrations
 
                     b.HasKey("InsuranceID");
 
+                    b.HasIndex("HospitalID");
+
                     b.HasIndex("StudentID");
 
                     b.ToTable("HealthInsurances");
+                });
+
+            modelBuilder.Entity("BusinessObject.Entities.Hospital", b =>
+                {
+                    b.Property<string>("HospitalID")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("HospitalName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("HospitalID");
+
+                    b.ToTable("Hospitals");
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.MaintenanceRequest", b =>
@@ -706,9 +729,6 @@ namespace DataAccess.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
 
-                    b.Property<string>("EquipmentID1")
-                        .HasColumnType("nvarchar(128)");
-
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
@@ -725,8 +745,6 @@ namespace DataAccess.Migrations
                     b.HasKey("RoomEquipmentID");
 
                     b.HasIndex("EquipmentID");
-
-                    b.HasIndex("EquipmentID1");
 
                     b.HasIndex("RoomID");
 
@@ -1005,12 +1023,20 @@ namespace DataAccess.Migrations
 
             modelBuilder.Entity("BusinessObject.Entities.HealthInsurance", b =>
                 {
+                    b.HasOne("BusinessObject.Entities.Hospital", "Hospital")
+                        .WithMany("Insurances")
+                        .HasForeignKey("HospitalID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("BusinessObject.Entities.Student", "Student")
                         .WithMany("HealthInsurances")
                         .HasForeignKey("StudentID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK_HealthInsurances_Students");
+
+                    b.Navigation("Hospital");
 
                     b.Navigation("Student");
                 });
@@ -1145,14 +1171,10 @@ namespace DataAccess.Migrations
             modelBuilder.Entity("BusinessObject.Entities.RoomEquipment", b =>
                 {
                     b.HasOne("BusinessObject.Entities.Equipment", "Equipment")
-                        .WithMany()
+                        .WithMany("RoomEquipments")
                         .HasForeignKey("EquipmentID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("BusinessObject.Entities.Equipment", null)
-                        .WithMany("RoomEquipments")
-                        .HasForeignKey("EquipmentID1");
 
                     b.HasOne("BusinessObject.Entities.Room", "Room")
                         .WithMany("RoomEquipments")
@@ -1252,6 +1274,11 @@ namespace DataAccess.Migrations
             modelBuilder.Entity("BusinessObject.Entities.Equipment", b =>
                 {
                     b.Navigation("RoomEquipments");
+                });
+
+            modelBuilder.Entity("BusinessObject.Entities.Hospital", b =>
+                {
+                    b.Navigation("Insurances");
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.Priority", b =>

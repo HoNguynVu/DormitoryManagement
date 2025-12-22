@@ -34,8 +34,7 @@ namespace DataAccess.Migrations
                     RoomID = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
                     EquipmentID = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
                     Quantity = table.Column<int>(type: "int", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    EquipmentID1 = table.Column<string>(type: "nvarchar(128)", nullable: true)
+                    Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -46,11 +45,6 @@ namespace DataAccess.Migrations
                         principalTable: "Equipment",
                         principalColumn: "EquipmentID",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_RoomEquipments_Equipment_EquipmentID1",
-                        column: x => x.EquipmentID1,
-                        principalTable: "Equipment",
-                        principalColumn: "EquipmentID");
                     table.ForeignKey(
                         name: "FK_RoomEquipments_Rooms_RoomID",
                         column: x => x.RoomID,
@@ -63,11 +57,6 @@ namespace DataAccess.Migrations
                 name: "IX_RoomEquipments_EquipmentID",
                 table: "RoomEquipments",
                 column: "EquipmentID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_RoomEquipments_EquipmentID1",
-                table: "RoomEquipments",
-                column: "EquipmentID1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RoomEquipments_RoomID",

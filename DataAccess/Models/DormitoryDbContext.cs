@@ -41,6 +41,7 @@ namespace DataAccess.Models
         public virtual DbSet<RegistrationForm> RegistrationForms { get; set; }
         public virtual DbSet<Violation> Violations { get; set; }
         public virtual DbSet<HealthInsurance> HealthInsurances { get; set; }
+        public virtual DbSet<Hospital> Hospitals { get; set; }
 
         // Finance
         public virtual DbSet<UtilityBill> UtilityBills { get; set; }
@@ -180,8 +181,6 @@ namespace DataAccess.Models
             modelBuilder.Entity<RoomEquipment>(entity =>
             {
                 entity.HasKey(e => e.RoomEquipmentID);
-                entity.HasOne(d => d.Room).WithMany(p => p.RoomEquipments).HasForeignKey(d => d.RoomID).OnDelete(DeleteBehavior.Cascade);
-                entity.HasOne(d => d.Equipment).WithMany().HasForeignKey(d => d.EquipmentID).OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<RefreshToken>(entity =>
@@ -203,8 +202,19 @@ namespace DataAccess.Models
             {
                 entity.HasKey(e => e.InsuranceID);
                 entity.HasOne(d => d.Student).WithMany(p => p.HealthInsurances).HasConstraintName("FK_HealthInsurances_Students");
+                entity.HasOne(d => d.Hospital)
+                      .WithMany(p => p.Insurances)     
+                      .HasForeignKey(d => d.HospitalID)
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.Property(e => e.Cost).HasColumnType("decimal(18, 2)");
+                entity.Property(e => e.Status).HasDefaultValue("Pending");
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETDATE()");
             });
-
+            modelBuilder.Entity<Hospital>(entity =>
+            {
+                entity.HasKey(e => e.HospitalID);
+                entity.Property(e => e.HospitalName).IsRequired();
+            });
             modelBuilder.Entity<Notification>(entity =>
             {
                 entity.HasKey(e => e.NotificationID);
