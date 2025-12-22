@@ -1,5 +1,6 @@
 ﻿using API.Services.Interfaces;
 using API.UnitOfWorks;
+using BusinessObject.DTOs.EquipmentDTOs;
 
 namespace API.Services.Implements
 {
@@ -11,7 +12,7 @@ namespace API.Services.Implements
             _equipmentUow = equipmentUow;
         }
 
-        public async Task<(bool Success, string Message, int StatusCode, Dictionary<string,string>? result)> GetAllEquipmentByRoomIdAsync(string roomId)
+        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<SummaryEquipmentDto>? result)> GetAllEquipmentByRoomIdAsync(string roomId)
         {
             if (string.IsNullOrEmpty(roomId))
             {
@@ -29,8 +30,12 @@ namespace API.Services.Implements
                 {
                     return (false, "No equipment found for the specified room ID.", 404, null);
                 }
-                var equipmentDict = equipments.ToDictionary(e => e.EquipmentID, e => e.EquipmentName);
-                return (true, "Equipments retrieved successfully.", 200, equipmentDict);
+                var result = equipments.Select(e => new SummaryEquipmentDto
+                {
+                    EquipmentId = e.EquipmentID,
+                    EquipmentName = e.EquipmentName
+                }).ToList();
+                return (true, "Equipments retrieved successfully.", 200, result);
             }
             catch (Exception ex)
             {
