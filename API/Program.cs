@@ -60,6 +60,7 @@ builder.Services.AddScoped<IPublicInformationUow>(sp => sp.GetRequiredService<Un
 builder.Services.AddScoped<IParameterUow>(sp => sp.GetRequiredService<UnitOfWork>());
 builder.Services.AddScoped<IStudentUow>(sp => sp.GetRequiredService<UnitOfWork>());
 builder.Services.AddScoped<IRoomTypeUow>(sp => sp.GetRequiredService<UnitOfWork>());
+builder.Services.AddScoped<IEquipmentUow>(sp => sp.GetRequiredService<UnitOfWork>());   
 
 // 6. Business Services
 builder.Services.AddScoped<IEmailService, EmailService>(); // Sửa lại: Không cần AddScoped<EmailService> riêng
@@ -79,6 +80,7 @@ builder.Services.AddScoped<IPublicInformationService, PublicInformationService>(
 builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<IBuildingService, BuildingService>();
 builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
+builder.Services.AddScoped<IEquipmentService, EquipmentService>();
 
 // 7. Repositories (Nếu UoW đã bao gồm Repo thì có thể không cần dòng này, nhưng giữ lại nếu code cũ cần)
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
@@ -129,7 +131,7 @@ builder.Services.AddSingleton(VnPaySettings =>
         FrontEndUrl = config["FrontEndUrl"] ?? string.Empty
     };
 });
-
+builder.Services.AddHttpClient();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
