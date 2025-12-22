@@ -118,11 +118,24 @@ namespace API.Services.Implements
                 // 3. Cập nhật thông tin chung
                 request.Status = dto.NewStatus;
                 request.ManagerNote = dto.ManagerNote;
-                if (dto.NewStatus == "Completed" && request.Equipment != null)
-                {
-                    request.Equipment.Status = "Good";
+                
+                try
+                {  
+                    if (dto.NewStatus == "In Progress" && request.EquipmentID != null)
+                    {
+                        await _roomEquipmentService.ChangeStatusAsync(request.RoomID, request.EquipmentID, 1, "Under Maintenance", "Being Repaired");
+                    }
+                    
+                    else if (dto.NewStatus == "Completed" && request.EquipmentID != null)
+                    {
+                        await _roomEquipmentService.ChangeStatusAsync(request.RoomID, request.EquipmentID, 1, "Being Repaired", "Good");
+                    }
                 }
-                // 4. Xử lý Logic khi trạng thái là "Completed" (Đã sửa xong)
+                catch (Exception ex)
+                {
+                    return (false, ex.Message, 400);
+                }
+                // 4. Xử lý Logic khi trạng thái là "Completed"
                 if (dto.NewStatus == "Completed")
                 {
                     request.ResolvedDate = DateTime.Now;
