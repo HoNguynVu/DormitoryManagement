@@ -235,9 +235,20 @@ namespace API.Services.Implements
             }
         }
 
-        public Task<(bool Success, string Message, int StatusCode, Dictionary<string, int> list)> GetOverviewMaintenance()
+        public async Task<(bool Success, string Message, int StatusCode, Dictionary<string, int> list)> GetOverviewMaintenance()
         {
-            throw new NotImplementedException();
+            try
+            {
+                var maintenances = await _uow.Maintenances.GetAllAsync();
+                var overview = maintenances
+                    .GroupBy(m => m.Status)
+                    .ToDictionary(g => g.Key, g => g.Count());
+                return (true, "Lấy tổng quan bảo trì thành công.", 200, overview);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Lỗi truy vấn: {ex.Message}", 500, new Dictionary<string, int>());
+            }
         }
     }
 }
