@@ -26,6 +26,9 @@ namespace BusinessObject.Entities
         public int ElectricityUsage { get; set; }
         public int WaterUsage { get; set; }
 
+        public decimal ElectricityUnitPrice { get; set; }
+        public decimal WaterUnitPrice { get; set; }
+
         [Column(TypeName = "decimal(18, 2)")]
         public decimal Amount { get; set; }
 

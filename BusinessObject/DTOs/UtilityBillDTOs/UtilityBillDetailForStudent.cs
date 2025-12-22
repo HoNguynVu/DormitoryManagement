@@ -16,6 +16,8 @@ namespace BusinessObject.DTOs.UtilityBillDTOs
         public int WaterOldIndex { get; set; }     
         public int WaterNewIndex { get; set; }
         public int ElectricityUsage { get; set; }
+        public decimal ElectricityUnitPrice { get; set; }
+        public decimal WaterUnitPrice { get; set; }
         public int WaterUsage { get; set; }
         public decimal TotalAmount { get; set; }
         public string Status { get; set; } = string.Empty;
