@@ -178,7 +178,29 @@ namespace API.Services.Implements
 
         public async Task<(bool Success, string Message, int StatusCode, IEnumerable<SummaryMaintenanceDto> dto)> GetMaintenanceFiltered(string? keyword, string? status, string? equipmentName)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var requests = await _uow.Maintenances.GetMaintenanceFilteredAsync(keyword, status, equipmentName);
+                if (requests == null || !requests.Any())
+                {
+                    return (true, "Không tìm thấy yêu cầu nào.", 200, Enumerable.Empty<SummaryMaintenanceDto>());
+                }
+                var result = requests.Select(m => new SummaryMaintenanceDto
+                {
+                    MaintenanceID = m.RequestID,
+                    RoomName = m.Room.RoomName,
+                    StudentName = m.Student.FullName,
+                    EquipmentName = m.Equipment.EquipmentName,
+                    Description = m.Description,
+                    Status = m.Status,
+                    MaintenanceDate = DateOnly.FromDateTime(m.RequestDate)
+                }).ToList();
+                return (true, "Lấy danh sách thành công.", 200, result);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Lỗi truy vấn: {ex.Message}", 500, Enumerable.Empty<SummaryMaintenanceDto>());
+            }
         }
 
         public Task<(bool Success, string Message, int StatusCode, DetailMaintenanceDto dto)> GetMaintenanceDetail(string maintenanceId)

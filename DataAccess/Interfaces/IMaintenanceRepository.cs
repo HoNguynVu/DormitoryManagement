@@ -15,6 +15,7 @@ namespace DataAccess.Interfaces
 
         Task<IEnumerable<MaintenanceRequest>> GetMaintenanceByStudentIdAsync(string studentId);
         Task<MaintenanceRequest?> GetMaintenanceByIdAsync(string maintenanceId);
+        Task<IEnumerable<MaintenanceRequest>> GetMaintenanceFilteredAsync(string? keyword, string? status, string? equipmentName);
 
 
     }
