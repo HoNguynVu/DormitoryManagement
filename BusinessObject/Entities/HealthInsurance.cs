@@ -16,14 +16,15 @@ namespace BusinessObject.Entities
         [Required]
         [StringLength(128)]
         public string StudentID { get; set; }
-        [ForeignKey("StudentID")]
-        public Student Student { get; set; }
+        public virtual Student Student { get; set; }
 
-        [StringLength(255)]
-        public string InitialHospital { get; set; }
+        [Required]
+        [StringLength(128)]
+        public string HospitalID { get; set; }
+        public virtual Hospital Hospital { get; set; }
 
         [StringLength(50)]
-        public string? CardNumber { get; set; } 
+        public string CardNumber { get; set; } 
 
         [Required]
         public DateOnly StartDate { get; set; }
