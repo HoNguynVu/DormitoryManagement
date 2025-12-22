@@ -710,11 +710,12 @@ namespace API.Services.Implements
                     RoomTypeName = contract.Room?.RoomType?.TypeName ?? "N/A",
                     RoomPrice = contract.Room?.RoomType?.Price ?? 0,
 
-                    Equipments = contract.Room?.Equipment?.Select(e => new EquipmentOfRoomDTO
+                    Equipments = contract.Room?.RoomEquipments?.Select(re => new EquipmentOfRoomDTO
                     {
-                        EquipmentID = e.EquipmentID,
-                        EquipmentName = e.EquipmentName,
-                        Status = e.Status,
+                        EquipmentID = re.EquipmentID,
+                        EquipmentName = re.Equipment.EquipmentName,
+                        Quantity = re.Quantity,
+                        Status = re.Status,
                     }).ToList() ?? new List<EquipmentOfRoomDTO>()
                 };
 

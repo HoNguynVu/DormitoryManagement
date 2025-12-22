@@ -10,6 +10,7 @@ namespace BusinessObject.DTOs.EquipmentDTO
     {
         public string EquipmentID { get; set; } = string.Empty;
         public string EquipmentName { get; set; } = string.Empty;
+        public int Quantity { get; set; } 
         public string Status { get; set; } = string.Empty;
     }
 }
