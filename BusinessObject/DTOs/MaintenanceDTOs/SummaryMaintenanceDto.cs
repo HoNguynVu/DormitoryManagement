@@ -14,6 +14,7 @@ namespace BusinessObject.DTOs.MaintenanceDTOs
         public string EquipmentName { get; set; } = string.Empty;
         public string Description {  get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;  
-        public DateOnly MaintenanceDate {  get; set; }
+        public DateOnly IssueDate {  get; set; }
+        public DateOnly? ResolvedDate {  get; set; }
     }
 }

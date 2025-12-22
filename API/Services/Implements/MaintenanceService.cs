@@ -87,7 +87,8 @@ namespace API.Services.Implements
                     EquipmentName = m.Equipment.EquipmentName,
                     Description = m.Description,
                     Status = m.Status,
-                    MaintenanceDate = DateOnly.FromDateTime(m.RequestDate)
+                    IssueDate = DateOnly.FromDateTime(m.RequestDate),
+                    ResolvedDate = m.ResolvedDate.HasValue ? DateOnly.FromDateTime(m.ResolvedDate.Value) : null
                 }).ToList();
                 return (true, "Lấy danh sách thành công.", 200, result);
             }
@@ -193,7 +194,8 @@ namespace API.Services.Implements
                     EquipmentName = m.Equipment.EquipmentName,
                     Description = m.Description,
                     Status = m.Status,
-                    MaintenanceDate = DateOnly.FromDateTime(m.RequestDate)
+                    IssueDate = DateOnly.FromDateTime(m.RequestDate),
+                    ResolvedDate = m.ResolvedDate.HasValue ? DateOnly.FromDateTime(m.ResolvedDate.Value) : null
                 }).ToList();
                 return (true, "Lấy danh sách thành công.", 200, result);
             }
@@ -203,9 +205,34 @@ namespace API.Services.Implements
             }
         }
 
-        public Task<(bool Success, string Message, int StatusCode, DetailMaintenanceDto dto)> GetMaintenanceDetail(string maintenanceId)
+        public async Task<(bool Success, string Message, int StatusCode, DetailMaintenanceDto dto)> GetMaintenanceDetail(string maintenanceId)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var request = await _uow.Maintenances.GetMaintenanceDetailAsync(maintenanceId);
+                if (request == null)
+                {
+                    return (false, "Yêu cầu bảo trì không tồn tại.", 404, null!);
+                }
+                var dto = new DetailMaintenanceDto
+                {
+                    MaintenanceID = request.RequestID,
+                    StudentName = request.Student.FullName,
+                    RoomName = request.Room.RoomName,
+                    EquipmentName = request.Equipment?.EquipmentName ?? "N/A",
+                    Description = request.Description,
+                    Status = request.Status,
+                    IssueDate = DateOnly.FromDateTime(request.RequestDate),
+                    ResolvedDate = request.ResolvedDate.HasValue ? DateOnly.FromDateTime(request.ResolvedDate.Value) : null,
+                    ManagerNote = request.ManagerNote,
+                    Amount = request.RepairCost
+                };
+                return (true, "Lấy chi tiết thành công.", 200, dto);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Lỗi truy vấn: {ex.Message}", 500, null!);
+            }
         }
 
         public Task<(bool Success, string Message, int StatusCode, Dictionary<string, int> list)> GetOverviewMaintenance()

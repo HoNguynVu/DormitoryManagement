@@ -70,5 +70,14 @@ namespace DataAccess.Repository
             }
             return await query.AsNoTracking().ToListAsync();
         }
+
+        public async Task<MaintenanceRequest?> GetMaintenanceDetailAsync(string maintenanceId)
+        {
+            return await _context.MaintenanceRequests
+                .Include(m => m.Student)
+                .Include(m => m.Room)
+                .Include(m => m.Equipment)
+                .FirstOrDefaultAsync(m => m.RequestID == maintenanceId);
+        }
     }
 }
