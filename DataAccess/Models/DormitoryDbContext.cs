@@ -34,6 +34,7 @@ namespace DataAccess.Models
         public virtual DbSet<Building> Buildings { get; set; }
         public virtual DbSet<Room> Rooms { get; set; }
         public virtual DbSet<Equipment> Equipment { get; set; }
+        public virtual DbSet<RoomEquipment> RoomEquipments { get; set; }
 
         // Operations
         public virtual DbSet<Contract> Contracts { get; set; }
@@ -174,7 +175,13 @@ namespace DataAccess.Models
             modelBuilder.Entity<Equipment>(entity =>
             {
                 entity.HasKey(e => e.EquipmentID);
-                entity.HasOne(d => d.Room).WithMany(p => p.Equipment).HasForeignKey(d => d.RoomID).OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<RoomEquipment>(entity =>
+            {
+                entity.HasKey(e => e.RoomEquipmentID);
+                entity.HasOne(d => d.Room).WithMany(p => p.RoomEquipments).HasForeignKey(d => d.RoomID).OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(d => d.Equipment).WithMany().HasForeignKey(d => d.EquipmentID).OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<RefreshToken>(entity =>

@@ -10,7 +10,7 @@ namespace API.UnitOfWorks
 {
     public class UnitOfWork : IAuthUow, IRegistrationUow, IViolationUow, IRoomUow,
         IContractUow, IPaymentUow , IHealthInsuranceUow, IParameterUow, IUtilityBillUow, IMaintenanceUow, IBuildingUow,
-        IPublicInformationUow, IStudentUow, IRoomTypeUow, IEquipmentUow
+        IPublicInformationUow, IStudentUow, IRoomTypeUow
     {
         private readonly DormitoryDbContext _context;
         private IDbContextTransaction? _transaction;
@@ -33,7 +33,6 @@ namespace API.UnitOfWorks
         public IPriorityRepository Priorities { get; } 
         public ISchoolRepository Schools { get; }
         public IMaintenanceRepository Maintenances { get; }
-        public IEquipmentRepository Equipments { get; }
         public IBuildingManagerRepository BuildingManagers { get; }
         public IBuildingRepository Buildings { get; }
         public UnitOfWork(DormitoryDbContext context, IDbContextTransaction? dbContextTransaction)
@@ -58,7 +57,6 @@ namespace API.UnitOfWorks
             Parameters = new ParameterRepository(_context);
             UtilityBills = new UtilityBillRepository(_context);
             Notifications = new NotificationRepository(_context);
-            Equipments = new EquipmentRepository(_context);
             BuildingManagers = new BuildingManagerRepository(_context);
             Priorities = new PriorityRepository(_context);
             Schools = new SchoolRepository(_context);

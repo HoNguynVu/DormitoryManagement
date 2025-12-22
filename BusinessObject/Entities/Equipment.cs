@@ -14,16 +14,9 @@ namespace BusinessObject.Entities
         public string EquipmentID { get; set; }
 
         [Required]
-        [StringLength(128)]
-        public string RoomID { get; set; }
-        [ForeignKey("RoomID")]
-        public Room Room { get; set; }
-
-        [Required]
         [StringLength(100)]
         public string EquipmentName { get; set; }
 
-        [StringLength(100)]
-        public string Status { get; set; }
+        public virtual ICollection<RoomEquipment> RoomEquipments { get; set; } = new List<RoomEquipment>();
     }
 }
