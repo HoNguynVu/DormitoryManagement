@@ -63,6 +63,50 @@ namespace API.Controllers
 
             return Ok(new { message = result.Message });
         }
-    }
 
+        [HttpGet("filter")]
+        public async Task<IActionResult> GetMaintenanceFiltered([FromQuery] string? keyword, [FromQuery] string? status, [FromQuery] string? equipmentName)
+        {
+            var result = await _maintenanceService.GetMaintenanceFiltered(keyword, status, equipmentName);
+            if (!result.Success)
+            {
+                return StatusCode(result.StatusCode, new { message = result.Message });
+            }
+            return Ok(new
+            {
+                message = result.Message,
+                data = result.dto
+            });
+        }
+
+        [HttpGet("{maintenanceId}/detail")]
+        public async Task<IActionResult> GetMaintenanceDetail([FromRoute] string maintenanceId)
+        {
+            var result = await _maintenanceService.GetMaintenanceDetail(maintenanceId);
+            if (!result.Success)
+            {
+                return StatusCode(result.StatusCode, new { message = result.Message });
+            }
+            return Ok(new
+            {
+                message = result.Message,
+                data = result.dto
+            });
+        }
+
+        [HttpGet("overview")]
+        public async Task<IActionResult> GetOverviewMaintenance()
+        {
+            var result = await _maintenanceService.GetOverviewMaintenance();
+            if (!result.Success)
+            {
+                return StatusCode(result.StatusCode, new { message = result.Message });
+            }
+            return Ok(new
+            {
+                message = result.Message,
+                data = result.list
+            });
+        }
+    }
 }

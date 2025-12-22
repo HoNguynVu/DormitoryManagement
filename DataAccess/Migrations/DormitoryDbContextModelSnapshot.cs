@@ -75,7 +75,7 @@ namespace DataAccess.Migrations
                     b.HasIndex(new[] { "Email" }, "UQ__Accounts__A9D10534E8EB8D7E")
                         .IsUnique();
 
-                    b.ToTable("Accounts");
+                    b.ToTable("Accounts", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.Building", b =>
@@ -103,7 +103,7 @@ namespace DataAccess.Migrations
 
                     b.HasIndex("ManagerID");
 
-                    b.ToTable("Buildings");
+                    b.ToTable("Buildings", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.BuildingManager", b =>
@@ -193,7 +193,7 @@ namespace DataAccess.Migrations
 
                     b.HasIndex("StudentID");
 
-                    b.ToTable("Contracts");
+                    b.ToTable("Contracts", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.Equipment", b =>
@@ -207,9 +207,21 @@ namespace DataAccess.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("RoomID")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.HasKey("EquipmentID");
 
-                    b.ToTable("Equipment");
+                    b.HasIndex("RoomID");
+
+                    b.ToTable("Equipment", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.HealthInsurance", b =>
@@ -253,7 +265,7 @@ namespace DataAccess.Migrations
 
                     b.HasIndex("StudentID");
 
-                    b.ToTable("HealthInsurances");
+                    b.ToTable("HealthInsurances", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.MaintenanceRequest", b =>
@@ -306,7 +318,7 @@ namespace DataAccess.Migrations
 
                     b.HasIndex("StudentID");
 
-                    b.ToTable("MaintenanceRequests");
+                    b.ToTable("MaintenanceRequests", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.Notification", b =>
@@ -343,7 +355,7 @@ namespace DataAccess.Migrations
 
                     b.HasIndex("AccountID");
 
-                    b.ToTable("Notifications");
+                    b.ToTable("Notifications", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.OtpCode", b =>
@@ -390,7 +402,7 @@ namespace DataAccess.Migrations
 
                     b.HasIndex("AccountUserId");
 
-                    b.ToTable("OtpCodes");
+                    b.ToTable("OtpCodes", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.Parameter", b =>
@@ -415,7 +427,7 @@ namespace DataAccess.Migrations
 
                     b.HasKey("ParameterID");
 
-                    b.ToTable("Parameters");
+                    b.ToTable("Parameters", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.Payment", b =>
@@ -454,7 +466,7 @@ namespace DataAccess.Migrations
 
                     b.HasKey("PaymentID");
 
-                    b.ToTable("Payments");
+                    b.ToTable("Payments", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.Priority", b =>
@@ -470,7 +482,7 @@ namespace DataAccess.Migrations
 
                     b.HasKey("PriorityID");
 
-                    b.ToTable("Priorities");
+                    b.ToTable("Priorities", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.Receipt", b =>
@@ -516,7 +528,7 @@ namespace DataAccess.Migrations
 
                     b.HasIndex("StudentID");
 
-                    b.ToTable("Receipts");
+                    b.ToTable("Receipts", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.RefreshToken", b =>
@@ -555,7 +567,7 @@ namespace DataAccess.Migrations
 
                     b.HasIndex("AccountUserId");
 
-                    b.ToTable("RefreshTokens");
+                    b.ToTable("RefreshTokens", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.RegistrationForm", b =>
@@ -590,7 +602,7 @@ namespace DataAccess.Migrations
 
                     b.HasIndex("StudentID");
 
-                    b.ToTable("RegistrationForms");
+                    b.ToTable("RegistrationForms", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.Relative", b =>
@@ -689,45 +701,7 @@ namespace DataAccess.Migrations
 
                     b.HasIndex("RoomTypeID");
 
-                    b.ToTable("Rooms");
-                });
-
-            modelBuilder.Entity("BusinessObject.Entities.RoomEquipment", b =>
-                {
-                    b.Property<string>("RoomEquipmentID")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
-                    b.Property<string>("EquipmentID")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
-                    b.Property<string>("EquipmentID1")
-                        .HasColumnType("nvarchar(128)");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<string>("RoomID")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("RoomEquipmentID");
-
-                    b.HasIndex("EquipmentID");
-
-                    b.HasIndex("EquipmentID1");
-
-                    b.HasIndex("RoomID");
-
-                    b.ToTable("RoomEquipments");
+                    b.ToTable("Rooms", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.RoomType", b =>
@@ -757,7 +731,7 @@ namespace DataAccess.Migrations
                     b.HasIndex("TypeName")
                         .IsUnique();
 
-                    b.ToTable("RoomTypes");
+                    b.ToTable("RoomTypes", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.School", b =>
@@ -779,7 +753,7 @@ namespace DataAccess.Migrations
 
                     b.HasKey("SchoolId");
 
-                    b.ToTable("Schools");
+                    b.ToTable("Schools", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.Student", b =>
@@ -907,7 +881,7 @@ namespace DataAccess.Migrations
 
                     b.HasIndex("RoomID");
 
-                    b.ToTable("UtilityBills");
+                    b.ToTable("UtilityBills", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.Violation", b =>
@@ -952,7 +926,7 @@ namespace DataAccess.Migrations
 
                     b.HasIndex("StudentID");
 
-                    b.ToTable("Violations");
+                    b.ToTable("Violations", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.Building", b =>
@@ -998,6 +972,17 @@ namespace DataAccess.Migrations
                     b.Navigation("Room");
 
                     b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("BusinessObject.Entities.Equipment", b =>
+                {
+                    b.HasOne("BusinessObject.Entities.Room", "Room")
+                        .WithMany("Equipment")
+                        .HasForeignKey("RoomID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Room");
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.HealthInsurance", b =>
@@ -1139,29 +1124,6 @@ namespace DataAccess.Migrations
                     b.Navigation("RoomType");
                 });
 
-            modelBuilder.Entity("BusinessObject.Entities.RoomEquipment", b =>
-                {
-                    b.HasOne("BusinessObject.Entities.Equipment", "Equipment")
-                        .WithMany()
-                        .HasForeignKey("EquipmentID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("BusinessObject.Entities.Equipment", null)
-                        .WithMany("RoomEquipments")
-                        .HasForeignKey("EquipmentID1");
-
-                    b.HasOne("BusinessObject.Entities.Room", "Room")
-                        .WithMany("RoomEquipments")
-                        .HasForeignKey("RoomID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Equipment");
-
-                    b.Navigation("Room");
-                });
-
             modelBuilder.Entity("BusinessObject.Entities.Student", b =>
                 {
                     b.HasOne("BusinessObject.Entities.Account", "Account")
@@ -1246,11 +1208,6 @@ namespace DataAccess.Migrations
                     b.Navigation("ReportedViolations");
                 });
 
-            modelBuilder.Entity("BusinessObject.Entities.Equipment", b =>
-                {
-                    b.Navigation("RoomEquipments");
-                });
-
             modelBuilder.Entity("BusinessObject.Entities.Priority", b =>
                 {
                     b.Navigation("Students");
@@ -1260,11 +1217,11 @@ namespace DataAccess.Migrations
                 {
                     b.Navigation("Contracts");
 
+                    b.Navigation("Equipment");
+
                     b.Navigation("MaintenanceRequests");
 
                     b.Navigation("RegistrationForms");
-
-                    b.Navigation("RoomEquipments");
 
                     b.Navigation("UtilityBills");
                 });
