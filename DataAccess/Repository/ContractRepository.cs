@@ -151,5 +151,20 @@ namespace DataAccess.Repository
                 .ToListAsync();
             return result.ToDictionary(x => x.Status, x => x.Count);
         }
+
+        public async Task<Contract?> GetLastContractByStudentIdAsync(string studentId)
+        {
+            return await _dbSet
+                .Include(c => c.Room)
+                    .ThenInclude(r => r.Building)
+                    .ThenInclude(b => b.Manager)
+                .Include(c => c.Room)
+                    .ThenInclude(r => r.RoomType)
+                .Include(c => c.Room)
+                    .ThenInclude(r => r.Equipment)
+                .Where(c => c.StudentID == studentId)
+                .OrderByDescending(c => c.StartDate)
+                .FirstOrDefaultAsync();
+        }
     }
 }

@@ -50,9 +50,13 @@ namespace API.Services.Implements
                 return (false, "This month's index cannot be less than last month's index", 400);
             }
             var parameter = await _utilityBillUow.Parameters.GetActiveParameterAsync();
+            if (parameter == null)
+            {
+                return (false, "Active parameter not found", 500);
+            }
             var newBill = new UtilityBill
             {
-                BillID = "BIL" + IdGenerator.GenerateUniqueSuffix(),
+                BillID = "BIL-" + IdGenerator.GenerateUniqueSuffix(),
                 RoomID = dto.RoomId,
                 ElectricityOldIndex = lastElectricityIndex,
                 ElectricityNewIndex = dto.ElectricityIndex,
@@ -60,6 +64,8 @@ namespace API.Services.Implements
                 WaterNewIndex = dto.WaterIndex,
                 ElectricityUsage = dto.ElectricityIndex - lastElectricityIndex,
                 WaterUsage = dto.WaterIndex - lastWaterIndex,
+                ElectricityUnitPrice = parameter.DefaultElectricityPrice,
+                WaterUnitPrice = parameter.DefaultWaterPrice,
                 Amount = (dto.ElectricityIndex - lastElectricityIndex) * parameter.DefaultElectricityPrice +
                          (dto.WaterIndex - lastWaterIndex) * parameter.DefaultWaterPrice,
                 Month = DateTime.Now.Month,
@@ -214,6 +220,57 @@ namespace API.Services.Implements
 
             var unpaidBills = billsOfRoom.Where(b => b.Status != PaymentConstants.BillPaid).ToList();
             return (true, "Bills retrieved successfully", 200, unpaidBills);
+        }
+
+        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<UtilityBillDetailForStudent> listBill)> GetUtilityBillsByStudent(string accountId)
+        {
+            if (string.IsNullOrEmpty(accountId))
+            {
+                return (false, "AccountId is required", 400, Enumerable.Empty<UtilityBillDetailForStudent>());
+            }
+
+            var account = await _utilityBillUow.Accounts.GetByIdAsync(accountId);
+            if (account == null)
+            {
+                return (false, "Account not found", 404, Enumerable.Empty<UtilityBillDetailForStudent>());
+            }
+
+            var student = await _utilityBillUow.Students.GetStudentByEmailAsync(account.Email);
+            if (student == null)
+            {
+                return (false, "Student not found", 404, Enumerable.Empty<UtilityBillDetailForStudent>());
+            }
+
+            var contract = await _utilityBillUow.Contracts.GetActiveContractByStudentId(student.StudentID);
+            if (contract == null)
+            {
+                return (false, "No active contract found for this student", 404, Enumerable.Empty<UtilityBillDetailForStudent>());
+            }
+            var list = await _utilityBillUow.UtilityBills.GetByRoomAsync(contract.RoomID);
+
+            var dtoList = new List<UtilityBillDetailForStudent>();
+
+            foreach (var bill in list)
+            {
+                var dto = new UtilityBillDetailForStudent
+                {
+                    BillId = bill.BillID,
+                    Month = bill.Month,
+                    Year = bill.Year,
+                    ElectricityOldIndex = bill.ElectricityOldIndex,
+                    ElectricityNewIndex = bill.ElectricityNewIndex,
+                    ElectricityUnitPrice = bill.ElectricityUnitPrice,
+                    WaterUnitPrice = bill.WaterUnitPrice,
+                    WaterOldIndex = bill.WaterOldIndex,
+                    WaterNewIndex = bill.WaterNewIndex,
+                    ElectricityUsage = bill.ElectricityUsage,
+                    WaterUsage = bill.WaterUsage,
+                    TotalAmount = bill.Amount,
+                    Status = bill.Status
+                };
+                dtoList.Add(dto);
+            }
+            return (true, "Utility bills retrieved successfully", 200, dtoList);
         }
     }
 }
