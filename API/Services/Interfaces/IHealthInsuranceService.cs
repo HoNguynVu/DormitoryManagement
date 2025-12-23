@@ -12,6 +12,6 @@ namespace API.Services.Interfaces
 
         Task<(bool Success, string Message, int StatusCode)> ConfirmInsurancePaymentAsync(string insuranceId);
 
-        Task<(bool Success, string Message, int StatusCode)> CreateHealthInsurancePrice(CreateHealthPriceDTO request);
+        Task<(bool Success, string Message, int StatusCode)> CreateHealthInsurancePriceAsync(CreateHealthPriceDTO request);
     }
 }

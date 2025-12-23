@@ -1,5 +1,6 @@
 ﻿using API.Services.Interfaces;
 using BusinessObject.DTOs.HealthInsuranceDTOs;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -67,6 +68,17 @@ namespace API.Controllers
 
             // 3. Thành công (200 OK)
             return Ok(new { message = result.Message });
+        }
+
+        [HttpPost("add-price")]
+        public async Task<IActionResult> CreateHealthPrice([FromBody] CreateHealthPriceDTO dto)
+        {
+            var result = await _healthInsuranceService.CreateHealthInsurancePriceAsync(dto);
+            if (!result.Success)
+            {
+                return StatusCode(result.StatusCode, new { Message = result.Message });
+            }
+            return StatusCode(result.StatusCode, new { message = result.Message });
         }
     }
 }

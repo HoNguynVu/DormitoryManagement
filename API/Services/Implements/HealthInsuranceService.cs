@@ -162,7 +162,7 @@ namespace API.Services.Implements
             }
         }
 
-        public async Task<(bool Success, string Message, int StatusCode)> CreateHealthInsurancePrice(CreateHealthPriceDTO request)
+        public async Task<(bool Success, string Message, int StatusCode)> CreateHealthInsurancePriceAsync(CreateHealthPriceDTO request)
         {
             //validate
             if (request == null)
