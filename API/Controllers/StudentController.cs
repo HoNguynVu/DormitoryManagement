@@ -1,4 +1,5 @@
 ﻿using API.Services.Interfaces;
+using BusinessObject.DTOs.StudentDTOs;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -23,6 +24,17 @@ namespace API.Controllers
                     message = result.Message,
                     student = result.student
                 });
+            }
+            return StatusCode(result.StatusCode, new { message = result.Message });
+        }
+
+        [HttpPost("update-info")]
+        public async Task<IActionResult> UpdateStudentInfo([FromBody] StudentUpdateInfoDTO infoDTO)
+        {
+            var result = await _studentService.UpdateStudent(infoDTO);
+            if (result.Success)
+            {
+                return StatusCode(result.StatusCode, new { message = result.Message });
             }
             return StatusCode(result.StatusCode, new { message = result.Message });
         }

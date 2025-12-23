@@ -45,5 +45,34 @@ namespace API.Services.Implements
             };
             return (true, "Student retrieved successfully.", 200, dto);
         }
+
+        public async Task<(bool Success, string Message, int StatusCode)> UpdateStudent(StudentUpdateInfoDTO infoDTO)
+        {
+            if (infoDTO == null || string.IsNullOrEmpty(infoDTO.StudentID))
+                return (false, "Invalid student data.", 400);
+            var student = await _uow.Students.GetByIdAsync(infoDTO.StudentID);
+            if (student == null)
+                return (false, "Student not found.", 404);
+            await _uow.BeginTransactionAsync();
+            try
+            {
+                student.FullName = infoDTO.FullName;
+                student.Email = infoDTO.Email;
+                student.PhoneNumber = infoDTO.PhoneNumber;
+                student.Address = infoDTO.Address;
+                student.SchoolID = infoDTO.SchoolID;
+                student.PriorityID = infoDTO.PriorityID;
+                student.CitizenIDIssuePlace = infoDTO.CitizenIDIssuePlace;
+                _uow.Students.Update(student);
+                await _uow.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await _uow.RollbackAsync();
+                return (false, $"Failed to update student: {ex.Message}", 500);
+            }
+            return (true, "Student updated successfully.", 200);
+        }
+
     }
 }
