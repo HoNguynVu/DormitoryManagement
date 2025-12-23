@@ -28,7 +28,7 @@ namespace API.Services.Implements
 
         private string NotiMessage(int month, int year)
         {
-            return $"Your utility bill for {month}/{year} is now available. Please check your BILLS for details and make the payment on time to avoid any late fees.";
+            return $"Hóa đơn điện nước {month}/{year} của bạn đã có. Hãy bấm vào mục Điện Nước để tiến hành thanh toán.";
         }
 
         public async Task<(bool Success, string Message, int StatusCode)> CreateUtilityBill(CreateBillDTO dto)
@@ -80,7 +80,7 @@ namespace API.Services.Implements
                 var accountId = contract.Student.AccountID;
                 var newNoti = NotificationServiceHelpers.CreateNew(
                     accountId: accountId,
-                    title: "New Utility Bill Available",
+                    title: "Hóa đơn điện nước mới!",
                     message: newMessage,
                     type: "UtilityBill"
                 );
