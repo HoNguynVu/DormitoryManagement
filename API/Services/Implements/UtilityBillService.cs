@@ -272,5 +272,64 @@ namespace API.Services.Implements
             }
             return (true, "Utility bills retrieved successfully", 200, dtoList);
         }
+        
+        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<ManagerGetBillDTO> listBill)> GetBillsForManagerAsync(ManagerGetBillRequest request)
+        {
+            if (string.IsNullOrEmpty(request.AccountId))
+            {
+                return (false, "ManagerId is required", 400, Enumerable.Empty<ManagerGetBillDTO>());
+            }
+            var manager = await _utilityBillUow.BuildingManagers.GetByAccountIdAsync(request.AccountId);
+            if (manager == null)
+            {
+                return (false, "Manager not found", 404, Enumerable.Empty<ManagerGetBillDTO>());
+            }
+
+            var rooms = await _utilityBillUow.Rooms.GetRoomByManagerIdAsync(manager.ManagerID);
+            if (rooms == null || !rooms.Any())
+            {
+                return (false, "No rooms found for this manager", 404, Enumerable.Empty<ManagerGetBillDTO>());
+            }
+            var dtoList = new List<ManagerGetBillDTO>();
+            try
+            {
+                foreach (var room in rooms)
+                {
+                    var bill = await _utilityBillUow.UtilityBills.GetByRoomAndPeriodAsync(room.RoomID, request.Month, request.Year);
+                    if (bill != null)
+                    {
+                        var dto = new ManagerGetBillDTO
+                        {
+                            RoomID = room.RoomID,
+                            RoomName = room.RoomName,
+                            ElectricityOldIndex = bill.ElectricityOldIndex,
+                            ElectricityNewIndex = bill.ElectricityNewIndex,
+                            WaterOldIndex = bill.WaterOldIndex,
+                            WaterNewIndex = bill.WaterNewIndex,
+                            ElectricityUsage = bill.ElectricityUsage,
+                            WaterUsage = bill.WaterUsage,
+                            Amount = bill.Amount,
+                            Status = bill.Status
+                        };
+                        dtoList.Add(dto);
+                    }
+                    else
+                    {
+                        var dto = new ManagerGetBillDTO
+                        {
+                            RoomID = room.RoomID,
+                            RoomName = room.RoomName,
+                            Status = "No Bill"
+                        };
+                        dtoList.Add(dto);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Error retrieving bills: {ex.Message}", 500, Enumerable.Empty<ManagerGetBillDTO>());
+            }
+            return (true, "Bills retrieved successfully", 200, dtoList);
+        }
     }
 }

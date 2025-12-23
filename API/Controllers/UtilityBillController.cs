@@ -35,5 +35,16 @@ namespace API.Controllers
             }
             return StatusCode(result.StatusCode, new { message = result.Message });
         }
+
+        [HttpPost("by-manager")]
+        public async Task<IActionResult> GetUtilityBillsByManager([FromBody] ManagerGetBillRequest request)
+        {
+            var result = await utilityBillService.GetBillsForManagerAsync(request);
+            if (result.Success)
+            {
+                return StatusCode(result.StatusCode, new { message = result.Message, data = result.listBill });
+            }
+            return StatusCode(result.StatusCode, new { message = result.Message });
+        }
     }
 }

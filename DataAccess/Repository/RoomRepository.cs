@@ -44,5 +44,14 @@ namespace DataAccess.Repository
                 .Where(spec)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<Room>> GetRoomByManagerIdAsync(string managerId)
+        {
+            return await _dbSet
+                .Include(r => r.Building)
+                .Include(r => r.RoomType)
+                .Where(r => r.Building.ManagerID == managerId)
+                .ToListAsync();
+        }
     }
 }

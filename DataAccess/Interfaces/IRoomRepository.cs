@@ -12,5 +12,6 @@ namespace DataAccess.Interfaces
     {
         Task<IEnumerable<Room>> GetAllRoomsWithTypesAsync();
         Task<IEnumerable<Room>> FindBySpecificationAsync(Expression<Func<Room, bool>> spec);
+        Task<IEnumerable<Room>> GetRoomByManagerIdAsync(string managerId);
     }
 }
