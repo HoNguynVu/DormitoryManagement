@@ -1,4 +1,5 @@
-﻿using BusinessObject.Entities;
+﻿using BusinessObject.DTOs.HealthInsuranceDTOs;
+using BusinessObject.Entities;
 
 namespace API.Services.Interfaces
 {
@@ -10,5 +11,7 @@ namespace API.Services.Interfaces
         Task<(bool Success, string Message, int StatusCode, HealthInsurance? Data)> GetInsuranceByStudentIdAsync(string studentId);
 
         Task<(bool Success, string Message, int StatusCode)> ConfirmInsurancePaymentAsync(string insuranceId);
+
+        Task<(bool Success, string Message, int StatusCode)> CreateHealthInsurancePrice(CreateHealthPriceDTO request);
     }
 }
