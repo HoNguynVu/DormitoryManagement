@@ -41,6 +41,16 @@ namespace DataAccess.Repository
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<HealthInsurance?> GetDetailInsuranceByIdAsync(string insuranceId)
+        {
+            return await _dbSet
+                .Include(h=>h.Hospital)
+                .Include(h=>h.Student)
+                .Include(h=>h.HealthInsurancePrice)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(h=>h.InsuranceID == insuranceId);
+        }
+
         public async Task<IEnumerable<HealthInsurance>> GetHealthInsuranceFiltered(string? keyword, string? hospitalName, int? year,string? status)
         {
              var query = _context.HealthInsurances

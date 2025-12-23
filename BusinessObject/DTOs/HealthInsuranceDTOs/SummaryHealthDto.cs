@@ -11,7 +11,7 @@ namespace BusinessObject.DTOs.HealthInsuranceDTOs
         public string HealthInsuranceId { get; set; } = string.Empty;
         public string StudentName { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
-        public DateTime CreatAt { get; set; } 
+        public string CardNumber { get; set; } = string.Empty ;
         public string HospitalName { get; set; } = string.Empty;
     }
 }

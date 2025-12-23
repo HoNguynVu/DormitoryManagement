@@ -18,6 +18,7 @@ namespace DataAccess.Interfaces
         // Hàm lấy BTHY mới nhất 
         Task<HealthInsurance?> GetLatestInsuranceByStudentIdAsync(string studentId);
 
+        Task<HealthInsurance?> GetDetailInsuranceByIdAsync(string insuranceId);
         Task<IEnumerable<HealthInsurance>> GetHealthInsuranceFiltered(string? keyword, string? hospitalName, int? year, string? status);
     }
 }

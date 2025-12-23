@@ -201,6 +201,37 @@ namespace API.Services.Implements
             }
         }
 
+        public async Task<(bool Success, string Message, int StatusCode, HealthDetailDto dto)> GetDetailHealth(string insuranceId)
+        {
+            // validate
+            if (string.IsNullOrWhiteSpace(insuranceId))
+                return (false, "Invalid InsuranceId", 400, new HealthDetailDto());
+
+            try
+            {
+                var result = await _uow.HealthInsurances.GetDetailInsuranceByIdAsync(insuranceId);
+                if (result == null)
+                    return (false, "Insurance Not Founded", 404, new HealthDetailDto());
+                var detailDto = new HealthDetailDto
+                {
+                    HealthInsuranceId = result.InsuranceID,
+                    StudentName = result.Student.FullName,
+                    Status = result.Status,
+                    CardNumber = result.CardNumber,
+                    HospitalName = result.Hospital.HospitalName,
+                    StartDate = result.StartDate,
+                    EndDate = result.EndDate,
+                    Price = result.Cost,
+                    Email = result.Student.Email
+                };
+                return (true, "Lấy dữ liệu thành công", 200, detailDto);
+            }
+            catch
+            {
+                return (false,"Internal Server Error",500, new HealthDetailDto());
+            }
+        }
+
         public async Task<(bool Success, string Message, int StatusCode, IEnumerable<SummaryHealthDto> dto)> GetHealthInsuranceFiltered(string? keyword, string? hospitalName, int? year, string? status)
         {
             try
@@ -211,7 +242,7 @@ namespace API.Services.Implements
                     HealthInsuranceId = h.InsuranceID,
                     StudentName = h.Student.FullName,
                     Status = h.Status,
-                    CreatAt = h.CreatedAt,
+                    CardNumber = h.CardNumber,
                     HospitalName = h.Hospital.HospitalName
                 }).ToList();
                 return (true,"Lấy dữ liệu thành công",200,result);

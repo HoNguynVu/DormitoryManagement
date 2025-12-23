@@ -16,6 +16,7 @@ namespace API.Services.Interfaces
         Task<(bool Success, string Message, int StatusCode)> CreateHealthInsurancePriceAsync(CreateHealthPriceDTO request);
 
         // Get
+        Task<(bool Success, string Message,int StatusCode,HealthDetailDto dto)> GetDetailHealth(string insuranceId);
         Task<(bool Success, string Message, int StatusCode,IEnumerable<SummaryHealthDto> dto)> GetHealthInsuranceFiltered(string? keyword,string? hospitalName,int? year,string? status);
     }
 }
