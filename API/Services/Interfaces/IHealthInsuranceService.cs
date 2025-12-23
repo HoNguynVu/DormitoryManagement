@@ -1,5 +1,6 @@
 ﻿using BusinessObject.DTOs.HealthInsuranceDTOs;
 using BusinessObject.Entities;
+using DocumentFormat.OpenXml;
 
 namespace API.Services.Interfaces
 {
@@ -13,5 +14,8 @@ namespace API.Services.Interfaces
         Task<(bool Success, string Message, int StatusCode)> ConfirmInsurancePaymentAsync(string insuranceId);
 
         Task<(bool Success, string Message, int StatusCode)> CreateHealthInsurancePriceAsync(CreateHealthPriceDTO request);
+
+        // Get
+        Task<(bool Success, string Message, int StatusCode,IEnumerable<SummaryHealthDto> dto)> GetHealthInsuranceFiltered(string? keyword,string? hospitalName,int? year,string? status);
     }
 }

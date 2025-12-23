@@ -100,8 +100,6 @@ namespace DataAccess.Repository
                 .Include(c => c.Room).ThenInclude(r => r.RoomType) 
                 .AsNoTracking()
                 .AsQueryable();
-
-            // 2. X? lý Keyword (Tìm ki?m ?a n?ng: MSSV, Tên SV, Tên Phòng)
             if (!string.IsNullOrEmpty(keyword))
             {
                 string key = keyword.Trim().ToLower();
@@ -112,19 +110,17 @@ namespace DataAccess.Repository
                 );
             }
 
-            // 3. L?c theo Tòa (Building)
             if (!string.IsNullOrEmpty(buildingId))
             {
                 query = query.Where(c => c.Room.BuildingID == buildingId);
             }
 
-            // 4. L?c theo Tr?ng thái (Status)
             if (!string.IsNullOrEmpty(status))
             {
                 query = query.Where(c => c.ContractStatus == status);
             }
 
-            // 5. S?p x?p và th?c thi
+
             return await query
                 .OrderByDescending(c => c.StartDate) // M?i nh?t lên ??u
                 .ToListAsync();

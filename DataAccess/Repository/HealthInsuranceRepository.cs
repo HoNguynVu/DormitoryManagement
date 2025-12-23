@@ -41,5 +41,43 @@ namespace DataAccess.Repository
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<IEnumerable<HealthInsurance>> GetHealthInsuranceFiltered(string? keyword, string? hospitalName, int? year,string? status)
+        {
+             var query = _context.HealthInsurances
+                .Include(h => h.Student)
+                .Include(h => h.Hospital)
+                .Include(h => h.HealthInsurancePrice)
+                .AsNoTracking()
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                string key = keyword.Trim().ToLower();
+                query = query.Where(h =>
+                    h.Student.StudentID.Contains(key) ||
+                    h.Student.FullName != null && h.Student.FullName.ToLower().Contains(key) ||
+                    h.CardNumber.Contains(key)
+                );
+            }
+
+            if (!string.IsNullOrEmpty(hospitalName))
+            {
+                query = query.Where(h=>h.Hospital.HospitalName==hospitalName);
+            }
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                query = query.Where(h=>h.Status == status);
+            }
+
+            if (year != null)
+            {
+                query = query.Where( h=> h.StartDate.Year == year);
+            }
+            return await query
+                .OrderByDescending(h => h.CreatedAt)
+                .ToListAsync();
+        }
+
     }
 }

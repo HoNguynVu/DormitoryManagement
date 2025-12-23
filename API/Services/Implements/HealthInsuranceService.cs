@@ -3,6 +3,7 @@ using API.Services.Helpers;
 using API.Services.Interfaces;
 using API.UnitOfWorks;
 using BusinessObject.DTOs.ConfirmDTOs;
+using BusinessObject.DTOs.ContractDTOs;
 using BusinessObject.DTOs.HealthInsuranceDTOs;
 using BusinessObject.Entities;
 
@@ -199,5 +200,27 @@ namespace API.Services.Implements
                 return (false, $"Lỗi hệ thống: {ex.Message}", 500);
             }
         }
+
+        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<SummaryHealthDto> dto)> GetHealthInsuranceFiltered(string? keyword, string? hospitalName, int? year, string? status)
+        {
+            try
+            {
+                var list = await _uow.HealthInsurances.GetHealthInsuranceFiltered(keyword, hospitalName, year, status);
+                var result = list.Select(h => new SummaryHealthDto
+                {
+                    HealthInsuranceId = h.InsuranceID,
+                    StudentName = h.Student.FullName,
+                    Status = h.Status,
+                    CreatAt = h.CreatedAt,
+                    HospitalName = h.Hospital.HospitalName
+                }).ToList();
+                return (true,"Lấy dữ liệu thành công",200,result);
+            }
+            catch
+            {
+                return (false, "Lỗi server", 500, Enumerable.Empty<SummaryHealthDto>());
+            }
+        }
+
     }
 }
