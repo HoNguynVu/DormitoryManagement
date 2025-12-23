@@ -22,11 +22,10 @@ namespace API.Controllers
             if (request == null) 
                 return BadRequest(new { message = "Invalid request data." });
 
-            var result = await _healthInsuranceService.RegisterHealthInsuranceAsync(request.StudentId, request.InitialHospital);
+            var result = await _healthInsuranceService.RegisterHealthInsuranceAsync(request.StudentId, request.HospitalId,request.CardNumber);
 
             if (!result.Success)
             {
-                // Trả về lỗi 400, 404, 409 hoặc 500 kèm thông báo từ Service
                 return StatusCode(result.StatusCode, new { message = result.Message });
             }
 
