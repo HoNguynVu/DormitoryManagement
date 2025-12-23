@@ -35,7 +35,7 @@ namespace API.UnitOfWorks
         public IMaintenanceRepository Maintenances { get; }
         public IBuildingManagerRepository BuildingManagers { get; }
         public IBuildingRepository Buildings { get; }
-
+        public IRelativeRepository Relatives { get; }
         public IRoomEquipmentRepository RoomEquipments { get; }
         public IEquipmentRepository Equipments { get; }
 
@@ -68,6 +68,7 @@ namespace API.UnitOfWorks
             Buildings = new BuildingRepository(_context);
             RoomEquipments = new RoomEquipmentRepository(_context);
             Equipments = new EquipmentRepository(_context);
+            Relatives = new RelativeRepository(_context);
             HealthPrices = new HealthPriceRepository(_context);
         }
 

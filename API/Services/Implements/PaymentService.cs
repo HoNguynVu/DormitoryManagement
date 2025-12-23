@@ -17,7 +17,7 @@ namespace API.Services.Implements
         private readonly ZaloPaySettings _zaloConfig;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IPaymentUow _paymentUow;
-
+        private readonly ILogger<PaymentService> _logger;
         private readonly IHealthInsuranceService _healthInsuranceService;
         private readonly IRegistrationService _registrationService;
         private readonly IContractService _contractService;
@@ -25,6 +25,7 @@ namespace API.Services.Implements
         public PaymentService(IOptions<ZaloPaySettings> zaloConfig,
             IHttpClientFactory httpClientFactory, 
             IPaymentUow paymentUow, 
+            ILogger<PaymentService> logger,
             IHealthInsuranceService healthInsuranceService,
             IRegistrationService registrationService,
             IContractService contractService,
@@ -37,6 +38,7 @@ namespace API.Services.Implements
             _registrationService = registrationService;
             _contractService = contractService;
             _utilityBillService = utilityBillService;
+            _logger = logger;
         }
 
         public async Task<(int StatusCode, PaymentLinkDTO dto)> CreateZaloPayLinkForRegistration(string registrationId)
@@ -182,19 +184,19 @@ namespace API.Services.Implements
             }
         }
 
-        public async Task<(int StatusCode, PaymentLinkDTO dto)> CreateZaloPayLinkForUtility(string utilityId, string payerStudentId)
+        public async Task<(int StatusCode, PaymentLinkDTO dto)> CreateZaloPayLinkForUtility(string utilityId, string accountId)
         {
             // Validate
             if (string.IsNullOrEmpty(utilityId))
             {
                 return (400, new PaymentLinkDTO { IsSuccess = false, Message = "Invalid utility ID" });
             }
-            if (string.IsNullOrEmpty(payerStudentId))
+            if (string.IsNullOrEmpty(accountId))
             {
                 return (400, new PaymentLinkDTO { IsSuccess = false, Message = "Invalid student ID" });
             }
 
-            var student = await _paymentUow.Students.GetByIdAsync(payerStudentId);
+            var student = await _paymentUow.Students.GetStudentByAccountIdAsync(accountId);
             if (student == null)
             {
                 return (404, new PaymentLinkDTO { IsSuccess = false, Message = "Student not found" });
@@ -204,13 +206,13 @@ namespace API.Services.Implements
             {
                 return (404, new PaymentLinkDTO { IsSuccess = false, Message = "Utility bill not found" });
             }
-            if (utilityBill.Status != "Pending")
+            if (utilityBill.Status != "Unpaid")
             {
-                return (400, new PaymentLinkDTO { IsSuccess = false, Message = "Utility bill is not in pending status" });
+                return (400, new PaymentLinkDTO { IsSuccess = false, Message = "Utility bill is not in unpaid status" });
             }
 
 
-            var contract = await _paymentUow.Contracts.GetActiveContractByStudentId(payerStudentId);
+            var contract = await _paymentUow.Contracts.GetActiveContractByStudentId(student.StudentID);
 
             // Check 1: SV có hợp đồng không?
             if (contract == null)
@@ -238,7 +240,7 @@ namespace API.Services.Implements
                 var receipt = new Receipt
                 {
                     ReceiptID = "RE-" + IdGenerator.GenerateUniqueSuffix(),
-                    StudentID = payerStudentId,
+                    StudentID = student.StudentID,
                     Amount = amount,
                     RelatedObjectID = utilityId,
                     PaymentType = PaymentConstants.TypeUtility,
@@ -439,19 +441,16 @@ namespace API.Services.Implements
                 {
                     return (0, "Không thể giải mã dữ liệu JSON.");
                 }
-
+                
                 string appTransId = dataJson["app_trans_id"];
                 string zpTransId = dataJson["zp_trans_id"];
-
                 // 4. Xử lý logic nghiệp vụ
-
                 if (appTransId.Contains($"_{PaymentConstants.PrefixRegis}_"))
                 {
                     await HanldeRegisSuccessPayment(appTransId, zpTransId);
                 }
                 else if (appTransId.Contains($"_{PaymentConstants.PrefixUtility}_"))
                 {
-                    
                     await HanldeUtilitySuccessPayment(appTransId, zpTransId);
                 }
                 else if (appTransId.Contains($"_{PaymentConstants.PrefixContract}_"))

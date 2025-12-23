@@ -12,5 +12,6 @@ namespace API.UnitOfWorks
         public IAccountRepository Accounts { get; }
         public INotificationRepository Notifications { get; }
         public IBuildingManagerRepository BuildingManagers { get; }
+        public IRoomEquipmentRepository RoomEquipments { get; }
     }
 }

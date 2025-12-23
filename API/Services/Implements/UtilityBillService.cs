@@ -118,7 +118,7 @@ namespace API.Services.Implements
 
         public async Task<(bool Success, string Message, int StatusCode)> ConfirmUtilityPaymentAsync(string billId)
         {
-            if (!string.IsNullOrEmpty(billId))
+            if (string.IsNullOrEmpty(billId))
             {
                 return (false, "BillId is required", 400);
             }

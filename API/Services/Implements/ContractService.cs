@@ -693,6 +693,7 @@ namespace API.Services.Implements
                     return (false, "No contract found for this student.", 404, null);
                 }
 
+
                 var dto = new ContractDetailByStudentDto
                 {
                     ContractID = contract.ContractID,
@@ -710,7 +711,7 @@ namespace API.Services.Implements
                     RoomTypeName = contract.Room?.RoomType?.TypeName ?? "N/A",
                     RoomPrice = contract.Room?.RoomType?.Price ?? 0,
 
-                    Equipments = contract.Room?.RoomEquipments?.Select(re => new EquipmentOfRoomDTO
+                    Equipments = contract.Room?.RoomEquipments.Select(re => new EquipmentOfRoomDTO
                     {
                         EquipmentID = re.EquipmentID,
                         EquipmentName = re.Equipment.EquipmentName,

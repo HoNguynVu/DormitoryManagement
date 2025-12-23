@@ -161,7 +161,7 @@ namespace DataAccess.Repository
                 .Include(c => c.Room)
                     .ThenInclude(r => r.RoomType)
                 .Include(c => c.Room)
-                    .ThenInclude(r => r.RoomEquipments)
+                    .ThenInclude(r => r.RoomEquipments).ThenInclude(re => re.Equipment)
                 .Where(c => c.StudentID == studentId)
                 .OrderByDescending(c => c.StartDate)
                 .FirstOrDefaultAsync();

@@ -2,8 +2,9 @@
 
 namespace API.UnitOfWorks
 {
-    public interface IStudentUow
+    public interface IStudentUow : ITransactionManager
     {
         public IStudentRepository Students { get; }
+        public IRelativeRepository Relatives { get; }
     }
 }

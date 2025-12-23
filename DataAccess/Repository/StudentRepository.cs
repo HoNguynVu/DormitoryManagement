@@ -29,6 +29,7 @@ namespace DataAccess.Repository
         public override async Task<Student?> GetByIdAsync(string id)
         {
             return await _dbSet
+                .Include(s => s.Relatives)
                 .Include(s => s.School)
                 .Include(s => s.Priority)
                 .Include(s => s.Account)
@@ -37,6 +38,10 @@ namespace DataAccess.Repository
         public async Task<Student?> GetStudentByAccountIdAsync(string accountId)
         {
             return await _dbSet
+                .Include(s => s.Relatives)
+                .Include(s => s.School)
+                .Include(s => s.Priority)
+                .Include(s => s.Account)
                 .FirstOrDefaultAsync(s => s.AccountID == accountId);
         }
     }
