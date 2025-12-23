@@ -182,19 +182,19 @@ namespace API.Services.Implements
             }
         }
 
-        public async Task<(int StatusCode, PaymentLinkDTO dto)> CreateZaloPayLinkForUtility(string utilityId, string payerStudentId)
+        public async Task<(int StatusCode, PaymentLinkDTO dto)> CreateZaloPayLinkForUtility(string utilityId, string accountId)
         {
             // Validate
             if (string.IsNullOrEmpty(utilityId))
             {
                 return (400, new PaymentLinkDTO { IsSuccess = false, Message = "Invalid utility ID" });
             }
-            if (string.IsNullOrEmpty(payerStudentId))
+            if (string.IsNullOrEmpty(accountId))
             {
                 return (400, new PaymentLinkDTO { IsSuccess = false, Message = "Invalid student ID" });
             }
 
-            var student = await _paymentUow.Students.GetByIdAsync(payerStudentId);
+            var student = await _paymentUow.Students.GetStudentByAccountIdAsync(accountId);
             if (student == null)
             {
                 return (404, new PaymentLinkDTO { IsSuccess = false, Message = "Student not found" });
@@ -210,7 +210,7 @@ namespace API.Services.Implements
             }
 
 
-            var contract = await _paymentUow.Contracts.GetActiveContractByStudentId(payerStudentId);
+            var contract = await _paymentUow.Contracts.GetActiveContractByStudentId(student.StudentID);
 
             // Check 1: SV có hợp đồng không?
             if (contract == null)
@@ -238,7 +238,7 @@ namespace API.Services.Implements
                 var receipt = new Receipt
                 {
                     ReceiptID = "RE-" + IdGenerator.GenerateUniqueSuffix(),
-                    StudentID = payerStudentId,
+                    StudentID = student.StudentID,
                     Amount = amount,
                     RelatedObjectID = utilityId,
                     PaymentType = PaymentConstants.TypeUtility,

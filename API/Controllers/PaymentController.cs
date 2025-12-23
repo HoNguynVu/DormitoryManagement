@@ -28,9 +28,9 @@ namespace API.Controllers
         }
 
         [HttpPost("create-zalopay-link/utility/{utilityId}")]
-        public async Task<IActionResult> CreateZaloPayLinkForUtility(string utilityId,string payerStudentId)
+        public async Task<IActionResult> CreateZaloPayLinkForUtility(string utilityId, string accountId)
         {
-            var (statusCode, dto) = await _paymentService.CreateZaloPayLinkForUtility(utilityId,payerStudentId);
+            var (statusCode, dto) = await _paymentService.CreateZaloPayLinkForUtility(utilityId, accountId);
             return StatusCode(statusCode, dto);
         }
 
