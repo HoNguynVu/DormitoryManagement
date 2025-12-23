@@ -105,5 +105,31 @@ namespace API.Services.Implements
             }
             return (true, "Relative created successfully.", 200);
         }
+
+        public async Task<(bool Success, string Message, int StatusCode)> UpdateRelativesForStudent(UpdateRelativeDTO relativeDTO)
+        {
+            if (relativeDTO == null || string.IsNullOrEmpty(relativeDTO.RelativeID))
+                return (false, "Invalid relative data.", 400);
+            var relative = await _uow.Relatives.GetByIdAsync(relativeDTO.RelativeID);
+            if (relative == null)
+                return (false, "Relative not found.", 404);
+            await _uow.BeginTransactionAsync();
+            try
+            {
+                relative.FullName = relativeDTO.FullName;
+                relative.Relationship = relativeDTO.Relationship;
+                relative.PhoneNumber = relativeDTO.PhoneNumber;
+                relative.Address = relativeDTO.Address;
+                relative.Occupation = relativeDTO.Occupation;
+                _uow.Relatives.Update(relative);
+                await _uow.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await _uow.RollbackAsync();
+                return (false, $"Failed to update relative: {ex.Message}", 500);
+            }
+            return (true, "Relative updated successfully.", 200);
+        }
     }
 }
