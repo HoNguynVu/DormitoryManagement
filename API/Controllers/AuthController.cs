@@ -36,7 +36,7 @@ namespace API.Controllers
             }
             return StatusCode(result.StatusCode, new { message = result.Message });
         }
-        
+
         [HttpPost("ResendOTPVerifyEmail")]
         public async Task<IActionResult> ResendOTPVerifyEmail(string email)
         {
@@ -129,6 +129,17 @@ namespace API.Controllers
         public async Task<IActionResult> Logout(string refreshToken)
         {
             var result = await _authService.LogOut(refreshToken);
+            if (result.Success)
+            {
+                return StatusCode(result.StatusCode, new { message = result.Message });
+            }
+            return StatusCode(result.StatusCode, new { message = result.Message });
+        }
+
+        [HttpPost("RegisterManager")]
+        public async Task<IActionResult> RegisterManager([FromBody] RegisterManagerAndAdminDTO registerManagerRequest)
+        {
+            var result = await _authService.RegisterManagerAsync(registerManagerRequest);
             if (result.Success)
             {
                 return StatusCode(result.StatusCode, new { message = result.Message });

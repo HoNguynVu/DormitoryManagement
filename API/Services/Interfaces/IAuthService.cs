@@ -19,5 +19,6 @@ namespace API.Services.Interfaces
         Task<(bool Success, string Message, int StatusCode)> ResetPasswordAsync(ResetPasswordRequest resetPasswordRequest);
         Task<(bool Success, string Message, int StatusCode)> LogOut(string refreshTokenValue);
         Task<(bool Success, string Message, int StatusCode, string? AccessToken)> GetAccessToken(string refreshTokenValue);
+        Task<(bool Success, string Message, int StatusCode)> RegisterManagerAsync(RegisterManagerAndAdminDTO registerRequest);
     }
 }
