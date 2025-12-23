@@ -7,5 +7,7 @@ namespace API.UnitOfWorks
         public IHealthInsuranceRepository HealthInsurances { get; }
         public IReceiptRepository Receipts { get; }
         public IStudentRepository Students { get; }
+
+        public IHealthPriceRepository HealthPrices { get; }
     }
 }

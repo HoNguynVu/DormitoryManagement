@@ -9,6 +9,7 @@ namespace BusinessObject.DTOs.HealthInsuranceDTOs
     public class HealthInsuranceRequestDto
     {
         public string StudentId { get; set; } =  string.Empty;
-        public string InitialHospital { get; set; } = string.Empty;
+        public string CardNumber {  get; set; } = string.Empty;
+        public string HospitalId { get; set; } = string.Empty;
     }
 }

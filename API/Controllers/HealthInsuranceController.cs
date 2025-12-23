@@ -1,5 +1,6 @@
 ﻿using API.Services.Interfaces;
 using BusinessObject.DTOs.HealthInsuranceDTOs;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -22,11 +23,10 @@ namespace API.Controllers
             if (request == null) 
                 return BadRequest(new { message = "Invalid request data." });
 
-            var result = await _healthInsuranceService.RegisterHealthInsuranceAsync(request.StudentId, request.InitialHospital);
+            var result = await _healthInsuranceService.RegisterHealthInsuranceAsync(request.StudentId, request.HospitalId,request.CardNumber);
 
             if (!result.Success)
             {
-                // Trả về lỗi 400, 404, 409 hoặc 500 kèm thông báo từ Service
                 return StatusCode(result.StatusCode, new { message = result.Message });
             }
 
@@ -68,6 +68,17 @@ namespace API.Controllers
 
             // 3. Thành công (200 OK)
             return Ok(new { message = result.Message });
+        }
+
+        [HttpPost("add-price")]
+        public async Task<IActionResult> CreateHealthPrice([FromBody] CreateHealthPriceDTO dto)
+        {
+            var result = await _healthInsuranceService.CreateHealthInsurancePriceAsync(dto);
+            if (!result.Success)
+            {
+                return StatusCode(result.StatusCode, new { Message = result.Message });
+            }
+            return StatusCode(result.StatusCode, new { message = result.Message });
         }
     }
 }

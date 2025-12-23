@@ -38,6 +38,8 @@ namespace API.UnitOfWorks
         public IRelativeRepository Relatives { get; }
         public IRoomEquipmentRepository RoomEquipments { get; }
         public IEquipmentRepository Equipments { get; }
+
+        public IHealthPriceRepository HealthPrices { get; }
         public UnitOfWork(DormitoryDbContext context, IDbContextTransaction? dbContextTransaction)
         {
             _context = context;
@@ -67,6 +69,7 @@ namespace API.UnitOfWorks
             RoomEquipments = new RoomEquipmentRepository(_context);
             Equipments = new EquipmentRepository(_context);
             Relatives = new RelativeRepository(_context);
+            HealthPrices = new HealthPriceRepository(_context);
         }
 
         public async Task BeginTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
