@@ -57,5 +57,16 @@ namespace API.Controllers
             }
             return StatusCode(result.StatusCode, new { message = result.Message });
         }
+
+        [HttpPost("last-month-index")]
+        public async Task<IActionResult> GetLastMonthIndex([FromBody] RequestLastMonthIndexDTO request)
+        {
+            var result = await utilityBillService.GetLastMonthIndex(request);
+            if (result.Success)
+            {
+                return StatusCode(result.StatusCode, new { message = result.Message, data = result.dto });
+            }
+            return StatusCode(result.StatusCode, new { message = result.Message });
+        }
     }
 }
