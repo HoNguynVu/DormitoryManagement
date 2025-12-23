@@ -1,4 +1,5 @@
-﻿using API.Services.Interfaces;
+﻿using API.Services.Helpers;
+using API.Services.Interfaces;
 using API.UnitOfWorks;
 using BusinessObject.DTOs.StudentDTOs;
 using BusinessObject.Entities;
@@ -73,6 +74,36 @@ namespace API.Services.Implements
             }
             return (true, "Student updated successfully.", 200);
         }
-
+        
+        public async Task<(bool Success, string Message, int StatusCode)> CreateRelativesForStudent(CreateRelativeDTO relativeDTO)
+        {
+            if (relativeDTO == null || string.IsNullOrEmpty(relativeDTO.StudentID))
+                return (false, "Invalid relative data.", 400);
+            var student = await _uow.Students.GetByIdAsync(relativeDTO.StudentID);
+            if (student == null)
+                return (false, "Student not found.", 404);
+            await _uow.BeginTransactionAsync();
+            try
+            {
+                var relative = new Relative
+                {
+                    RelativeID = "REL-" + IdGenerator.GenerateUniqueSuffix(),
+                    FullName = relativeDTO.FullName,
+                    Relationship = relativeDTO.Relationship,
+                    PhoneNumber = relativeDTO.PhoneNumber,
+                    Address = relativeDTO.Address,
+                    Occupation = relativeDTO.Occupation,
+                    StudentID = relativeDTO.StudentID
+                };
+                _uow.Relatives.Add(relative);
+                await _uow.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await _uow.RollbackAsync();
+                return (false, $"Failed to create relative: {ex.Message}", 500);
+            }
+            return (true, "Relative created successfully.", 200);
+        }
     }
 }

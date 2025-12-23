@@ -38,5 +38,16 @@ namespace API.Controllers
             }
             return StatusCode(result.StatusCode, new { message = result.Message });
         }
+
+        [HttpPost("create-relative")]
+        public async Task<IActionResult> CreateRelative([FromBody] CreateRelativeDTO relativeDTO)
+        {
+            var result = await _studentService.CreateRelativesForStudent(relativeDTO);
+            if (result.Success)
+            {
+                return StatusCode(result.StatusCode, new { message = result.Message });
+            }
+            return StatusCode(result.StatusCode, new { message = result.Message });
+        }
     }
 }
