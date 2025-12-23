@@ -51,6 +51,10 @@ namespace API.Services.Implements
                 return (false, $"Your current insurance is valid until {currentInsurance.EndDate}. Renewal is only allowed 1 months before expiration.", 400);
             }
             int nextYear = DateTime.Now.Year + 1;
+            var healthprice = await _uow.HealthPrices.GetHealthInsuranceByYear(nextYear);
+            if (healthprice == null) {
+                return (false, "Không thể lấy giá bảo hiểm", 404);
+            }
             // Add Insurance
             await _uow.BeginTransactionAsync();
             try
@@ -62,7 +66,7 @@ namespace API.Services.Implements
                     HospitalID = hospitalId, 
                     StartDate = new DateOnly(nextYear, 1, 1),
                     EndDate = new DateOnly(nextYear, 12, 31),
-                    Cost = Cost.INSURANCE_COST_PER_YEAR,
+                    Cost = healthprice.Amount,
                     Status = "Pending",
                     CardNumber = cardNumber
                 };

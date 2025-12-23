@@ -41,6 +41,7 @@ namespace DataAccess.Models
         public virtual DbSet<RegistrationForm> RegistrationForms { get; set; }
         public virtual DbSet<Violation> Violations { get; set; }
         public virtual DbSet<HealthInsurance> HealthInsurances { get; set; }
+        public virtual DbSet<HealthInsurancePrice> HealthInsurancePrices { get; set; }
         public virtual DbSet<Hospital> Hospitals { get; set; }
 
         // Finance
@@ -206,6 +207,11 @@ namespace DataAccess.Models
                       .WithMany(p => p.Insurances)     
                       .HasForeignKey(d => d.HospitalID)
                       .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(d => d.HealthInsurancePrice)
+                      .WithMany(p => p.Insurances)
+                      .HasForeignKey(d => d.HealthPriceID)
+                      .OnDelete(DeleteBehavior.Restrict);
                 entity.Property(e => e.Cost).HasColumnType("decimal(18, 2)");
                 entity.Property(e => e.Status).HasDefaultValue("Pending");
                 entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETDATE()");
@@ -214,6 +220,13 @@ namespace DataAccess.Models
             {
                 entity.HasKey(e => e.HospitalID);
                 entity.Property(e => e.HospitalName).IsRequired();
+            });
+
+            modelBuilder.Entity<HealthInsurancePrice>(entity =>
+            {
+                entity.HasKey(e => e.HealthPriceID);
+                entity.Property(e => e.Amount).HasColumnType("decimal(18, 2)");
+                entity.Property(e => e.IsActive).HasDefaultValue(true);
             });
             modelBuilder.Entity<Notification>(entity =>
             {

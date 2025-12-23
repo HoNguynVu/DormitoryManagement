@@ -32,6 +32,13 @@ namespace BusinessObject.Entities
         [Required]
         public DateOnly EndDate { get; set; }
 
+
+        [Required]
+        [StringLength(128)]
+        public string HealthPriceID { get; set; }
+
+        [ForeignKey("HealthPriceID")]
+        public virtual HealthInsurancePrice HealthInsurancePrice { get; set; }
         [Required]
         [Column(TypeName = "decimal(18, 2)")]
         public decimal Cost { get; set; }

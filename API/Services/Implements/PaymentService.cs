@@ -292,7 +292,7 @@ namespace API.Services.Implements
                 return (400, new PaymentLinkDTO { IsSuccess = false, Message = "Health insurance form is not in pending status" });
             }
             var year = DateTime.Now.Year;
-            var amount = Cost.INSURANCE_COST_PER_YEAR;
+            var amount = form.Cost;
             var appTransId = GenerateAppTransId(PaymentConstants.PrefixHealthInsurance, insuranceId);
             string description = $"Thanh toan bao hiem y te {insuranceId} nam {year} ";
             string orderUrl = await CallZaloPayCreateOrder(appTransId, (long)amount, description, insuranceId);
