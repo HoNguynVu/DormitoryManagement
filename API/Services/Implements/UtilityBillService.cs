@@ -331,5 +331,15 @@ namespace API.Services.Implements
             }
             return (true, "Bills retrieved successfully", 200, dtoList);
         }
+
+        public async Task<(bool Success, string Message, int StatusCode, Parameter para)> GetActiveParameter()
+        {
+            var parameter = await _utilityBillUow.Parameters.GetActiveParameterAsync();
+            if (parameter == null)
+            {
+                return (false, "Active parameter not found", 404, null);
+            }
+            return (true, "Active parameter retrieved successfully", 200, parameter);
+        }
     }
 }

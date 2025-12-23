@@ -11,5 +11,6 @@ namespace API.Services.Interfaces
         Task<(bool Success, string Message, int StatusCode)> CreateUtilityBill(CreateBillDTO dto);
         Task<(bool Success, string Message, int StatusCode)> ConfirmUtilityPaymentAsync(string billId);
         Task<(bool Success, string Message, int StatusCode, IEnumerable<ManagerGetBillDTO> listBill)> GetBillsForManagerAsync(ManagerGetBillRequest request);
+        Task<(bool Success, string Message, int StatusCode, Parameter para)> GetActiveParameter();
     }
 }

@@ -46,5 +46,16 @@ namespace API.Controllers
             }
             return StatusCode(result.StatusCode, new { message = result.Message });
         }
+
+        [HttpGet("active-parameter")]
+        public async Task<IActionResult> GetActiveParameter()
+        {
+            var result = await utilityBillService.GetActiveParameter();
+            if (result.Success)
+            {
+                return StatusCode(result.StatusCode, new { message = result.Message, data = result.para });
+            }
+            return StatusCode(result.StatusCode, new { message = result.Message });
+        }
     }
 }
