@@ -146,6 +146,7 @@ namespace API.Services.Implements
             string zpTransId,
             Func<Receipt, Task<(bool Success, string Message, int StatusCode)>> businessLogic)
         {
+            await _paymentUow.BeginTransactionAsync();
             try
             {
                 // 1. Tìm Payment
