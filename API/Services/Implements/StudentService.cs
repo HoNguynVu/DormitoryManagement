@@ -1,5 +1,6 @@
 ﻿using API.Services.Interfaces;
 using API.UnitOfWorks;
+using BusinessObject.DTOs.StudentDTOs;
 using BusinessObject.Entities;
 
 namespace API.Services.Implements
@@ -11,7 +12,7 @@ namespace API.Services.Implements
         {
             _uow = uow;
         }
-        public async Task<(bool Success, string Message, int StatusCode, Student? student)> GetStudentByID(string accountId)
+        public async Task<(bool Success, string Message, int StatusCode, GetStudentDTO? student)> GetStudentByID(string accountId)
         {
             if (string.IsNullOrEmpty(accountId))
                 return (false, "Student ID is required.", 400, null);
@@ -20,7 +21,29 @@ namespace API.Services.Implements
             {
                 return (false, "Student not found.", 404, null);
             }
-            return (true, "Student retrieved successfully.", 200, student);
+            var dto = new GetStudentDTO
+            {
+                StudentID = student.StudentID,
+                FullName = student.FullName,
+                Email = student.Email,
+                PhoneNumber = student.PhoneNumber,
+                Address = student.Address,
+                SchoolName = student.School.SchoolName,
+                CitizenID = student.CitizenID,
+                CitizenIDIssuePlace = student.CitizenIDIssuePlace,
+                PriorityName = student.Priority.PriorityDescription,
+                Gender = student.Gender,
+                Relatives = student.Relatives.Select(r => new Relative
+                {
+                    RelativeID = r.RelativeID,
+                    FullName = r.FullName,
+                    Relationship = r.Relationship,
+                    PhoneNumber = r.PhoneNumber,
+                    Occupation = r.Occupation,
+                    Address = r.Address
+                }).ToList()
+            };
+            return (true, "Student retrieved successfully.", 200, dto);
         }
     }
 }
