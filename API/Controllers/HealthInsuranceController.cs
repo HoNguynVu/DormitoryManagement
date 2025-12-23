@@ -1,4 +1,5 @@
-﻿using API.Services.Interfaces;
+﻿using API.Services.Implements;
+using API.Services.Interfaces;
 using BusinessObject.DTOs.HealthInsuranceDTOs;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -80,5 +81,30 @@ namespace API.Controllers
             }
             return StatusCode(result.StatusCode, new { message = result.Message });
         }
+
+        [HttpGet("detail/{insuranceId}")]
+        public async Task<IActionResult> GetDetailHealthInsuranceAsync([FromQuery] string insuranceId)
+        {
+            var result = await _healthInsuranceService.GetDetailHealth(insuranceId);
+            if (!result.Success)
+                return StatusCode(result.StatusCode, new { Message = result.Message });
+            return StatusCode(result.StatusCode,new { Message = result.Message });
+        }
+
+        [HttpGet("filtered")]
+        public async Task<IActionResult> GetContractFiltered([FromQuery] string? keyword, [FromQuery] string? hospitalName, [FromQuery] int? year, [FromQuery] string? status)
+        {
+            var result = await _healthInsuranceService.GetHealthInsuranceFiltered(keyword, hospitalName, year, status);
+            if (!result.Success)
+            {
+                return StatusCode(result.StatusCode, new { message = result.Message });
+            }
+            return Ok(new
+            {
+                message = result.Message,
+                data = result.dto
+            });
+        }
+
     }
 }

@@ -123,7 +123,7 @@ namespace API.Controllers
             return Ok(new { success = true, message = result.Message });
         }
         [HttpGet("detail/{contractId}")]
-        public async Task<IActionResult> GetDetailContract(string contractId)
+        public async Task<IActionResult> GetDetailContract([FromQuery] string contractId)
         {
             var result = await _contractService.GetDetailContract(contractId);
             if (!result.Success)
