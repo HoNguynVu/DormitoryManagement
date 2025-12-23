@@ -21,7 +21,7 @@ namespace API.Services.Implements
             _logger = logger;
         }
 
-        public async Task<(bool Success, string Message, int StatusCode, Contract? Data)> GetCurrentContractAsync(string studentId)
+        public async Task<(bool Success, string Message, int StatusCode, ContractDto? Data)> GetCurrentContractAsync(string studentId)
         {
             if (string.IsNullOrEmpty(studentId))
                 return (false, "Student ID is required.", 400, null);
@@ -35,12 +35,19 @@ namespace API.Services.Implements
                 }
 
                 var contract = await _uow.Contracts.GetActiveContractByStudentId(studentId);
+                if (contract== null)
+                    return (false,"No active contract found",200,null);
 
-                if (contract == null)
+                var contractDto = new ContractDto
                 {
-                    return (true, "No active contract found.", 200, null);
-                }
-                return (true, "Success", 200, contract);
+                    ContractId = contract.ContractID,
+                    RoomName = contract.Room?.RoomName ?? "N/A", // Null check an toàn
+                    StudentName = contract.Student?.FullName ?? "N/A",
+                    StartDate = contract.StartDate,
+                    EndDate = contract.EndDate,
+                    Status = contract.ContractStatus,
+                };
+                return (true, "Success", 200, contractDto);
             }
             catch (Exception ex)
             {

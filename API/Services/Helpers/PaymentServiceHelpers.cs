@@ -133,10 +133,8 @@ namespace API.Services.Implements
         {
             return await ExecutePaymentTransaction(appTransId, zpTransId, async (receipt) =>
             {
-                // For room change payment, just mark receipt as paid
-                // No additional business logic needed as room change was already executed
-                //return await _contractService.ConfirmRefundAsync(receipt.RelatedObjectID);
-                return (true, "Room change payment confirmed successfully.", 200);
+
+                return  (true, "Room change payment confirmed successfully.", 200);
             });
         }
 
