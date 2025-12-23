@@ -131,5 +131,26 @@ namespace API.Services.Implements
             }
             return (true, "Relative updated successfully.", 200);
         }
+
+        public async Task<(bool Success, string Message, int StatusCode)> DeleteRelative(string relativeId)
+        {
+            if (string.IsNullOrEmpty(relativeId))
+                return (false, "Relative ID is required.", 400);
+            var relative = await _uow.Relatives.GetByIdAsync(relativeId);
+            if (relative == null)
+                return (false, "Relative not found.", 404);
+            await _uow.BeginTransactionAsync();
+            try
+            {
+                _uow.Relatives.Delete(relative);
+                await _uow.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await _uow.RollbackAsync();
+                return (false, $"Failed to delete relative: {ex.Message}", 500);
+            }
+            return (true, "Relative deleted successfully.", 200);
+        }
     }
 }
