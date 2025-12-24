@@ -733,5 +733,26 @@ namespace API.Services.Implements
                 return (false, $"Error retrieving contract details: {ex.Message}", 500, null);
             }
         }
+
+        public async Task<(bool Success, string Message, int StatusCode,string? receiptId)> GetPendingRenewalRequestAsync(string studentId)
+        {
+            //validate 
+            if (string.IsNullOrEmpty(studentId)) 
+                return (false,"Invalid StudentId",404, null);
+            try
+            {
+                var contract = await _uow.Contracts.GetActiveContractByStudentId(studentId);
+                if (contract == null)
+                    return (false,"Student doesn't have contract",400,null);
+                var receipt = await _uow.Receipts.GetReceiptByTypeAndRelatedIdAsync(PaymentConstants.TypeRenewal, contract.ContractID);
+                if (receipt == null)
+                    return (false, "Student doesn't have pending request renewal", 400, null);
+                return (true, "Receipt data retrieved successfully.", 200, receipt.ReceiptID);
+            }
+            catch
+            {
+                return (false,"Internal Server Error",500,null);
+            }   
+        }
     }
 }

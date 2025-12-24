@@ -5,6 +5,7 @@ namespace API.Services.Interfaces
     public interface IContractService
     {
         Task<(bool Success, string Message, int StatusCode,string? receiptId)> RequestRenewalAsync(string studentId, int monthsToExtend);
+        Task<(bool Success, string Message, int StatusCode, string? receiptId)> GetPendingRenewalRequestAsync(string studentId);
         Task<(bool Success, string Message, int StatusCode, ContractDto? Data)> GetCurrentContractAsync(string studentId);
         Task<(bool Success, string Message, int StatusCode)> TerminateContractNowAsync(string studentId);
         //Manager
