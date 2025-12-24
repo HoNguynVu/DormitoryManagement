@@ -17,12 +17,12 @@ namespace API.Services.Implements
             _uow = uow;
             _roomEquipmentService = roomEquipmentService;
         }
-        public async Task<(bool Success, string Message, int StatusCode)> CreateRequestAsync(CreateMaintenanceDto dto)
+        public async Task<(bool Success, string Message, int StatusCode,string? requestMaintenanceId)> CreateRequestAsync(CreateMaintenanceDto dto)
         {
             // Validation đầu vào
             if (dto == null || string.IsNullOrEmpty(dto.StudentId) || string.IsNullOrEmpty(dto.Description))
             {
-                return (false, "Thông tin yêu cầu không hợp lệ (Thiếu StudentId hoặc Mô tả).", 400);
+                return (false, "Thông tin yêu cầu không hợp lệ (Thiếu StudentId hoặc Mô tả).", 400,null);
             }
             await _uow.BeginTransactionAsync();
             try
@@ -32,7 +32,7 @@ namespace API.Services.Implements
 
                 if (contract == null || contract.Room == null)
                 {
-                    return (false, "Sinh viên chưa có hợp đồng phòng hiệu lực, không thể gửi yêu cầu.", 403);
+                    return (false, "Sinh viên chưa có hợp đồng phòng hiệu lực, không thể gửi yêu cầu.", 403,null); ;
                 }
                 if (!string.IsNullOrEmpty(dto.EquipmentId))
                 {
@@ -42,7 +42,7 @@ namespace API.Services.Implements
                     }
                     catch (Exception ex)
                     {
-                        return (false, ex.Message, 400);
+                        return (false, ex.Message, 400,null);
                     }
                 }
 
@@ -61,11 +61,11 @@ namespace API.Services.Implements
                 _uow.Maintenances.Add(request);
                 await _uow.CommitAsync();
 
-                return (true, "Gửi yêu cầu bảo trì thành công.", 201);
+                return (true, "Gửi yêu cầu bảo trì thành công.", 201,request.RequestID);
             }
             catch (Exception ex)
             {
-                return (false, $"Lỗi hệ thống: {ex.Message}", 500);
+                return (false, $"Lỗi hệ thống: {ex.Message}", 500, null);
             }
         }
 

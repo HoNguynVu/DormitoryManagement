@@ -6,7 +6,7 @@ namespace API.Services.Interfaces
     public interface IMaintenanceService
     {
         // Sinh viên gửi báo cáo
-        Task<(bool Success, string Message, int StatusCode)> CreateRequestAsync(CreateMaintenanceDto dto);
+        Task<(bool Success, string Message, int StatusCode,string? requestMaintenanceId)> CreateRequestAsync(CreateMaintenanceDto dto);
 
         // Lấy danh sách (cho SV xem lịch sử )
         Task<(bool Success, string Message, int StatusCode, IEnumerable<SummaryMaintenanceDto> dto)> GetRequestsByStudentIdAsync(string studentId);

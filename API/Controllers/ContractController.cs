@@ -193,7 +193,7 @@ namespace API.Controllers
             });
         }
 
-        [HttpGet("pending-request-renew/{studentId}")]
+        [HttpGet("pending-request-renew/")]
         public async Task<IActionResult> GetPendingRequestRenew([FromQuery] string studentId)
         {
             var result = await _contractService.GetPendingRenewalRequestAsync(studentId);
