@@ -21,42 +21,42 @@ namespace API.Services.Implements
             _logger = logger;
         }
 
-        public async Task<(bool Success, string Message, int StatusCode)> RegisterHealthInsuranceAsync(string studentId, string hospitalId, string cardNumber)
+        public async Task<(bool Success, string Message, int StatusCode,string? insuranceId)> RegisterHealthInsuranceAsync(string studentId, string hospitalId, string cardNumber)
         {
             //Validation 
             if (string.IsNullOrEmpty(studentId))
-                return (false, "Student ID is required.", 400);
+                return (false, "Student ID is required.", 400, null);
 
             if (string.IsNullOrEmpty(hospitalId))
-                return (false, "Registration place is required.", 400);
+                return (false, "Registration place is required.", 400, null);
 
             if (!string.IsNullOrEmpty(cardNumber))
-                return (false, "Card Number is required", 400);
+                return (false, "Card Number is required", 400, null);
             // Check Dkien
             var student = await _uow.Students.GetByIdAsync(studentId);
             if (student == null)
             {
-                return (false, "Student not found.", 404);
+                return (false, "Student not found.", 404, null);
             }
 
             var hasPending = await _uow.HealthInsurances.HasPendingInsuranceRequestAsync(studentId);
 
             if (hasPending)
             {
-                return (false, "You already have a pending insurance request.", 409);
+                return (false, "You already have a pending insurance request.", 409, null);
             }
             var currentInsurance = await _uow.HealthInsurances.GetActiveInsuranceByStudentIdAsync(studentId);
             // Kiểm tra nếu còn hạn quá dài thì không cho mua tiếp ( > 1 tháng)
             DateOnly today = DateOnly.FromDateTime(DateTime.Now);
             if (currentInsurance != null && currentInsurance.EndDate > today.AddMonths(1))
             {
-                return (false, $"Your current insurance is valid until {currentInsurance.EndDate}. Renewal is only allowed 1 months before expiration.", 400);
+                return (false, $"Your current insurance is valid until {currentInsurance.EndDate}. Renewal is only allowed 1 months before expiration.", 400,null);
             }
             int nextYear = DateTime.Now.Year + 1;
             var healthprice = await _uow.HealthPrices.GetHealthInsuranceByYear(nextYear);
             if (healthprice == null)
             {
-                return (false, "Không thể lấy giá bảo hiểm", 404);
+                return (false, "Không thể lấy giá bảo hiểm", 404, null);
             }
             // Add Insurance
             await _uow.BeginTransactionAsync();
@@ -76,12 +76,12 @@ namespace API.Services.Implements
 
                 _uow.HealthInsurances.Add(healthInsurance);
                 await _uow.CommitAsync();
-                return (true, healthInsurance.InsuranceID, 201);
+                return (true, healthInsurance.InsuranceID, 201,healthInsurance.InsuranceID);
             }
             catch (Exception ex)
             {
                 await _uow.RollbackAsync();
-                return (false, $"DB Error (Write): {ex.Message}", 500);
+                return (false, $"DB Error (Write): {ex.Message}", 500, null);
             }
         }
 
@@ -163,13 +163,13 @@ namespace API.Services.Implements
             }
         }
 
-        public async Task<(bool Success, string Message, int StatusCode)> CreateHealthInsurancePriceAsync(CreateHealthPriceDTO request)
+        public async Task<(bool Success, string Message, int StatusCode,string? healthPriceId)> CreateHealthInsurancePriceAsync(CreateHealthPriceDTO request)
         {
             //validate
             if (request == null)
-                return (false, "Không có dữ liệu đầu vào", 400);
+                return (false, "Không có dữ liệu đầu vào", 400, null);
             if (request.Amount < 0)
-                return (false, " Gía tiền BHYT không được âm", 400);
+                return (false, " Gía tiền BHYT không được âm", 400, null);
             await _uow.BeginTransactionAsync();
             try
             {
@@ -192,12 +192,12 @@ namespace API.Services.Implements
                 _uow.HealthPrices.Add(newPrice);
                 await _uow.CommitAsync();
 
-                return (true, "Tạo mới giá BHYT thành công.", 201); // 201 Created
+                return (true, "Tạo mới giá BHYT thành công.", 201,newPrice.HealthPriceID); // 201 Created
             }
             catch (Exception ex)
             {
 
-                return (false, $"Lỗi hệ thống: {ex.Message}", 500);
+                return (false, $"Lỗi hệ thống: {ex.Message}", 500, null);
             }
         }
 
