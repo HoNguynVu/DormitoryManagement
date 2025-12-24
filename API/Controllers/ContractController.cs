@@ -192,5 +192,18 @@ namespace API.Controllers
                 data = result.dto
             });
         }
+
+        [HttpGet("pending-request-renew/{studentId}")]
+        public async Task<IActionResult> GetPendingRequestRenew([FromQuery] string studentId)
+        {
+            var result = await _contractService.GetPendingRenewalRequestAsync(studentId);
+            if (!result.Success)
+                return StatusCode(result.StatusCode,new { message= result.Message});
+            return StatusCode(result.StatusCode,new
+            {
+                message = result.Message,
+                receiptId = result.receiptId
+            });
+        }
     }
 }
