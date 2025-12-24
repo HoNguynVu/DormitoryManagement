@@ -15,8 +15,7 @@ namespace API.Services.Interfaces
         Task<(bool Success, string Message, int StatusCode, DetailContractDto dto)> GetDetailContract(string contractId);
         Task<(bool Success, string Message, int StatusCode, IEnumerable<ExpiringContractDTO>)> GetExpiringContractByManager(int daysUntilExpiration, string managerId);
         Task<(bool Success, string Message, int StatusCode, int numContracts)> CountExpiringContractsByManager(int daysUntilExpiration, string managerID);
-        Task<(bool Success, string Message, int StatusCode)> ChangeRoomAsync(ChangeRoomRequestDto request);
-        Task<(bool Success, string Message, int StatusCode)> ConfirmRefundAsync(ConfirmRefundDto request);
+        Task<(bool Success, string Message, int StatusCode, string? ReceiptId, string? Type)> ChangeRoomAsync(ChangeRoomRequestDto request);
         //Student
         Task<(bool Success, string Message, int StatusCode, ContractDetailByStudentDto? dto)> GetContractDetailByStudentAsync(string accountId);
     }

@@ -3,17 +3,17 @@ namespace BusinessObject.DTOs.ContractDTOs
     public enum ChangeRoomReasonEnum
     {
         /// <summary>
-        /// L?i t? phía KTX (h?ng hóc, s? c?) - gi?m 50% phí
+        /// Loi tu phia KTX (hong hoc, sua chua) - giam 50% phi
         /// </summary>
         DormitoryIssue,
 
         /// <summary>
-        /// Yêu c?u cá nhân - không gi?m giá
+        /// Yeu cau ca nhan - không giam gia
         /// </summary>
         PersonalRequest,
 
         /// <summary>
-        /// Lý do khác
+        /// Ly do khac
         /// </summary>
         Other
     }
