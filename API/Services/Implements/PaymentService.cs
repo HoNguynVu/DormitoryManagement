@@ -174,6 +174,7 @@ namespace API.Services.Implements
                 {
                     IsSuccess = true,
                     PaymentUrl = orderUrl,
+                    PaymentId = appTransId,
                     Message = "Renewal payment link created successfully."
                 });
             }

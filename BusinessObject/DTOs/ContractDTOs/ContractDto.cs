@@ -14,6 +14,5 @@ namespace BusinessObject.DTOs.ContractDTOs
         public DateOnly StartDate { get; set; }
         public DateOnly? EndDate { get; set; }
         public string Status { get; set; }
-        public decimal Price { get; set; }
     }
 }

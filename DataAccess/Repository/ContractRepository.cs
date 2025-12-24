@@ -52,7 +52,7 @@ namespace DataAccess.Repository
         {
             return await _context.Receipts
                  .AnyAsync(i => i.StudentID == studentId
-                                && i.PaymentType == "Renewal"
+                                && i.PaymentType == "RenewalContract"
                                 && i.Status == "Pending");
         }
 

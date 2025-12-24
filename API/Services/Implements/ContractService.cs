@@ -41,7 +41,7 @@ namespace API.Services.Implements
                 var contractDto = new ContractDto
                 {
                     ContractId = contract.ContractID,
-                    RoomName = contract.Room?.RoomName ?? "N/A", // Null check an toàn
+                    RoomName = contract.Room?.RoomName ?? "N/A", 
                     StudentName = contract.Student?.FullName ?? "N/A",
                     StartDate = contract.StartDate,
                     EndDate = contract.EndDate,
@@ -55,46 +55,46 @@ namespace API.Services.Implements
             }
         }
 
-        public async Task<(bool Success, string Message, int StatusCode)> RequestRenewalAsync(string studentId, int monthsToExtend)
+        public async Task<(bool Success, string Message, int StatusCode,string? receiptId)> RequestRenewalAsync(string studentId, int monthsToExtend)
         {
 
             // Validation
             if (string.IsNullOrEmpty(studentId))
-                return (false, "Student ID is required.", 400);
+                return (false, "Student ID is required.", 400,null);
             if (monthsToExtend <= 0)
-                return (false, "Extension duration must be greater than 0.", 400);
+                return (false, "Extension duration must be greater than 0.", 400,null);
             try
             {
                 var student = await _uow.Students.GetByIdAsync(studentId);
                 if (student == null)
                 {
-                    return (false, "Student not found.", 404);
+                    return (false, "Student not found.", 404,null);
                 }
                 // Check hợp đồng active
                 var activeContract = await _uow.Contracts.GetActiveContractByStudentId(studentId);
                 if (activeContract == null)
                 {
-                    return (false, "No active contract found for this student.", 404);
+                    return (false, "No active contract found for this student.", 404,null);
                 }
 
                 // Check pending request
                 bool hasPending = await _uow.Contracts.HasPendingRenewalRequestAsync(studentId);
                 if (hasPending)
                 {
-                    return (false, "A pending renewal request already exists. Please check your invoices.", 409);
+                    return (false, "A pending renewal request already exists. Please check your invoices.", 409,null);
                 }
 
                 // Check violations
                 int violations = await _uow.Violations.CountViolationsByStudentId(studentId);
                 if (violations >= 3)
-                    return (false, $"Cannot renew. Too many violations ({violations}). Contact manager.", 400);
+                    return (false, $"Cannot renew. Too many violations ({violations}). Contact manager.", 400,null);
 
                 if (activeContract.Room == null)
-                    return (false, "Room data is missing, cannot calculate fee.", 422);
+                    return (false, "Room data is missing, cannot calculate fee.", 422, null);
                 // Calculate fee
                 decimal? price = activeContract.Room?.RoomType?.Price;
                 if (price == null)
-                    return (false, "Room type price data is missing, cannot calculate fee.", 422);
+                    return (false, "Room type price data is missing, cannot calculate fee.", 422, null);
 
 
                 decimal totalAmount = (monthsToExtend == 12) ? price.Value : price.Value * 0.5m; // giá phòng theo năm
@@ -115,12 +115,12 @@ namespace API.Services.Implements
                 };
                 _uow.Receipts.Add(newReceipt);
                 await _uow.CommitAsync();
-                return (true, newReceipt.ReceiptID, 201);
+                return (true, newReceipt.ReceiptID, 201,newReceipt.ReceiptID);
             }
             catch (Exception ex)
             {
                 await _uow.RollbackAsync();
-                return (false, $"Internal Server Error: {ex.Message}", 500);
+                return (false, $"Internal Server Error: {ex.Message}", 500, null);
             }
         }
 
