@@ -31,7 +31,7 @@ namespace API.Services.Implements
                 { "app_time", appTime.ToString() },
                 { "amount", amount.ToString() },
                 { "app_trans_id", appTransId },
-                { "embed_data", JsonConvert.SerializeObject(new { redirecturl = "" }) },
+                { "embed_data", JsonConvert.SerializeObject(new { redirecturl = _zaloConfig.FrontEndUrl }) },
                 { "item", JsonConvert.SerializeObject(items) },
                 { "description", description },
                 { "bank_code", "" },
@@ -83,7 +83,7 @@ namespace API.Services.Implements
         {
             return await ExecutePaymentTransaction(appTransId, zpTransId, async (receipt) =>
             {
-                var contract = await _paymentUow.Contracts.GetByIdAsync(receipt.RelatedObjectID);
+                var contract = await _paymentUow.Contracts.GetDetailContractAsync(receipt.RelatedObjectID);
 
                 // 2. Kiểm tra dữ liệu Hợp đồng và Phòng
                 if (contract == null)
@@ -101,7 +101,7 @@ namespace API.Services.Implements
                 }
 
                 // 4. Tính toán số tháng (Dùng .Value để lấy giá trị thực)
-                int months = (int)(receipt.Amount / rawPrice.Value);
+                int months = (receipt.Amount == rawPrice) ? 12 : 6;
 
                 if (months <= 0)
                 {

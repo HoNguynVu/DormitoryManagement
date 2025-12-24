@@ -27,8 +27,8 @@ namespace API.Controllers
 
             return StatusCode(result.StatusCode, new
             {
-                message = result.Message,
-                receipId = result.receiptId
+                message = "Renewal request created successfully.",
+                receiptId = result.receiptId
             });
         }
 

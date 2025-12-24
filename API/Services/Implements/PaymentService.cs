@@ -454,9 +454,15 @@ namespace API.Services.Implements
                 {
                     await HanldeUtilitySuccessPayment(appTransId, zpTransId);
                 }
-                else if (appTransId.Contains($"_{PaymentConstants.PrefixContract}_"))
+                else if (appTransId.Contains($"_{PaymentConstants.PrefixRenew}_"))
                 {
-                    await HanldeRenewalSuccessPayment(appTransId, zpTransId);
+                    var result = await HanldeRenewalSuccessPayment(appTransId, zpTransId);
+
+                    // 2. Kiểm tra kết quả
+                    if (!result.Success)
+                    {
+                        return (0, $"Lỗi xử lý gia hạn: {result.Message}");
+                    }
                 }
                 else if (appTransId.Contains($"_{PaymentConstants.PrefixHealthInsurance}_"))
                 {

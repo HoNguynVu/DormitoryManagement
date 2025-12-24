@@ -263,12 +263,10 @@ namespace API.Services.Implements
             {
                 return (false, "Months added must be greater than 0.", 400);
             }
-
-            await _uow.BeginTransactionAsync();
             try
             {
                 // 3. Lấy thông tin hợp đồng
-                var contract = await _uow.Contracts.GetByIdAsync(contractId);
+                var contract = await _uow.Contracts.GetDetailContractAsync(contractId);
 
                 if (contract == null)
                 {
@@ -292,9 +290,7 @@ namespace API.Services.Implements
 
                 // 5. Cập nhật và Lưu xuống DB
                 _uow.Contracts.Update(contract);
-                await _uow.CommitAsync();
                 // 6 . Gửi email xác nhận 
-
                 var receipt = await _uow.Receipts.GetReceiptByTypeAndRelatedIdAsync(PaymentConstants.TypeRenewal, contract.ContractID);
                 if (receipt == null)
                 {

@@ -20,7 +20,6 @@
         public const string PrefixRegis = "REG";
         public const string PrefixUtility = "UTL";
         public const string PrefixHealthInsurance = "HI";
-        public const string PrefixContract = "CNT";
         public const string PrefixRenew = "REN";
         public const string PrefixRoomChange = "RCH";
 
