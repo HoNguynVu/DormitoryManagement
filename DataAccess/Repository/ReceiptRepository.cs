@@ -19,5 +19,10 @@ namespace DataAccess.Repository
         {
             return await _dbSet.FirstOrDefaultAsync(r => r.PaymentType == paymentType && r.RelatedObjectID == relatedId);
         }
+
+        public async Task<Receipt?> GetPendingRequestAsync(string releatedId)
+        {
+            return await _dbSet.FirstOrDefaultAsync(r => r.Status=="Pending" && r.RelatedObjectID == releatedId);
+        }
     }
 }

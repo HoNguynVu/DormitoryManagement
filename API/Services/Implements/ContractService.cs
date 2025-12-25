@@ -744,7 +744,7 @@ namespace API.Services.Implements
                 var contract = await _uow.Contracts.GetActiveContractByStudentId(studentId);
                 if (contract == null)
                     return (false,"Student doesn't have contract",400,null);
-                var receipt = await _uow.Receipts.GetReceiptByTypeAndRelatedIdAsync(PaymentConstants.TypeRenewal, contract.ContractID);
+                var receipt = await _uow.Receipts.GetPendingRequestAsync(contract.ContractID);
                 if (receipt == null)
                     return (false, "Student doesn't have pending request renewal", 400, null);
                 var rawprice = contract.Room?.RoomType?.Price;
