@@ -71,5 +71,20 @@ namespace API.Controllers
             }
             return StatusCode(result.StatusCode, new { message = result.Message });
         }
+
+        [HttpGet("dashboard/{accountId}")]
+        public async Task<IActionResult> GetStudentDashboardData(string accountId)
+        {
+            var result = await _studentService.GetDashboardByStudentId(accountId);
+            if (result.Success)
+            {
+                return StatusCode(result.StatusCode, new
+                {
+                    message = result.Message,
+                    dashboardData = result.dto
+                });
+            }
+            return StatusCode(result.StatusCode, new { message = result.Message });
+        }
     }
 }

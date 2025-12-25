@@ -49,5 +49,11 @@ namespace DataAccess.Repository
             return await _dbSet.FirstOrDefaultAsync(bill => bill.RoomID == roomId && bill.Month == lastMonth && bill.Year == lastMonthYear);
         }
 
+        public async Task<int> CountUnpaidBillByRoomAsync(string roomId)
+        {
+            var count = await _dbSet.CountAsync(bill => bill.RoomID == roomId && bill.Status == "Unpaid");
+            return count;
+        }
+
     }
 }
