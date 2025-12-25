@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers
 {
     [ApiController]
-    // 1. Dùng số nhiều cho tên resource
     [Route("api/maintenances")]
     public class MaintenanceController : ControllerBase
     {

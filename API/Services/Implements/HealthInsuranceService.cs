@@ -253,5 +253,27 @@ namespace API.Services.Implements
             }
         }
 
+        public async Task<(bool Success, string Message, int StatusCode, HealthPriceDto? dto)> GetHealthPriceByYear(int year)
+        {
+            try
+            {
+                var price = await _uow.HealthPrices.GetHealthInsuranceByYear(year);
+                if (price == null)
+                    return (false, "Error get price by year", 400, null);
+                var result = new HealthPriceDto
+                {
+                    HealthPriceId = price.HealthPriceID,
+                    Price = price.Amount,
+                    IsActive = price.IsActive,
+                    Year = price.Year,
+                };
+                return (true, "Health insurance price data get successful", 200, result);
+            }
+            catch
+            {
+                return(false,"Internal Server Error",500,null);
+            }
+        }
+
     }
 }

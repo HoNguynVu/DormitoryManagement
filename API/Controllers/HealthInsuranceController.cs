@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
-    // 1. Sử dụng danh từ số nhiều, kebab-case
     [Route("api/health-insurances")]
     [ApiController]
     public class HealthInsuranceController : ControllerBase
@@ -59,6 +58,22 @@ namespace API.Controllers
             {
                 message = result.Message,
                 data = result.dto // Giả sử result trả về dto ở đây
+            });
+        }
+
+        // GET: api/health-insurances/prices
+        [HttpGet("prices")]
+        public async Task<IActionResult> GetPriceHealthInsurance([FromQuery] int year)
+        {
+
+            var result = await _healthInsuranceService.GetHealthPriceByYear(year);
+            if (!result.Success)
+                return StatusCode(result.StatusCode, new { Message = result.Message });
+
+            return Ok(new
+            {
+                message = result.Message,
+                data = result.dto 
             });
         }
 

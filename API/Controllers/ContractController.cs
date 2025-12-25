@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
-    // 1. Dùng danh từ số nhiều cho Resource
     [Route("api/contracts")]
     [ApiController]
     public class ContractController : ControllerBase

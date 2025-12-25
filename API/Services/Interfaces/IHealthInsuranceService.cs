@@ -18,5 +18,7 @@ namespace API.Services.Interfaces
         // Get
         Task<(bool Success, string Message,int StatusCode,HealthDetailDto dto)> GetDetailHealth(string insuranceId);
         Task<(bool Success, string Message, int StatusCode,IEnumerable<SummaryHealthDto> dto)> GetHealthInsuranceFiltered(string? keyword,string? hospitalName,int? year,string? status);
+
+        Task<(bool Success, string Message, int StatusCode,HealthPriceDto? dto)> GetHealthPriceByYear(int year);
     }
 }
