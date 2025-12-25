@@ -734,7 +734,7 @@ namespace API.Services.Implements
             }
         }
 
-        public async Task<(bool Success, string Message, int StatusCode,string? receiptId)> GetPendingRenewalRequestAsync(string studentId)
+        public async Task<(bool Success, string Message, int StatusCode,PendingRequestDto? dto)> GetPendingRenewalRequestAsync(string studentId)
         {
             //validate 
             if (string.IsNullOrEmpty(studentId)) 
@@ -747,7 +747,16 @@ namespace API.Services.Implements
                 var receipt = await _uow.Receipts.GetReceiptByTypeAndRelatedIdAsync(PaymentConstants.TypeRenewal, contract.ContractID);
                 if (receipt == null)
                     return (false, "Student doesn't have pending request renewal", 400, null);
-                return (true, "Receipt data retrieved successfully.", 200, receipt.ReceiptID);
+                var rawprice = contract.Room?.RoomType?.Price;
+                int months = (receipt.Amount == rawprice) ? 12 : 6;
+                var result = new PendingRequestDto
+                {
+                    ReceiptId = receipt.ReceiptID,
+                    ReceiptDate = receipt.PrintTime,
+                    Months = months,
+                    TotalAmount = receipt.Amount
+                };
+                return (true, "Receipt data retrieved successfully.", 200, result);
             }
             catch
             {

@@ -169,7 +169,7 @@ namespace API.Services.Implements
             if (request == null)
                 return (false, "Không có dữ liệu đầu vào", 400, null);
             if (request.Amount < 0)
-                return (false, " Gía tiền BHYT không được âm", 400, null);
+                return (false, " Giá tiền BHYT không được âm", 400, null);
             await _uow.BeginTransactionAsync();
             try
             {

@@ -19,8 +19,6 @@ namespace API.Controllers
         // ================= GET METHODS (READ) =================
 
         // GET: api/contracts
-        // Gộp Filter và Overview vào luồng GET chính hoặc tách resource con nếu cần thiết.
-        // Ở đây tôi giữ API filter làm endpoint chính để lấy danh sách.
         [HttpGet]
         public async Task<IActionResult> GetContracts(
             [FromQuery] string? keyword,
@@ -59,7 +57,6 @@ namespace API.Controllers
         }
 
         // GET: api/contracts/overview
-        // Tài nguyên thống kê (Singleton resource)
         [HttpGet("overview")]
         public async Task<IActionResult> GetContractOverview()
         {
@@ -87,13 +84,11 @@ namespace API.Controllers
             return StatusCode(result.StatusCode, new
             {
                 message = result.Message,
-                receiptId = result.receiptId
+                data = result.dto
             });
         }
 
         // GET: api/contracts/students/{studentId}/current
-        // Hoặc: api/students/{studentId}/contracts/current (Nếu có StudentController thì nên để bên đó)
-        // Ở đây giữ trong ContractController nhưng đặt route rõ ràng
         [HttpGet("students/{studentId}/current")]
         public async Task<IActionResult> GetCurrentContractByStudent([FromRoute] string studentId)
         {
