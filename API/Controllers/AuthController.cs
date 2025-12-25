@@ -110,7 +110,7 @@ namespace API.Controllers
             return StatusCode(result.StatusCode, new { message = result.Message });
         }
 
-        [HttpPost("Refresh")]
+        [HttpGet("Refresh/{refreshToken}")]
         public async Task<IActionResult> RefreshToken(string refreshToken)
         {
             var result = await _authService.GetAccessToken(refreshToken);
