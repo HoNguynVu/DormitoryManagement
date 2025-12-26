@@ -16,5 +16,6 @@ namespace BusinessObject.DTOs.MaintenanceDTOs
         public string Status { get; set; } = string.Empty;  
         public DateOnly IssueDate {  get; set; }
         public DateOnly? ResolvedDate {  get; set; }
+        public decimal? RepairCost { get; set; }
     }
 }

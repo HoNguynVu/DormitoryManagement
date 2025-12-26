@@ -39,28 +39,28 @@ namespace API.Controllers
             [FromQuery] string? status,
             [FromQuery] string? equipmentName)
         {
-            // Logic xử lý: Nếu có studentId thì gọi service get by student, 
-            // nếu có keyword/status thì gọi filter. 
-            // Tốt nhất nên gộp Logic này vào 1 hàm trong Service nhận vào 1 object filter.
-            dynamic result;
+            bool success ;
+            string message;
+            int statusCode;
+            IEnumerable<SummaryMaintenanceDto> data;
             if (!string.IsNullOrEmpty(studentId))
             {
-                result = await _maintenanceService.GetRequestsByStudentIdAsync(studentId);
+                (success, message, statusCode, data) = await _maintenanceService.GetRequestsByStudentIdAsync(studentId);
             }
             else
             {
-                result = await _maintenanceService.GetMaintenanceFiltered(keyword, status, equipmentName);
+                (success, message, statusCode, data) = await _maintenanceService.GetMaintenanceFiltered(keyword, status, equipmentName);
             }
-
-            if (!result.Success)
+   
+            if (!success)
             {
-                return StatusCode(result.StatusCode, new { message = result.Message });
+                return StatusCode(statusCode, new { message = message });
             }
 
             return Ok(new
             {
-                message = result.Message,
-                data = result.dto // Hoặc result.list tùy vào response của service
+                message = message,
+                data = data // Hoặc result.list tùy vào response của service
             });
         }
 

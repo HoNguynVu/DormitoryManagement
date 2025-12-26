@@ -88,7 +88,8 @@ namespace API.Services.Implements
                     Description = m.Description,
                     Status = m.Status,
                     IssueDate = DateOnly.FromDateTime(m.RequestDate),
-                    ResolvedDate = m.ResolvedDate.HasValue ? DateOnly.FromDateTime(m.ResolvedDate.Value) : null
+                    ResolvedDate = m.ResolvedDate.HasValue ? DateOnly.FromDateTime(m.ResolvedDate.Value) : null,
+                    RepairCost = m.RepairCost,
                 }).ToList();
                 return (true, "Lấy danh sách thành công.", 200, result);
             }
@@ -195,7 +196,9 @@ namespace API.Services.Implements
                     Description = m.Description,
                     Status = m.Status,
                     IssueDate = DateOnly.FromDateTime(m.RequestDate),
-                    ResolvedDate = m.ResolvedDate.HasValue ? DateOnly.FromDateTime(m.ResolvedDate.Value) : null
+                    ResolvedDate = m.ResolvedDate.HasValue ? DateOnly.FromDateTime(m.ResolvedDate.Value) : null,
+                    RepairCost = m.RepairCost,
+                    
                 }).ToList();
                 return (true, "Lấy danh sách thành công.", 200, result);
             }
