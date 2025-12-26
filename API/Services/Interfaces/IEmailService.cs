@@ -8,7 +8,7 @@ namespace API.Services.Interfaces
         Task SendResetPasswordEmail(string toEmail, string Otp);
         Task SendRegistrationPaymentEmailAsync(DormRegistrationSuccessDto dto);
         Task SendRenewalPaymentEmailAsync(DormRenewalSuccessDto dto);
-
+        Task SendTerminatedNotiToStudentAsync(DormTerminationDto dto);
         Task SendInsurancePaymentEmailAsync(HealthInsurancePurchaseDto dto);
         Task SendUtilityPaymentEmailAsync(UtilityPaymentSuccessDto dto);
 

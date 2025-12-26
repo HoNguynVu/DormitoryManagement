@@ -14,29 +14,85 @@ namespace API.Services.Implements
         {
             _config = configuration;
         }
+        private string GetOtpEmailTemplate(string title, string otp, string purpose)
+        {
+            // Màu chủ đạo (Ví dụ: Xanh dương đậm của KTX)
+            string primaryColor = "#0056b3";
+
+            return $@"
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                    .container {{ max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }}
+                    .card {{ background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }}
+                    .header {{ text-align: center; border-bottom: 2px solid {primaryColor}; padding-bottom: 10px; margin-bottom: 20px; }}
+                    .otp-box {{ font-size: 32px; font-weight: bold; color: {primaryColor}; letter-spacing: 5px; text-align: center; margin: 20px 0; padding: 15px; background-color: #eef6fc; border-radius: 5px; border: 1px dashed {primaryColor}; }}
+                    .footer {{ margin-top: 30px; font-size: 12px; color: #777; text-align: center; }}
+                </style>
+            </head>
+            <body>
+                <div class='container'>
+                    <div class='card'>
+                        <div class='header'>
+                            <h2 style='color: {primaryColor}; margin: 0;'>{title}</h2>
+                        </div>
+                
+                        <p>Xin chào,</p>
+                        <p>Bạn vừa yêu cầu <strong>{purpose}</strong>. Đây là mã xác thực (OTP) của bạn:</p>
+                
+                        <div class='otp-box'>{otp}</div>
+                
+                        <p>Mã này sẽ hết hạn trong vòng <strong>5 phút</strong>.</p>
+                        <p style='color: #dc3545;'><strong>Lưu ý:</strong> Vui lòng không chia sẻ mã này cho bất kỳ ai, kể cả nhân viên quản lý.</p>
+                
+                        <p>Trân trọng,<br>Ban Quản Lý KTX.</p>
+                    </div>
+            
+                    <div class='footer'>
+                        <p>Đây là email tự động, vui lòng không trả lời.<br>
+                        &copy; {DateTime.Now.Year} Dormitory Management System.</p>
+                    </div>
+                </div>
+            </body>
+            </html>";
+        }
         public async Task SendVericationEmail(string toEmail, string Otp)
         {
             var emailMessage = new MimeMessage();
-            emailMessage.From.Add(new MailboxAddress("NoReply", _config["Email:From"]));
+            emailMessage.From.Add(new MailboxAddress("Dormitory Admin", _config["Email:From"])); // Thêm tên hiển thị cho chuyên nghiệp
             emailMessage.To.Add(MailboxAddress.Parse(toEmail));
-            emailMessage.Subject = "Email Verification Otp";
-            emailMessage.Body = new TextPart("plain")
-            {
-                Text = $"Your verification OTP is: {Otp}"
-            };
+            emailMessage.Subject = "[KTX] Xác thực tài khoản của bạn";
+
+            var bodyBuilder = new BodyBuilder();
+            // Gọi hàm helper ở trên
+            bodyBuilder.HtmlBody = GetOtpEmailTemplate(
+                title: "Xác Thực Tài Khoản",
+                otp: Otp,
+                purpose: "đăng ký tài khoản mới"
+            );
+
+            emailMessage.Body = bodyBuilder.ToMessageBody();
             await SendEmailAsync(emailMessage);
         }
 
         public async Task SendResetPasswordEmail(string toEmail, string Otp)
         {
             var emailMessage = new MimeMessage();
-            emailMessage.From.Add(new MailboxAddress("NoReply", _config["Email:From"]));
+            emailMessage.From.Add(new MailboxAddress("Dormitory Security", _config["Email:From"]));
             emailMessage.To.Add(MailboxAddress.Parse(toEmail));
-            emailMessage.Subject = "Reset Password Otp";
-            emailMessage.Body = new TextPart("plain")
-            {
-                Text = $"Your verification OTP is: {Otp}"
-            };
+            emailMessage.Subject = "[KTX] Yêu cầu đặt lại mật khẩu";
+
+            var bodyBuilder = new BodyBuilder();
+            // Gọi hàm helper ở trên
+            bodyBuilder.HtmlBody = GetOtpEmailTemplate(
+                title: "Đặt Lại Mật Khẩu",
+                otp: Otp,
+                purpose: "khôi phục mật khẩu đăng nhập"
+            );
+
+            emailMessage.Body = bodyBuilder.ToMessageBody();
             await SendEmailAsync(emailMessage);
         }
 
@@ -191,6 +247,54 @@ namespace API.Services.Implements
                 <p style='margin-top: 30px; font-style: italic; font-size: 12px; text-align: center; color: #777;'>
                     Đây là email tự động, vui lòng không trả lời.<br>Ban Quản lý KTX.
                 </p>
+            </div>";
+
+            message.Body = bodyBuilder.ToMessageBody();
+            await SendEmailAsync(message);
+        }
+
+        public async Task SendTerminatedNotiToStudentAsync(DormTerminationDto dto)
+        {
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress("Ban Quản Lý KTX", "noreply@dormitory.com"));
+
+            message.To.Add(new MailboxAddress(dto.StudentName, dto.StudentEmail));
+            message.Subject = $"[KTX] Thông báo chấm dứt hợp đồng {dto.ContractCode}";
+            var bodyBuilder = new BodyBuilder();
+
+            // Sử dụng style giống hàm SendUtilityPaymentEmailAsync để đồng bộ giao diện
+            bodyBuilder.HtmlBody = $@"
+            <div style='font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.05);'>
+        
+                <div style='text-align: center; border-bottom: 2px solid #dc3545; padding-bottom: 10px; margin-bottom: 20px;'>
+                    <h2 style='margin: 0; color: #dc3545; text-transform: uppercase;'>Thông Báo Chấm Dứt Hợp Đồng</h2>
+                    <p style='margin: 5px 0; color: #666;'>Mã hợp đồng: <strong>{dto.ContractCode}</strong></p>
+                </div>
+
+                <p>Chào bạn <strong>{dto.StudentName}</strong>,</p>
+        
+                <p>Ban Quản lý KTX xin thông báo: Hợp đồng lưu trú của bạn đã chính thức được chấm dứt (thanh lý). Dưới đây là thông tin chi tiết:</p>
+
+                <div style='background-color: #fff3cd; border-left: 5px solid #ffc107; padding: 15px; margin: 20px 0;'>
+                    <p style='margin: 5px 0;'><strong>Ngày chấm dứt hiệu lực:</strong> {dto.TerminationDate:dd/MM/yyyy}</p>
+                    <p style='margin: 5px 0;'><strong>Trạng thái:</strong> Đã chấm dứt</p>
+                </div>
+
+                <p><strong>Những việc cần thực hiện:</strong></p>
+                <ul style='line-height: 1.6;'>
+                    <li>Vui lòng dọn dẹp vệ sinh và di chuyển toàn bộ tư trang cá nhân ra khỏi phòng.</li>
+                    <li>Hoàn tất thủ tục bàn giao tài sản và trả chìa khóa tại phòng quản lý.</li>
+                    <li>Thanh toán các khoản công nợ tồn đọng (điện, nước, phí phạt...) nếu có.</li>
+                </ul>
+
+                <p>Nếu bạn cần hỗ trợ thêm hoặc có thắc mắc về quyết định này, vui lòng liên hệ trực tiếp văn phòng quản lý KTX.</p>
+
+                <div style='border-top: 1px solid #eee; margin-top: 30px; padding-top: 10px;'>
+                    <p style='font-weight: bold; margin: 0;'>Ban Quản lý Ký túc xá</p>
+                    <p style='font-style: italic; font-size: 12px; color: #777; margin-top: 5px;'>
+                        Đây là email tự động, vui lòng không trả lời vào địa chỉ này.
+                    </p>
+                </div>
             </div>";
 
             message.Body = bodyBuilder.ToMessageBody();

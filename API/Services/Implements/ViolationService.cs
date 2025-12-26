@@ -2,6 +2,7 @@
 using API.Services.Helpers;
 using API.Services.Interfaces;
 using API.UnitOfWorks;
+using BusinessObject.DTOs.ConfirmDTOs;
 using BusinessObject.DTOs.ViolationDTOs;
 using BusinessObject.Entities;
 using Microsoft.AspNetCore.SignalR;
@@ -13,12 +14,14 @@ namespace API.Services.Implements
     {
         private readonly IViolationUow _violationUow;
         private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly IEmailService _emailService;
         private const int MAX_VIOLATIONS_BEFORE_TERMINATION = 3;
 
-        public ViolationService(IViolationUow violationUow, IHubContext<NotificationHub> hubContext)
+        public ViolationService(IViolationUow violationUow, IHubContext<NotificationHub> hubContext, IEmailService emailService)
         {
             _violationUow = violationUow;
             _hubContext = hubContext;
+            _emailService = emailService;
         }
 
         public async Task<(bool Success, string Message, int StatusCode, ViolationResponse? Data)> CreateViolationAsync(CreateViolationRequest request)
@@ -27,18 +30,37 @@ namespace API.Services.Implements
             {
                 // ===== TRANSACTION 1: CREATE VIOLATION =====
                 await _violationUow.BeginTransactionAsync();
-                
+                var manager = await _violationUow.BuildingManagers.GetByAccountIdAsync(request.AccountId);
+                if (manager == null)
+                {
+                    await _violationUow.RollbackAsync();
+                    return (false, "Building manager not found.", 404, null);
+                }
                 var newViolation = new Violation
                 {
                     ViolationID = "VL-" + IdGenerator.GenerateUniqueSuffix(),
                     StudentID = request.StudentId,
-                    ReportingManagerID = request.BuildingManagerId,
+                    ReportingManagerID = manager.ManagerID,
                     ViolationAct = request.ViolationAct,
                     Description = request.Description,
-                    ViolationTime = DateTime.UtcNow,
-                    Resolution = null
+                    ViolationTime = DateTime.Now,
+                    Resolution = "Đang chờ"
                 };
 
+                var account = await _violationUow.Accounts.GetAccountByStudentId(request.StudentId);
+                if (account == null) {
+                    await _violationUow.RollbackAsync();
+                    return (false, "Account not found for the given student ID.", 404, null);
+                }
+
+                var newNoti = NotificationServiceHelpers.CreateNew(
+                    accountId: account.UserId,
+                    title: "Bạn đã có vi phạm mới!",
+                    message: $"Vi phạm: '{newViolation.ViolationAct}' vừa được ghi nhận. Vui lòng kiểm tra và liên hệ ban quản lý để giái quyết.",
+                    type: "Violation"
+                );
+
+                _violationUow.Notifications.Add(newNoti);
                 _violationUow.Violations.Add(newViolation);
                 await _violationUow.CommitAsync(); // Commit violation
                 
@@ -49,15 +71,47 @@ namespace API.Services.Implements
                 if (totalViolations >= MAX_VIOLATIONS_BEFORE_TERMINATION)
                 {
                     await _violationUow.BeginTransactionAsync(); // New transaction
-                    
-                    var activeContract = await _violationUow.Contracts.GetActiveContractByStudentId(request.StudentId);
-                    if (activeContract != null)
+                    try
                     {
-                        activeContract.ContractStatus = "Terminated";
-                        activeContract.EndDate = DateOnly.FromDateTime(DateTime.UtcNow);
-                        _violationUow.Contracts.Update(activeContract);
-                        
+                        var activeContract = await _violationUow.Contracts.GetActiveContractByStudentId(request.StudentId);
+                        if (activeContract != null)
+                        {
+                            activeContract.ContractStatus = "Terminated";
+                            activeContract.EndDate = DateOnly.FromDateTime(DateTime.UtcNow);
+                            _violationUow.Contracts.Update(activeContract);
+                        }
+                        var notiTermination = NotificationServiceHelpers.CreateNew(
+                            accountId: account.UserId,
+                            title: "Hợp đồng của bạn đã bị chấm dứt!",
+                            message: "Do bạn đã vi phạm nội quy 3 lần, hợp đồng của bạn đã bị chấm dứt. Vui lòng liên hệ quản lý tòa nhà để biết thêm chi tiết.",
+                            type: "Contract"
+                            );
+                        _violationUow.Notifications.Add(notiTermination);
                         await _violationUow.CommitAsync(); // Commit contract update
+
+                        try
+                        {
+                            var dto = new DormTerminationDto
+                            {
+                                ContractCode = activeContract.ContractID,
+                                StudentName = activeContract.Student.FullName,
+                                StudentEmail = activeContract.Student.Email,
+                                StudentId = activeContract.StudentID,
+                                BuildingName = activeContract.Room.Building.BuildingName,
+                                RoomName = activeContract.Room.RoomName,
+                                TerminationDate = DateOnly.FromDateTime(DateTime.Now)
+                            };
+                            await _emailService.SendTerminatedNotiToStudentAsync(dto);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Email Error: {ex.Message}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        await _violationUow.RollbackAsync();
+                        return (false, $"Error terminating contract: {ex.Message}", 500, null);
                     }
                 }
 
@@ -293,6 +347,11 @@ namespace API.Services.Implements
                 StudentName = violation.Student?.FullName ?? "Unknown",
                 ReportingManagerId = violation.ReportingManagerID,
                 ReportingManagerName = violation.ReportingManager?.FullName,
+                RoomId = violation.Student != null && violation.Student.Contracts != null && violation.Student.Contracts.Any(c => c.ContractStatus == "Active")
+                            ? violation.Student.Contracts.First(c => c.ContractStatus == "Active").RoomID
+                            : null,
+                RoomName = violation.Student != null && violation.Student.Contracts != null && violation.Student.Contracts.Any(c => c.ContractStatus == "Active")
+                            ? violation.Student.Contracts.First(c => c.ContractStatus == "Active").Room.RoomName : null,
                 ViolationAct = violation.ViolationAct,
                 ViolationTime = violation.ViolationTime,
                 Description = violation.Description,
