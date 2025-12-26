@@ -22,6 +22,7 @@ namespace API.Services.Implements
         private readonly IRegistrationService _registrationService;
         private readonly IContractService _contractService;
         private readonly IUtilityBillService _utilityBillService;
+        private readonly IMaintenanceService _maintenanceService;
         public PaymentService(IOptions<ZaloPaySettings> zaloConfig,
             IHttpClientFactory httpClientFactory, 
             IPaymentUow paymentUow, 
@@ -29,6 +30,7 @@ namespace API.Services.Implements
             IHealthInsuranceService healthInsuranceService,
             IRegistrationService registrationService,
             IContractService contractService,
+            IMaintenanceService maintenanceService,
             IUtilityBillService utilityBillService)
         {
             _zaloConfig = zaloConfig.Value;
@@ -38,6 +40,7 @@ namespace API.Services.Implements
             _registrationService = registrationService;
             _contractService = contractService;
             _utilityBillService = utilityBillService;
+            _maintenanceService = maintenanceService;
             _logger = logger;
         }
 
@@ -446,7 +449,7 @@ namespace API.Services.Implements
 
             // 4. Chuẩn bị dữ liệu ZaloPay
             var amount = receipt.Amount;
-            var appTransId = GenerateAppTransId(PaymentConstants.PrefixRenew, receiptId);
+            var appTransId = GenerateAppTransId(PaymentConstants.PrefixMaintenance, receiptId);
             string description = receipt.Content ?? $"Thanh toan phi sua chua {receipt.RelatedObjectID}";
 
             // 5. Gọi ZaloPay API
@@ -523,17 +526,15 @@ namespace API.Services.Implements
                 // 4. Xử lý logic nghiệp vụ
                 if (appTransId.Contains($"_{PaymentConstants.PrefixRegis}_"))
                 {
-                    await HanldeRegisSuccessPayment(appTransId, zpTransId);
+                    await HandleRegisSuccessPayment(appTransId, zpTransId);
                 }
                 else if (appTransId.Contains($"_{PaymentConstants.PrefixUtility}_"))
                 {
-                    await HanldeUtilitySuccessPayment(appTransId, zpTransId);
+                    await HandleUtilitySuccessPayment(appTransId, zpTransId);
                 }
                 else if (appTransId.Contains($"_{PaymentConstants.PrefixRenew}_"))
                 {
-                    var result = await HanldeRenewalSuccessPayment(appTransId, zpTransId);
-
-                    // 2. Kiểm tra kết quả
+                    var result = await HandleRenewalSuccessPayment(appTransId, zpTransId);
                     if (!result.Success)
                     {
                         return (0, $"Lỗi xử lý gia hạn: {result.Message}");
@@ -541,7 +542,7 @@ namespace API.Services.Implements
                 }
                 else if (appTransId.Contains($"_{PaymentConstants.PrefixHealthInsurance}_"))
                 {
-                    var result = await HanldeInsuranceSuccessPayment(appTransId, zpTransId);
+                    var result = await HandleInsuranceSuccessPayment(appTransId, zpTransId);
                     if (!result.Success)
                     {
                         return (0, $"Lỗi xử lý gia hạn: {result.Message}");
@@ -550,6 +551,14 @@ namespace API.Services.Implements
                 else if (appTransId.Contains($"_{PaymentConstants.PrefixRoomChange}_"))
                 {
                     var result = await HandleRoomChangeSuccessPayment(appTransId, zpTransId);
+                    if (!result.Success)
+                    {
+                        return (0, $"Lỗi xử lý gia hạn: {result.Message}");
+                    }
+                }
+                else if (appTransId.Contains($"_{PaymentConstants.PrefixMaintenance}_"))
+                {
+                    var result = await HanldeMaintenanceSuccessPayment(appTransId, zpTransId);
                     if (!result.Success)
                     {
                         return (0, $"Lỗi xử lý gia hạn: {result.Message}");

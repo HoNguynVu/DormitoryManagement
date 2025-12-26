@@ -71,7 +71,7 @@ namespace API.Services.Implements
             }
         }
 
-        private async Task<(bool Success, string Message, int StatusCode)> HanldeRegisSuccessPayment(string appTransId, string zpTransId)
+        private async Task<(bool Success, string Message, int StatusCode)> HandleRegisSuccessPayment(string appTransId, string zpTransId)
         {
             return await ExecutePaymentTransaction(appTransId, zpTransId, async (receipt) =>
             {
@@ -79,7 +79,7 @@ namespace API.Services.Implements
             });
         }
 
-        private async Task<(bool Success, string Message, int StatusCode)> HanldeRenewalSuccessPayment(string appTransId, string zpTransId)
+        private async Task<(bool Success, string Message, int StatusCode)> HandleRenewalSuccessPayment(string appTransId, string zpTransId)
         {
             return await ExecutePaymentTransaction(appTransId, zpTransId, async (receipt) =>
             {
@@ -112,7 +112,7 @@ namespace API.Services.Implements
             });
         }
 
-        private async Task<(bool Success, string Message, int StatusCode)> HanldeUtilitySuccessPayment(string appTransId, string zpTransId)
+        private async Task<(bool Success, string Message, int StatusCode)> HandleUtilitySuccessPayment(string appTransId, string zpTransId)
         {
             return await ExecutePaymentTransaction(appTransId, zpTransId, async (receipt) =>
             {
@@ -121,11 +121,19 @@ namespace API.Services.Implements
             });
         }
 
-        private async Task<(bool Success, string Message, int StatusCode)> HanldeInsuranceSuccessPayment(string appTransId, string zpTransId)
+        private async Task<(bool Success, string Message, int StatusCode)> HandleInsuranceSuccessPayment(string appTransId, string zpTransId)
         {
             return await ExecutePaymentTransaction(appTransId, zpTransId, async (receipt) =>
             {
                 return await _healthInsuranceService.ConfirmInsurancePaymentAsync(receipt.RelatedObjectID);
+            });
+        }
+
+        private async Task<(bool Success, string Message, int StatusCode)> HanldeMaintenanceSuccessPayment(string appTransId, string zpTransId)
+        {
+            return await ExecutePaymentTransaction(appTransId, zpTransId, async (receipt) =>
+            {
+                return await _maintenanceService.ConfirmPaymentMaintenanceFee(receipt.RelatedObjectID);
             });
         }
 
