@@ -44,5 +44,14 @@ namespace DataAccess.Repository
                 .Include(v => v.ReportingManager)
                 .FirstOrDefaultAsync(v => v.ViolationID == id);
         }
+
+        public async Task<IEnumerable<Violation>> GetByManagerId(string managerid)
+        {
+            var list = await _dbSet
+                .Include(v => v.Student)
+                .Where(v => v.ReportingManagerID == managerid)
+                .ToListAsync();
+            return list;
+        }
     }
 }

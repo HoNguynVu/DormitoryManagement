@@ -160,6 +160,46 @@ namespace API.Services.Implements
             }
         }
 
+        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<ViolationStats>? Data)> GetViolationStatsByManagerAsync(string accountId)
+        {
+            // 1. Lấy thông tin Manager
+            var manager = await _violationUow.BuildingManagers.GetByAccountIdAsync(accountId);
+            if (manager == null)
+                return (false, "Building manager not found", 404, Enumerable.Empty<ViolationStats>());
+
+            var violations = await _violationUow.Violations.GetByManagerId(manager.ManagerID);
+
+            if (!violations.Any())
+                return (true, "No violations found", 200, Enumerable.Empty<ViolationStats>());
+
+            var statsList = new List<ViolationStats>();
+
+            var studentGroups = violations.GroupBy(v => v.StudentID);
+
+            foreach (var group in studentGroups)
+            {
+                var studentId = group.Key;
+                var firstViolation = group.First(); 
+                var totalCount = group.Count(); 
+
+                var contract = await _violationUow.Contracts.GetActiveContractByStudentId(studentId);
+
+                var dto = new ViolationStats
+                {
+                    StudentId = studentId,
+                    StudentName = firstViolation.Student?.FullName ?? "Unknown",
+
+                    RoomId = contract?.RoomID ?? "N/A",
+                    RoomName = contract?.Room?.RoomName ?? "N/A", 
+                    TotalViolations = totalCount
+                };
+
+                statsList.Add(dto);
+            }
+
+            return (true, "Successfully", 200, statsList);
+        }
+
         private ViolationResponse MapToResponse(Violation violation, int totalViolations)
         {
             return new ViolationResponse
