@@ -133,10 +133,41 @@ namespace API.Services.Implements
         {
             return await ExecutePaymentTransaction(appTransId, zpTransId, async (receipt) =>
             {
-                // For room change payment, just mark receipt as paid
-                // No additional business logic needed as room change was already executed
-                //return await _contractService.ConfirmRefundAsync(receipt.RelatedObjectID);
-                return (true, "Room change payment confirmed successfully.", 200);
+                string newRoomId = null;
+                if (!string.IsNullOrEmpty(receipt.Content) && receipt.Content.Contains("CMD|"))
+                {
+                    var parts = receipt.Content.Split(new string[] { "CMD|" }, StringSplitOptions.None);
+                    if (parts.Length > 1)
+                    {
+                        var dataParts = parts[1].Split('|');
+                        if (dataParts.Length > 0)
+                        {
+                            newRoomId = dataParts[0].Trim();
+                        }
+                    }
+                }
+                if (string.IsNullOrEmpty(newRoomId))
+                {
+                    // Log error here
+                    return (false, "Error: No Room information in Receipt.", 400);
+                }
+                var activeContract = await _contractUow.Contracts.GetByIdAsync(receipt.RelatedObjectID);
+                if (activeContract == null)
+                {
+                    return (false, "Error: No contract found.", 404);
+                }
+
+                try
+                {
+                    await RoomTransactionHelper.SwapRoomLogicAsync(_contractUow, activeContract, newRoomId);
+
+                    return (true, "Room change payment confirmed successfully.", 200);
+                }
+                catch (Exception ex)
+                {
+                    return (false, $"Lỗi khi cập nhật phòng: {ex.Message}", 500);
+                }
+          
             });
         }
 
