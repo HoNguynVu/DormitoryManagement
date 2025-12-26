@@ -254,5 +254,24 @@ namespace API.Services.Implements
                 return (false, $"Lỗi truy vấn: {ex.Message}", 500, new Dictionary<string, int>());
             }
         }
+
+        public async Task<(bool Success, string Message, int StatusCode)> ConfirmPaymentMaintenanceFee(string maintainanceId)
+        {
+            if (string.IsNullOrEmpty(maintainanceId))
+                 return (false, "Invalid Maintenance ID", 400);
+            try
+            {
+                var maintenance = await _uow.Maintenances.GetByIdAsync(maintainanceId);
+                if (maintenance == null)
+                    return (false, "Maintenance not found", 404);
+                maintenance.Status = "Completed";
+                _uow.Maintenances.Update(maintenance);
+                return (true, "Confirm Payment Mainteanance Successfully", 200);
+            }
+            catch
+            {
+                return (false, "Internal Server Error", 500);
+            }
+        }
     }
 }
