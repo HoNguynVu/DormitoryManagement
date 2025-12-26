@@ -60,7 +60,8 @@ namespace API.Controllers
                     accessToken = result.accessToken,
                     refreshToken = result.refreshToken,
                     userId = result.userId,
-                    hasActiveContract = result.hasActiveContract
+                    hasActiveContract = result.hasActiveContract,
+                    hasTerminatedContract = result.hasTerminatedContract
                 });
             }
             return StatusCode(result.StatusCode, new { message = result.Message });

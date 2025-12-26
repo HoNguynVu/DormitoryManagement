@@ -8,5 +8,6 @@ namespace API.UnitOfWorks
         IContractRepository Contracts { get; }
         IBuildingManagerRepository BuildingManagers { get; }
         INotificationRepository Notifications { get; }
+        IAccountRepository Accounts { get; }
     }
 }

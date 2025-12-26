@@ -91,13 +91,21 @@ namespace API.Services.Implements
                 var violation = await _violationUow.Violations.GetByIdAsync(request.ViolationId);
                 if (violation == null)
                 {
+                    await _violationUow.RollbackAsync();
                     return (false, "Violation not found.", 404);
+                }
+                var account = await _violationUow.Accounts.GetAccountByStudentId(violation.StudentID);
+
+                if (account == null)
+                {
+                    await _violationUow.RollbackAsync();
+                    return (false, "Account not found.", 404);
                 }
 
                 var newNoti = NotificationServiceHelpers.CreateNew(
-                    accountId: violation.StudentID,
+                    accountId: account.UserId,
                     title: "Vi phạm đã bị xử lý!",
-                    message: $"Vi phạm: '{violation.ViolationAct}' của bạn đã đưuọc xử lí như sau: {request.Resolution}",
+                    message: $"Vi phạm: '{violation.ViolationAct}' của bạn đã được xử lí như sau: {request.Resolution}",
                     type: "Violation"
                 );
 
