@@ -101,5 +101,17 @@ namespace API.Controllers
                 data = result.Data
             });
         }
+
+        [HttpGet("manager/{accountId}")]
+        public async Task<IActionResult> GetAllViolationsByManager(string accountId)
+        {
+            var result = await _violationService.GetAllViolationsByManagerAsync(accountId);
+            return StatusCode(result.StatusCode, new
+            {
+                success = result.Success,
+                message = result.Message,
+                data = result.Data
+            });
+        }
     }
 }

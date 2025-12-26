@@ -140,6 +140,58 @@ namespace API.Services.Implements
             }
         }
 
+        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<ViolationResponse>? Data)> GetAllViolationsByManagerAsync(string accountId)
+        {
+            try
+            {
+                var manager = await _violationUow.BuildingManagers.GetByAccountIdAsync(accountId);
+                if (manager == null)
+                    return (false, "Building manager not found", 404, Enumerable.Empty<ViolationResponse>());
+
+                var vioList = await _violationUow.Violations.GetByManagerId(manager.ManagerID);
+
+                if (!vioList.Any())
+                    return (true, "No violations found.", 200, Enumerable.Empty<ViolationResponse>());
+
+                var violationCounts = vioList
+                    .GroupBy(v => v.StudentID)
+                    .ToDictionary(g => g.Key, g => g.Count());
+
+                var dtoList = new List<ViolationResponse>(vioList.Count());
+
+                foreach (var vio in vioList)
+                {
+                    var contract = await _violationUow.Contracts.GetActiveContractByStudentId(vio.StudentID);
+
+                    var dto = new ViolationResponse
+                    {
+                        StudentId = vio.StudentID,
+                        StudentName = vio.Student?.FullName ?? "N/A",
+                        ReportingManagerId = vio.ReportingManagerID,
+
+  
+                        RoomId = contract?.RoomID ?? "N/A",
+                        RoomName = contract?.Room?.RoomName ?? "N/A",
+
+                        ViolationAct = vio.ViolationAct,
+                        Description = vio.Description,
+                        Resolution = vio.Resolution,
+
+                        TotalViolationsOfStudent = violationCounts.ContainsKey(vio.StudentID)
+                                                   ? violationCounts[vio.StudentID]
+                                                   : 0
+                    };
+                    dtoList.Add(dto);
+                }
+
+                return (true, "Violations retrieved successfully.", 200, dtoList);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Error retrieving violations: {ex.Message}", 500, null);
+            }
+        }
+
         public async Task<(bool Success, string Message, int StatusCode, IEnumerable<ViolationResponse>? Data)> GetPendingViolationsAsync()
         {
             try
