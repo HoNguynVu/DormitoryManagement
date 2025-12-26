@@ -18,7 +18,7 @@ namespace API.Services.Interfaces
         Task<(bool Success, string Message, int StatusCode, IEnumerable<SummaryMaintenanceDto> dto)> GetMaintenanceFiltered(string? keyword, string? status,string? equipmentName);
         Task<(bool Success, string Message, int StatusCode, DetailMaintenanceDto dto)> GetMaintenanceDetail(string maintenanceId);
         Task<(bool Success, string Message, int StatusCode, Dictionary<string,int> list)> GetOverviewMaintenance();
-        Task<(bool Success, string Message, int StatusCode)> ConfirmPaymentMaintenanceFee(string maintainanceId)
+        Task<(bool Success, string Message, int StatusCode)> ConfirmPaymentMaintenanceFee(string maintainanceId);
 
     }
 }
