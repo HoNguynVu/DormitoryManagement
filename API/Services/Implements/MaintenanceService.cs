@@ -53,6 +53,7 @@ namespace API.Services.Implements
                     StudentID = dto.StudentId,
                     RoomID = contract.Room.RoomID,
                     Description = dto.Description,
+                    EquipmentID = dto.EquipmentId,
                     Status = "Pending",            
                     RequestDate = DateTime.Now,
                     RepairCost = 0             
@@ -228,7 +229,7 @@ namespace API.Services.Implements
                     IssueDate = DateOnly.FromDateTime(request.RequestDate),
                     ResolvedDate = request.ResolvedDate.HasValue ? DateOnly.FromDateTime(request.ResolvedDate.Value) : null,
                     ManagerNote = request.ManagerNote,
-                    Amount = request.RepairCost
+                    RepairCost = request.RepairCost,
                 };
                 return (true, "Lấy chi tiết thành công.", 200, dto);
             }

@@ -415,6 +415,81 @@ namespace API.Services.Implements
             }
         }
 
+        public async Task<(int StatusCode, PaymentLinkDTO dto)> CreateZaloPayLinkForMaintenance(string receiptId)
+        {
+            // 1. Validate Input
+            if (string.IsNullOrEmpty(receiptId))
+            {
+                return (400, new PaymentLinkDTO { IsSuccess = false, Message = "Receipt ID is required." });
+            }
+
+            // 2. Lấy thông tin Receipt 
+            var receipt = await _paymentUow.Receipts.GetByIdAsync(receiptId);
+
+            if (receipt == null)
+            {
+                return (404, new PaymentLinkDTO { IsSuccess = false, Message = "Receipt not found." });
+            }
+
+            // 3. Kiểm tra hợp lệ
+            // Chỉ thanh toán cho Receipt trạng thái Pending và loại là Renewal
+            if (receipt.Status != "Pending")
+            {
+                return (400, new PaymentLinkDTO { IsSuccess = false, Message = "This receipt is not pending (already paid or cancelled)." });
+            }
+
+            // Kiểm tra đúng loại hóa đơn gia hạn không 
+            if (receipt.PaymentType != PaymentConstants.TypeMaintenanceFee)
+            {
+                return (400, new PaymentLinkDTO { IsSuccess = false, Message = "Invalid receipt type. Expected Renewal." });
+            }
+
+            // 4. Chuẩn bị dữ liệu ZaloPay
+            var amount = receipt.Amount;
+            var appTransId = GenerateAppTransId(PaymentConstants.PrefixRenew, receiptId);
+            string description = receipt.Content ?? $"Thanh toan phi sua chua {receipt.RelatedObjectID}";
+
+            // 5. Gọi ZaloPay API
+            // Lưu ý: embed_data = receiptId để khi Callback biết update Receipt nào
+            string orderUrl = await CallZaloPayCreateOrder(appTransId, (long)amount, description, receiptId);
+
+            if (string.IsNullOrEmpty(orderUrl))
+            {
+                return (500, new PaymentLinkDTO { IsSuccess = false, Message = "Failed to create ZaloPay order." });
+            }
+
+            // 6. Lưu thông tin Payment (Ghi nhận là SV đang cố gắng thanh toán)
+            await _paymentUow.BeginTransactionAsync();
+            try
+            {
+                var payment = new Payment
+                {
+                    PaymentID = appTransId, // Dùng luôn mã của ZaloPay làm ID
+                    PaymentMethod = PaymentConstants.MethodZaloPay,
+                    Amount = amount,
+                    ReceiptID = receipt.ReceiptID, // Link ngược về Receipt
+                    TransactionID = appTransId,
+                    Status = PaymentConstants.StatusPending,
+                    PaymentDate = DateTime.Now,
+                };
+
+                _paymentUow.Payments.Add(payment);
+                await _paymentUow.CommitAsync();
+
+                return (200, new PaymentLinkDTO
+                {
+                    IsSuccess = true,
+                    PaymentUrl = orderUrl,
+                    PaymentId = appTransId,
+                    Message = "Renewal payment link created successfully."
+                });
+            }
+            catch (Exception ex)
+            {
+                await _paymentUow.RollbackAsync();
+                return (500, new PaymentLinkDTO { IsSuccess = false, Message = $"Database error: {ex.Message}" });
+            }
+        }
         public async Task<(int ReturnCode, string ReturnMessage)> ProcessZaloPayCallback(ZaloPayCallbackDTO cbdata)
         {
             try

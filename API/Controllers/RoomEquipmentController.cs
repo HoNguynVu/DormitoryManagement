@@ -14,7 +14,7 @@ namespace API.Controllers
             _roomEquipmentService = roomEquipmentService;
         }
 
-        [HttpPost("change-status")]
+        [HttpPost]
         public async Task<IActionResult> ChangeStatus([FromBody] ChangeStatusRoomEquipmentDto dto)
         {
             var result = await _roomEquipmentService.ChangeStatusAsync(
@@ -31,6 +31,29 @@ namespace API.Controllers
             else
             {
                 return StatusCode(result.StatusCode, new { error = result.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetEquipmentsByRoomId([FromQuery] string roomId)
+        {
+            try
+            {
+                var result = await _roomEquipmentService.GetEquipmentsByRoomIdAsync(roomId);
+                if (result.Success)
+                {
+                    return StatusCode(result.StatusCode, new
+                    {
+                        message = result.Message,
+                        data = result.dto
+                    });
+                }
+                return StatusCode(result.StatusCode,new { message = result.Message });
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
     }

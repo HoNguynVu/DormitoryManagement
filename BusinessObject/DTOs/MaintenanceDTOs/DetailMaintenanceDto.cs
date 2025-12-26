@@ -8,7 +8,6 @@ namespace BusinessObject.DTOs.MaintenanceDTOs
 {
     public class DetailMaintenanceDto : SummaryMaintenanceDto
     {
-        public decimal? Amount { get; set; }
         public string? ManagerNote { get; set; }
     }
 }
