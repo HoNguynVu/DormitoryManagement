@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
-    [Route("api/contracts")]
+    [Route("api/[controller]")]
     [ApiController]
     public class ContractController : ControllerBase
     {
@@ -17,7 +17,7 @@ namespace API.Controllers
 
         // ================= GET METHODS (READ) =================
 
-        // GET: api/contracts
+        // GET: api/contract
         [HttpGet]
         public async Task<IActionResult> GetContracts(
             [FromQuery] string? keyword,
@@ -36,7 +36,7 @@ namespace API.Controllers
             });
         }
 
-        // GET: api/contracts/{id}
+        // GET: api/contract/{id}
         // Lấy chi tiết hợp đồng theo ID
         [HttpGet("{id}")]
         public async Task<IActionResult> GetContractById([FromRoute] string id)
@@ -55,7 +55,7 @@ namespace API.Controllers
             });
         }
 
-        // GET: api/contracts/overview
+        // GET: api/contract/overview
         [HttpGet("overview")]
         public async Task<IActionResult> GetContractOverview()
         {
@@ -71,7 +71,7 @@ namespace API.Controllers
             });
         }
 
-        // GET: api/contracts/pending-renewals
+        // GET: api/contract/pending-renewals
         // Lấy yêu cầu gia hạn đang chờ (Resource con hoặc filter đặc biệt)
         [HttpGet("pending-renewals")]
         public async Task<IActionResult> GetPendingRequestRenew([FromQuery] string studentId)
@@ -87,7 +87,7 @@ namespace API.Controllers
             });
         }
 
-        // GET: api/contracts/students/{studentId}/current
+        // GET: api/contracts/student/{studentId}/current
         [HttpGet("students/{studentId}/current")]
         public async Task<IActionResult> GetCurrentContractByStudent([FromRoute] string studentId)
         {
@@ -123,7 +123,7 @@ namespace API.Controllers
 
         // ================= POST/PUT/PATCH METHODS (WRITE) =================
 
-        // POST: api/contracts/renewals
+        // POST: api/contract/renewals
         // Tạo yêu cầu gia hạn (Tạo ra một resource "Renewal Request")
         [HttpPost("renewals")]
         public async Task<IActionResult> RequestRenewal([FromBody] RenewalRequestDto request)
@@ -143,7 +143,7 @@ namespace API.Controllers
             });
         }
 
-        // PUT: api/contracts/{id}/extension
+        // PUT: api/contract/{id}/extension
         // Xác nhận gia hạn (Cập nhật thời gian hợp đồng)
         [HttpPut("{id}/extension")]
         public async Task<IActionResult> ConfirmExtension([FromRoute] string id, [FromBody] ConfirmExtensionDto request)
@@ -163,7 +163,7 @@ namespace API.Controllers
             return Ok(new { message = result.Message });
         }
 
-        // POST: api/contracts/rejections
+        // POST: api/contract/rejections
         // Từ chối gia hạn. Đây là một hành động xử lý (Process).
         [HttpPost("rejections")]
         public async Task<IActionResult> RejectRenewal([FromBody] RejectRenewalDto dto)
@@ -176,9 +176,7 @@ namespace API.Controllers
             return Ok(new { message = result.Message });
         }
 
-        // DELETE: api/contracts/active?studentId=...
-        // Chấm dứt hợp đồng. Dùng DELETE hợp lý hơn POST vì bản chất là hủy bỏ resource active.
-        // Tuy nhiên, vì service nhận vào StudentId (chứ không phải ContractId), ta dùng Query String.
+        // DELETE: api/contract/active?studentId=...
         [HttpDelete("active")]
         public async Task<IActionResult> TerminateContract([FromQuery] string studentId)
         {
@@ -192,7 +190,7 @@ namespace API.Controllers
             return Ok(new { message = result.Message });
         }
 
-        // POST: api/contracts/room-transfers
+        // POST: api/contract/room-transfers
         // Đổi phòng = Tạo ra một yêu cầu chuyển phòng (Transaction)
         [HttpPost("room-transfers")]
         public async Task<IActionResult> ChangeRoom([FromBody] ChangeRoomRequestDto request)
@@ -212,7 +210,7 @@ namespace API.Controllers
             return Ok(new { success = true, message = result.Message });
         }
 
-        // POST: api/contracts/refunds
+        // POST: api/contract/refunds
         // Xác nhận hoàn tiền
         [HttpPost("refunds")]
         public async Task<IActionResult> ConfirmRefund([FromBody] ConfirmRefundDto request)

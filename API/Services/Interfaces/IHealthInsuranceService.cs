@@ -20,5 +20,6 @@ namespace API.Services.Interfaces
         Task<(bool Success, string Message, int StatusCode,IEnumerable<SummaryHealthDto> dto)> GetHealthInsuranceFiltered(string? keyword,string? hospitalName,int? year,string? status);
 
         Task<(bool Success, string Message, int StatusCode,HealthPriceDto? dto)> GetHealthPriceByYear(int year);
+        Task<(bool Success, string Message, int StatusCode, IEnumerable<SummaryHospitalDto> listHospital)> GetAllHospitalAsync();
     }
 }

@@ -51,6 +51,11 @@ namespace DataAccess.Repository
                 .FirstOrDefaultAsync(h=>h.InsuranceID == insuranceId);
         }
 
+        public async Task<IEnumerable<Hospital>> GetAllHospitalAsync()
+        {
+            return await _context.Hospitals.ToListAsync();
+        }
+
         public async Task<IEnumerable<HealthInsurance>> GetHealthInsuranceFiltered(string? keyword, string? hospitalName, int? year,string? status)
         {
              var query = _context.HealthInsurances

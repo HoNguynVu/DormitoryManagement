@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
-    [Route("api/health-insurances")]
+    [Route("api/[controller]")]
     [ApiController]
     public class HealthInsuranceController : ControllerBase
     {
@@ -19,7 +19,7 @@ namespace API.Controllers
 
         // ================= GET METHODS (READ) =================
 
-        // GET: api/health-insurances
+        // GET: api/healthinsurance
         // Thay thế cho /filtered. Dùng Query Params để lọc.
         [HttpGet]
         public async Task<IActionResult> GetHealthInsurances(
@@ -42,7 +42,7 @@ namespace API.Controllers
             });
         }
 
-        // GET: api/health-insurances/{id}
+        // GET: api/healthinsurance/{id}
         // Thay thế cho /detail/{insuranceId}. ID nằm trên Route.
         [HttpGet("{id}")]
         public async Task<IActionResult> GetDetailHealthInsurance([FromRoute] string id)
@@ -61,7 +61,7 @@ namespace API.Controllers
             });
         }
 
-        // GET: api/health-insurances/prices
+        // GET: api/healthinsurance/prices
         [HttpGet("prices")]
         public async Task<IActionResult> GetPriceHealthInsurance([FromQuery] int year)
         {
@@ -77,7 +77,7 @@ namespace API.Controllers
             });
         }
 
-        // GET: api/health-insurances/students/{studentId}
+        // GET: api/healthinsurance/students/{studentId}
         // Lấy BHYT theo Student ID (Mapping resource quan hệ)
         [HttpGet("students/{studentId}")]
         public async Task<IActionResult> GetStudentInsurance([FromRoute] string studentId)
@@ -94,6 +94,26 @@ namespace API.Controllers
                 data = result.Data
             });
         }
+
+
+        // GET: api/healthinsurance/hospitals
+        [HttpGet("hospitals")]
+        public async Task<IActionResult> GetAllHospital() 
+        {
+            var result = await _healthInsuranceService.GetAllHospitalAsync();
+
+            if (!result.Success)
+            {
+                return StatusCode(result.StatusCode, new { message = result.Message });
+            }
+            return Ok(new
+            {
+                message = result.Message,
+                data = result.listHospital
+            });
+        }
+
+
 
         // ================= POST/PUT/PATCH METHODS (WRITE) =================
 

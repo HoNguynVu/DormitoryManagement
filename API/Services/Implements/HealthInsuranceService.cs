@@ -6,6 +6,7 @@ using BusinessObject.DTOs.ConfirmDTOs;
 using BusinessObject.DTOs.ContractDTOs;
 using BusinessObject.DTOs.HealthInsuranceDTOs;
 using BusinessObject.Entities;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace API.Services.Implements
 {
@@ -30,7 +31,7 @@ namespace API.Services.Implements
             if (string.IsNullOrEmpty(hospitalId))
                 return (false, "Registration place is required.", 400, null);
 
-            if (!string.IsNullOrEmpty(cardNumber))
+            if (string.IsNullOrEmpty(cardNumber))
                 return (false, "Card Number is required", 400, null);
             // Check Dkien
             var student = await _uow.Students.GetByIdAsync(studentId);
@@ -71,7 +72,8 @@ namespace API.Services.Implements
                     EndDate = new DateOnly(nextYear, 12, 31),
                     Cost = healthprice.Amount,
                     Status = "Pending",
-                    CardNumber = cardNumber
+                    CardNumber = cardNumber,
+                    HealthInsurancePrice = healthprice 
                 };
 
                 _uow.HealthInsurances.Add(healthInsurance);
@@ -81,7 +83,7 @@ namespace API.Services.Implements
             catch (Exception ex)
             {
                 await _uow.RollbackAsync();
-                return (false, $"DB Error (Write): {ex.Message}", 500, null);
+                return (false, $"DB Error (Write): {ex.InnerException.Message}", 500, null);
             }
         }
 
@@ -275,5 +277,22 @@ namespace API.Services.Implements
             }
         }
 
+        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<SummaryHospitalDto> listHospital)> GetAllHospitalAsync()
+        {
+            try
+            {
+                var result = await _uow.HealthInsurances.GetAllHospitalAsync();
+                var list = result.Select(h => new SummaryHospitalDto
+                {
+                    HospitalId = h.HospitalID,
+                    HospitalName = h.HospitalName,
+                }).ToList();
+                return (true, "Get Hospital Successfully", 200, list);
+            }
+            catch
+            {
+                return (false,"Internal Server Error",500,Enumerable.Empty<SummaryHospitalDto>());
+            }
+        }
     }
 }

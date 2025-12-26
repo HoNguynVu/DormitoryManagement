@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers
 {
     [ApiController]
-    [Route("api/maintenances")]
+    [Route("api/[controller]")]
     public class MaintenanceController : ControllerBase
     {
         private readonly IMaintenanceService _maintenanceService;
@@ -14,7 +14,7 @@ namespace API.Controllers
             _maintenanceService = maintenanceService;
         }
 
-        // 2. Tạo mới: POST /api/maintenances
+        // 2. Tạo mới: POST /api/maintenance
         [HttpPost]
         public async Task<IActionResult> CreateRequest([FromBody] CreateMaintenanceDto dto)
         {
@@ -30,7 +30,7 @@ namespace API.Controllers
             return StatusCode(201, new { message = result.Message, data = result.requestMaintenanceId });
         }
 
-        // 3. Lấy danh sách (Lọc/Tìm kiếm): GET /api/maintenances
+        // 3. Lấy danh sách (Lọc/Tìm kiếm): GET /api/maintenance
         // URL mẫu: /api/maintenances?studentId=123&status=pending&keyword=broken
         [HttpGet]
         public async Task<IActionResult> GetMaintenances(
@@ -64,7 +64,7 @@ namespace API.Controllers
             });
         }
 
-        // 4. Lấy chi tiết: GET /api/maintenances/{id}
+        // 4. Lấy chi tiết: GET /api/maintenance/{id}
         [HttpGet("{id}")]
         public async Task<IActionResult> GetMaintenanceDetail([FromRoute] string id)
         {
@@ -80,7 +80,7 @@ namespace API.Controllers
             });
         }
 
-        // 5. Cập nhật trạng thái: PATCH /api/maintenances/{id}/status
+        // 5. Cập nhật trạng thái: PATCH /api/maintenance/{id}/status
         [HttpPatch("{id}/status")]
         public async Task<IActionResult> UpdateStatus([FromRoute] string id, [FromBody] UpdateMaintenanceStatusDto dto)
         {
@@ -99,7 +99,7 @@ namespace API.Controllers
             return Ok(new { message = result.Message });
         }
 
-        // 6. Overview: GET /api/maintenances/overview
+        // 6. Overview: GET /api/maintenance/overview
         [HttpGet("overview")]
         public async Task<IActionResult> GetOverviewMaintenance()
         {
