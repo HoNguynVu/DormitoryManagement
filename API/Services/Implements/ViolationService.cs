@@ -1,19 +1,24 @@
-﻿using API.Services.Helpers;
+﻿using API.Hubs;
+using API.Services.Helpers;
 using API.Services.Interfaces;
 using API.UnitOfWorks;
 using BusinessObject.DTOs.ViolationDTOs;
 using BusinessObject.Entities;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.Identity.Client;
 
 namespace API.Services.Implements
 {
     public class ViolationService : IViolationService
     {
         private readonly IViolationUow _violationUow;
+        private readonly IHubContext<NotificationHub> _hubContext;
         private const int MAX_VIOLATIONS_BEFORE_TERMINATION = 3;
 
-        public ViolationService(IViolationUow violationUow)
+        public ViolationService(IViolationUow violationUow, IHubContext<NotificationHub> hubContext)
         {
             _violationUow = violationUow;
+            _hubContext = hubContext;
         }
 
         public async Task<(bool Success, string Message, int StatusCode, ViolationResponse? Data)> CreateViolationAsync(CreateViolationRequest request)
@@ -89,18 +94,35 @@ namespace API.Services.Implements
                     return (false, "Violation not found.", 404);
                 }
 
+                var newNoti = NotificationServiceHelpers.CreateNew(
+                    accountId: violation.StudentID,
+                    title: "Vi phạm đã bị xử lý!",
+                    message: $"Vi phạm: '{violation.ViolationAct}' của bạn đã đưuọc xử lí như sau: {request.Resolution}",
+                    type: "Violation"
+                );
+
                 violation.Resolution = request.Resolution;
                 _violationUow.Violations.Update(violation);
+                _violationUow.Notifications.Add(newNoti);
 
                 await _violationUow.CommitAsync();
+                try
+                {
+                    await _hubContext.Clients.User(newNoti.AccountID).SendAsync("ReceiveNotification", newNoti);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"SignalR Error: {ex.Message}");
+                }
 
-                return (true, "Resolution updated successfully.", 200);
             }
             catch (Exception ex)
             {
                 await _violationUow.RollbackAsync();
                 return (false, $"Error updating resolution: {ex.Message}", 500);
             }
+            
+            return (true, "Resolution updated successfully.", 200);
         }
 
         public async Task<(bool Success, string Message, int StatusCode, IEnumerable<ViolationResponse>? Data)> GetViolationsByStudentIdAsync(string studentId)
@@ -173,9 +195,11 @@ namespace API.Services.Implements
                         RoomId = contract?.RoomID ?? "N/A",
                         RoomName = contract?.Room?.RoomName ?? "N/A",
 
+                        ViolationId = vio.ViolationID,
                         ViolationAct = vio.ViolationAct,
                         Description = vio.Description,
                         Resolution = vio.Resolution,
+                        ViolationTime = vio.ViolationTime,
 
                         TotalViolationsOfStudent = violationCounts.ContainsKey(vio.StudentID)
                                                    ? violationCounts[vio.StudentID]
