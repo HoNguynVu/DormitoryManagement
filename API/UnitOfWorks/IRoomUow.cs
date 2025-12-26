@@ -9,6 +9,7 @@ namespace API.UnitOfWorks
         IRegistrationFormRepository RegistrationForms { get; }
         IRoomTypeRepository RoomTypes { get; }
         IContractRepository Contracts { get; }
+        IBuildingManagerRepository BuildingManagers { get; }
 
         // Allow services to persist changes made via repositories
         Task<int> SaveChangesAsync();

@@ -239,5 +239,37 @@ namespace API.Services.Implements
                 return (false, $"Error: {ex.Message}", 500, Enumerable.Empty<AvailableRoomDto>());
             }
         }
+        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<RoomResponseDto>)> GetAllRoomsForManagerAsync(string accountId)
+        {
+            try
+            {
+                var manager = await _roomUow.BuildingManagers.GetByAccountIdAsync(accountId);
+                if (manager == null)
+                    return (false, "Building manager not found", 404, Enumerable.Empty<RoomResponseDto>());
+                var rooms = await _roomUow.Rooms.GetRoomByManagerIdAsync(manager.ManagerID);
+                if (rooms == null || !rooms.Any())
+                    return (false, "No rooms found for this manager", 404, Enumerable.Empty<RoomResponseDto>());
+                var roomDtos = rooms.Select(room => new RoomResponseDto
+                {
+                    RoomID = room.RoomID,
+                    RoomName = room.RoomName,
+                    BuildingID = room.BuildingID,
+                    BuildingName = room.Building?.BuildingName ?? "N/A",
+                    RoomTypeID = room.RoomTypeID,
+                    RoomTypeName = room.RoomType?.TypeName ?? "N/A",
+                    Capacity = room.Capacity,
+                    CurrentOccupancy = room.CurrentOccupancy,
+                    RoomStatus = room.RoomStatus,
+                    IsUnderMaintenance = room.IsUnderMaintenance,
+                    IsBeingCleaned = room.IsBeingCleaned
+                });
+
+                return (true, "Rooms retrieved successfully", 200, roomDtos);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"An error occurred: {ex.Message}", 500, Enumerable.Empty<RoomResponseDto>());
+            }
+        }
     }
 }

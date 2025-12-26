@@ -16,5 +16,6 @@ namespace API.Services.Interfaces
         Task<(bool Success, string Message, int StatusCode, RoomStatusDto?)> GetRoomStatusAsync(string roomId);
 
         Task<(bool Success, string Message, int StatusCode, IEnumerable<AvailableRoomDto>)> GetAvailableRoomsAsync(RoomFilterDto filter);
+        Task<(bool Success, string Message, int StatusCode, IEnumerable<RoomResponseDto>)> GetAllRoomsForManagerAsync(string accountId);
     }
 }
