@@ -20,5 +20,7 @@ namespace API.Services.Interfaces
         Task<(bool Success, string Message, int StatusCode, Dictionary<string,int> list)> GetOverviewMaintenance();
         Task<(bool Success, string Message, int StatusCode)> ConfirmPaymentMaintenanceFee(string maintainanceId);
 
+        Task<(bool Success, string Message, int StatusCode,string? receiptId)> GetReceiptPendingMaintenance(string maintainanceId);
+
     }
 }

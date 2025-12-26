@@ -47,6 +47,12 @@ namespace API.Controllers
             var (statusCode, dto) = await _paymentService.CreateZaloPayLinkForRoomChange(receiptId);
             return StatusCode(statusCode, dto);
         }
+        [HttpPost("create-zalopay-link/maintenance/{receiptId}")]
+        public async Task<IActionResult> CreateZaloPayLinkForMaintenance(string receiptId)
+        {
+            var (statusCode, dto) = await _paymentService.CreateZaloPayLinkForMaintenance(receiptId);
+            return StatusCode(statusCode, dto);
+        }
 
         [HttpPost("callback")]
         public async Task<IActionResult> ZaloPayCallback([FromBody] ZaloPayCallbackDTO cbData)

@@ -114,5 +114,19 @@ namespace API.Controllers
                 data = result.list
             });
         }
+
+        // 7. Lấy mã hóa đơn: GET /api/maintenance/{id}
+        [HttpGet("{requestId}/receipt")] 
+        public async Task<IActionResult> GetReceiptIdByRequestId([FromRoute] string requestId)
+        {
+            // Lưu ý: Đổi tên tham số từ 'id' thành 'requestId' cho rõ ràng
+            var result = await _maintenanceService.GetReceiptPendingMaintenance(requestId);
+
+            return StatusCode(result.StatusCode, new
+            {
+                message = result.Message,
+                data = result.receiptId
+            });
+        }
     }
 }

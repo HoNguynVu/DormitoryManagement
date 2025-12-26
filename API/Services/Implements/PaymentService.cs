@@ -484,7 +484,7 @@ namespace API.Services.Implements
                     IsSuccess = true,
                     PaymentUrl = orderUrl,
                     PaymentId = appTransId,
-                    Message = "Renewal payment link created successfully."
+                    Message = "Maintenance link created successfully."
                 });
             }
             catch (Exception ex)

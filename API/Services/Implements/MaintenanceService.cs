@@ -139,7 +139,7 @@ namespace API.Services.Implements
                     return (false, ex.Message, 400);
                 }
                 // 4. Xử lý Logic khi trạng thái là "Completed"
-                if (dto.NewStatus == "Completed")
+                if (dto.NewStatus == "Wait Payment")
                 {
                     request.ResolvedDate = DateTime.Now;
                     request.RepairCost = dto.RepairCost;
@@ -152,6 +152,7 @@ namespace API.Services.Implements
                             ReceiptID = "RE-" + IdGenerator.GenerateUniqueSuffix(),
                             StudentID = request.StudentID,
                             Amount = dto.RepairCost,
+                            RelatedObjectID = request.RequestID,
                             PaymentType = PaymentConstants.TypeMaintenanceFee, // Đánh dấu loại thanh toán
                             Status = "Pending",             // Chờ thanh toán
                             Content = $"Phí sửa chữa cho yêu cầu {request.RequestID}: {request.Description}",
@@ -271,6 +272,23 @@ namespace API.Services.Implements
             catch
             {
                 return (false, "Internal Server Error", 500);
+            }
+        }
+
+        public async Task<(bool Success, string Message, int StatusCode,string? receiptId)> GetReceiptPendingMaintenance(string maintainanceId)
+        {
+            if (string.IsNullOrEmpty(maintainanceId))
+                return (false, "Invalid Maintenance Id", 400,null);
+            try
+            {
+                var receipt =await _uow.Receipts.GetPendingRequestAsync(maintainanceId);
+                if (receipt == null)
+                    return (false, "Receipt not found", 404,null);
+                return (true, "Receipt retrived successfully", 200, receipt.ReceiptID);
+            }
+            catch
+            {
+                return (false,"Internal Server Error",500,null);
             }
         }
     }
