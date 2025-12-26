@@ -127,7 +127,7 @@ namespace API.Services.Implements
             try
             {
                 registration.Status = "Confirmed";
-                room.CurrentOccupancy += 1;
+                room.AddOccupant();
                 _registrationUow.Rooms.Update(room);        
                 _registrationUow.RegistrationForms.Update(registration);
                 _registrationUow.Contracts.Add(newContract);
