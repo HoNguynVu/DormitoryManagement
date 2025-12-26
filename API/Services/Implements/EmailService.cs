@@ -111,14 +111,14 @@ namespace API.Services.Implements
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress("NoReply", _config["Email:From"]));
             message.To.Add(new MailboxAddress(dto.StudentName, dto.StudentEmail));
-            message.Subject = $"[BHYT] Xác nhận đăng ký và thanh toán BHYT {dto.InsurancePeriod}";
+            message.Subject = $"[BHYT] Xác nhận đăng ký và thanh toán BHYT năm {dto.Year}";
 
             var bodyBuilder = new BodyBuilder();
             bodyBuilder.HtmlBody = $@"
             <div style='font-family: Arial, sans-serif; color: #333;'>
                 <h2 style='color: #17a2b8;'>XÁC NHẬN THANH TOÁN BHYT</h2>
                 <p>Chào bạn <strong>{dto.StudentName}</strong>,</p>
-                <p>Bạn đã đăng ký và thanh toán thành công Bảo hiểm Y tế cho giai đoạn <strong>{dto.InsurancePeriod}</strong>.</p>
+                <p>Bạn đã đăng ký và thanh toán thành công Bảo hiểm Y tế cho năm <strong>{dto.Year}</strong>.</p>
             
                 <table style='width: 100%; border: 1px solid #ddd; margin-bottom: 20px;'>
                     <tr><td style='padding: 8px; border-bottom: 1px solid #ddd;'>Hiệu lực từ:</td><td style='padding: 8px; border-bottom: 1px solid #ddd;'>{dto.CoverageStartDate:dd/MM/yyyy}</td></tr>

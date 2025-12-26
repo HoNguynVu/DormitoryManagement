@@ -138,7 +138,7 @@ namespace API.Services.Implements
                 {
                     StudentName = insurance.Student.FullName,
                     StudentEmail = insurance.Student.Email,
-                    InsurancePeriod = $"{insurance.StartDate.Year} - {insurance.EndDate.Year}",
+                    Year = insurance.StartDate.Year,
                     CoverageStartDate = insurance.StartDate,
                     CoverageEndDate = insurance.EndDate,
                     Cost = insurance.Cost
