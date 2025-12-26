@@ -118,7 +118,7 @@ namespace API.Services.Implements
             try
             {
                 // 1. Tìm bản ghi bảo hiểm đang chờ (Pending)
-                var insurance = await _uow.HealthInsurances.GetByIdAsync(insuranceId);
+                var insurance = await _uow.HealthInsurances.GetDetailInsuranceByIdAsync(insuranceId);
 
                 if (insurance == null)
                 {
