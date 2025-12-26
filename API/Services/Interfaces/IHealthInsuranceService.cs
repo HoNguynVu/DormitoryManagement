@@ -9,7 +9,7 @@ namespace API.Services.Interfaces
         //  Sinh viên đăng ký mua BHYT 
         Task<(bool Success, string Message, int StatusCode,string? insuranceId)> RegisterHealthInsuranceAsync(string studentId, string hospitalId, string cardNumber);
         // Lấy thông tin BHYT hiện tại của sinh viên
-        Task<(bool Success, string Message, int StatusCode, HealthInsurance? Data)> GetInsuranceByStudentIdAsync(string studentId);
+        Task<(bool Success, string Message, int StatusCode, SummaryHealthDto? dto)> GetInsuranceByStudentIdAsync(string studentId);
 
         Task<(bool Success, string Message, int StatusCode)> ConfirmInsurancePaymentAsync(string insuranceId);
 

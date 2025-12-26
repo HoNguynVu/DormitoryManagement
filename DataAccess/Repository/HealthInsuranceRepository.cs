@@ -35,6 +35,8 @@ namespace DataAccess.Repository
         public async Task<HealthInsurance?> GetLatestInsuranceByStudentIdAsync(string studentId)
         {
             return await _context.HealthInsurances
+                .Include (h => h.Student)
+                .Include (h => h.Hospital)
                 .Where(h => h.StudentID == studentId)
                 .OrderByDescending(h => h.CreatedAt) // Lấy đơn mới tạo gần đây nhất
                 .FirstOrDefaultAsync();

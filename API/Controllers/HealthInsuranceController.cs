@@ -91,7 +91,7 @@ namespace API.Controllers
             return Ok(new
             {
                 message = result.Message,
-                data = result.Data
+                data = result.dto
             });
         }
 

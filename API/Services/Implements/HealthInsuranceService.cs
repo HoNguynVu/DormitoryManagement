@@ -87,7 +87,7 @@ namespace API.Services.Implements
             }
         }
 
-        public async Task<(bool Success, string Message, int StatusCode, HealthInsurance? Data)> GetInsuranceByStudentIdAsync(string studentId)
+        public async Task<(bool Success, string Message, int StatusCode, SummaryHealthDto? dto)> GetInsuranceByStudentIdAsync(string studentId)
         {
             if (string.IsNullOrWhiteSpace(studentId))
             {
@@ -103,7 +103,16 @@ namespace API.Services.Implements
                     return (true, "No insurance record found.", 200, null);
                 }
 
-                return (true, "Success", 200, insurance);
+                var result = new SummaryHealthDto
+                {
+                    HealthInsuranceId = insurance.InsuranceID,
+                    StudentName = insurance.Student.FullName,
+                    Status = insurance.Status,
+                    CardNumber = insurance.CardNumber,
+                    HospitalName = insurance.Hospital.HospitalName
+                };
+
+                return (true, "Success", 200, result);
             }
             catch (Exception ex)
             {
