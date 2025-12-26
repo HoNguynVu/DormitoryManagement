@@ -73,7 +73,7 @@ namespace API.Services.Implements
                     Cost = healthprice.Amount,
                     Status = "Pending",
                     CardNumber = cardNumber,
-                    HealthInsurancePrice = healthprice 
+                    HealthPriceID = healthprice.HealthPriceID
                 };
 
                 _uow.HealthInsurances.Add(healthInsurance);
@@ -83,7 +83,7 @@ namespace API.Services.Implements
             catch (Exception ex)
             {
                 await _uow.RollbackAsync();
-                return (false, $"DB Error (Write): {ex.InnerException.Message}", 500, null);
+                return (false, $"DB Error (Write): {ex.InnerException?.Message}", 500, null);
             }
         }
 
@@ -115,8 +115,6 @@ namespace API.Services.Implements
         {
             if (string.IsNullOrEmpty(insuranceId))
                 return (false, "Insurance ID is required.", 400);
-
-            await _uow.BeginTransactionAsync();
             try
             {
                 // 1. Tìm bản ghi bảo hiểm đang chờ (Pending)
@@ -134,10 +132,7 @@ namespace API.Services.Implements
 
                 // 3. Cập nhật thông tin bản ghi
                 insurance.Status = "Active";
-
                 _uow.HealthInsurances.Update(insurance);
-                // 4. Lưu và Commit
-                await _uow.CommitAsync();
 
                 var emailDto = new HealthInsurancePurchaseDto
                 {

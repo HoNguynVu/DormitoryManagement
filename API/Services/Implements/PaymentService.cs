@@ -466,11 +466,19 @@ namespace API.Services.Implements
                 }
                 else if (appTransId.Contains($"_{PaymentConstants.PrefixHealthInsurance}_"))
                 {
-                    await HanldeInsuranceSuccessPayment(appTransId, zpTransId);
+                    var result = await HanldeInsuranceSuccessPayment(appTransId, zpTransId);
+                    if (!result.Success)
+                    {
+                        return (0, $"Lỗi xử lý gia hạn: {result.Message}");
+                    }
                 }
                 else if (appTransId.Contains($"_{PaymentConstants.PrefixRoomChange}_"))
                 {
-                    await HandleRoomChangeSuccessPayment(appTransId, zpTransId);
+                    var result = await HandleRoomChangeSuccessPayment(appTransId, zpTransId);
+                    if (!result.Success)
+                    {
+                        return (0, $"Lỗi xử lý gia hạn: {result.Message}");
+                    }
                 }
                 else
                 {

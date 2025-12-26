@@ -27,9 +27,8 @@ namespace DataAccess.Repository
 
         public async Task<bool> HasPendingInsuranceRequestAsync(string studentId)
         {
-            return await _context.Receipts
+            return await _context.HealthInsurances
                 .AnyAsync(i => i.StudentID == studentId
-                               && i.PaymentType == "HealthInsurance" 
                                && i.Status == "Pending");
         }
 
