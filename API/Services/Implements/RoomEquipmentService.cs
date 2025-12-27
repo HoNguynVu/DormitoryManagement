@@ -15,7 +15,7 @@ namespace API.Services.Implements
             _uow = uow;
         }
 
-        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<string>? list)> GetAllEquipment()
+        public async Task<(bool Success, string Message, int StatusCode, object? list)> GetAllEquipment()
         {
             try
             {
@@ -24,7 +24,7 @@ namespace API.Services.Implements
                 {
                     return (false, "Không thể tải danh sách thiết bị", 400, null);
                 }
-                var result = list.Select(l => l.EquipmentName).ToList();
+                var result = list.Select(l => new { l.EquipmentID,l.EquipmentName}).ToList();
                 return (true,"Lấy danh sách thiết bị thành công",200,result);
             }
             catch
