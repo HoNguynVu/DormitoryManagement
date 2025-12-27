@@ -44,5 +44,23 @@ namespace DataAccess.Repository
                 .Include(s => s.Account)
                 .FirstOrDefaultAsync(s => s.AccountID == accountId);
         }
+        public async Task<IEnumerable<Student>> GetStudentsWithPriorityAsync(string? priorityId)
+        {
+            var query = _dbSet
+                .AsNoTracking()
+                .Include(s => s.Priority)   
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(priorityId))
+            {
+                query = query.Where(s => s.PriorityID == priorityId);
+            }
+            else
+            {
+                query = query.Where(s => s.PriorityID != null && s.PriorityID != "");
+            }
+
+            return await query.ToListAsync();
+        }
     }
 }

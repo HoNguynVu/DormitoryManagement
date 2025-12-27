@@ -11,5 +11,6 @@ namespace DataAccess.Interfaces
     {
         Task<Student?> GetStudentByEmailAsync(string email);
         Task<Student?> GetStudentByAccountIdAsync(string accountId);
+        Task<IEnumerable<Student>> GetStudentsWithPriorityAsync(string? priorityId);
     }
 }

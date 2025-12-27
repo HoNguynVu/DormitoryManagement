@@ -21,12 +21,7 @@ namespace API.Services.Implements
 
         public async Task<IEnumerable<Student>> GetStudentsByPriorityAsync(string? priorityId = null)
         {
-            var students = await _contractUow.Students.GetAllAsync();
-            if (!string.IsNullOrWhiteSpace(priorityId))
-            {
-                return students.Where(s => s.PriorityID == priorityId);
-            }
-            return students.Where(s => !string.IsNullOrWhiteSpace(s.PriorityID));
+            return await _contractUow.Students.GetStudentsWithPriorityAsync(priorityId);
         }
 
         public async Task<IEnumerable<ExpiredContractDto>> GetExpiredContractsAsync(DateOnly olderThan)
