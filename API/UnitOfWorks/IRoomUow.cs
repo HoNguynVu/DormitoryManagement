@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace API.UnitOfWorks
 {
-    public interface IRoomUow
+    public interface IRoomUow : ITransactionManager
     {
         IRoomRepository Rooms { get; }
         IRegistrationFormRepository RegistrationForms { get; }

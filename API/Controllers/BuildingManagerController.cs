@@ -52,5 +52,38 @@ namespace API.Controllers
             }
             return StatusCode(statusCode, new { success = false, message = message });
         }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateManager([FromBody] UpdateBuildingManagerDto updateDto)
+        {
+            var (success, message, statusCode) = await _service.UpdateManagerAsync(updateDto);
+            if (success)
+            {
+                return StatusCode(statusCode, new { success = true, message = message });
+            }
+            return StatusCode(statusCode, new { success = false, message = message });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateManager([FromBody] CreateManagerDto createDto)
+        {
+            var (success, message, statusCode) = await _service.CreateManagerAsync(createDto);
+            if (success)
+            {
+                return StatusCode(statusCode, new { success = true, message = message });
+            }
+            return StatusCode(statusCode, new { success = false, message = message });
+        }
+
+        [HttpDelete("{managerId}")]
+        public async Task<IActionResult> DeleteManager(string managerId)
+        {
+            var (success, message, statusCode) = await _service.DeleteManagerAsync(managerId);
+            if (success)
+            {
+                return StatusCode(statusCode, new { success = true, message = message });
+            }
+            return StatusCode(statusCode, new { success = false, message = message });
+        }
     } 
 }
