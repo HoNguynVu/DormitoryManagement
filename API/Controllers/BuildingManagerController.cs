@@ -52,5 +52,16 @@ namespace API.Controllers
             }
             return StatusCode(statusCode, new { success = false, message = message });
         }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateManager([FromBody] UpdateBuildingManagerDto updateDto)
+        {
+            var (success, message, statusCode) = await _service.UpdateManagerAsync(updateDto);
+            if (success)
+            {
+                return StatusCode(statusCode, new { success = true, message = message });
+            }
+            return StatusCode(statusCode, new { success = false, message = message });
+        }
     } 
 }

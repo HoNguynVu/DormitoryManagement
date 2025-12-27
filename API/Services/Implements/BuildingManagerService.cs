@@ -131,5 +131,30 @@ namespace API.Services.Implements
                 return (false, $"An error occurred: {ex.Message}", 500, null);
             }
         }
+
+        public async Task<(bool Success, string Message, int StatusCode)> UpdateManagerAsync(UpdateBuildingManagerDto updateDto)
+        {
+            await _buildingUow.BeginTransactionAsync();
+            try
+            {
+                var manager = await _buildingUow.BuildingManagers.GetByIdAsync(updateDto.ManagerID);
+                if (manager == null)
+                {
+                    return (false, "Building manager not found", 404);
+                }
+                manager.FullName = updateDto.FullName;
+                manager.CitizenId = updateDto.CitizenId;
+                manager.DateOfBirth = updateDto.DateOfBirth;
+                manager.PhoneNumber = updateDto.PhoneNumber;
+                manager.Address = updateDto.Address;
+                _buildingUow.BuildingManagers.Update(manager);
+                await _buildingUow.CommitAsync();
+                return (true, "Building manager updated successfully", 200);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"An error occurred: {ex.Message}", 500);
+            }
+        }
     }
 }
