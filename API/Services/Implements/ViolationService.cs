@@ -204,6 +204,30 @@ namespace API.Services.Implements
             }
         }
 
+        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<ViolationResponse>? Data)> GetViolationsByStudentAccountIdAsync(string accountId)
+        {
+            try
+            {
+                if(string.IsNullOrEmpty(accountId))
+                {
+                    return (false, "Account ID is required.", 400, null);
+                }
+                var student = await _violationUow.Students.GetStudentByAccountIdAsync(accountId);
+                if (student == null)
+                {
+                    return (false, "Student not found for the given account ID.", 404, null);
+                }
+                var violations = await _violationUow.Violations.GetViolationsByStudentId(student.StudentID);
+                var totalCount = violations.Count();
+                var response = violations.Select(v => MapToResponse(v, totalCount));
+                return (true, "Violations retrieved successfully.", 200, response);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Error retrieving violations: {ex.Message}", 500, null);
+            }
+        }
+
         public async Task<(bool Success, string Message, int StatusCode, IEnumerable<ViolationResponse>? Data)> GetAllViolationsAsync()
         {
             try

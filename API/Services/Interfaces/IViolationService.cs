@@ -7,6 +7,7 @@ namespace API.Services.Interfaces
         Task<(bool Success, string Message, int StatusCode, ViolationResponse? Data)> CreateViolationAsync(CreateViolationRequest request);
         Task<(bool Success, string Message, int StatusCode)> UpdateViolationAsync(UpdateViolationRequest request);
         Task<(bool Success, string Message, int StatusCode, IEnumerable<ViolationResponse>? Data)> GetViolationsByStudentIdAsync(string studentId);
+        Task<(bool Success, string Message, int StatusCode, IEnumerable<ViolationResponse>? Data)> GetViolationsByStudentAccountIdAsync(string accountId);
         Task<(bool Success, string Message, int StatusCode, IEnumerable<ViolationResponse>? Data)> GetAllViolationsAsync();
         Task<(bool Success, string Message, int StatusCode, IEnumerable<ViolationResponse>? Data)> GetPendingViolationsAsync();
         Task<(bool Success, string Message, int StatusCode, IEnumerable<ViolationStats>? Data)> GetViolationStatsByManagerAsync(string accountId);

@@ -113,5 +113,17 @@ namespace API.Controllers
                 data = result.Data
             });
         }
-    }
+
+        [HttpGet("student/account/{accountId}")]
+        public async Task<IActionResult> GetViolationsByStudentAccountId(string accountId)
+        {
+            var result = await _violationService.GetViolationsByStudentAccountIdAsync(accountId);
+            return StatusCode(result.StatusCode, new
+            {
+                success = result.Success,
+                message = result.Message,
+                data = result.Data
+            });
+        }
+    } 
 }
