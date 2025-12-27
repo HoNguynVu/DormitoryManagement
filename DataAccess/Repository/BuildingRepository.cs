@@ -8,6 +8,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BusinessObject.Entities;
+using DataAccess.Interfaces;
+using DataAccess.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace DataAccess.Repository
 {
@@ -58,6 +62,10 @@ namespace DataAccess.Repository
                     ? Math.Round((double)x.UsedBeds / x.TotalBeds * 100, 3)
                     : 0
             }).ToList();
+        }
+        public async Task<Building?> GetByManagerId(string managerId)
+        {
+            return await _dbSet.Where(b => b.ManagerID == managerId).FirstOrDefaultAsync();
         }
     }
 }

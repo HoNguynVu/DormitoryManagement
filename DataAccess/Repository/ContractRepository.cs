@@ -162,5 +162,15 @@ namespace DataAccess.Repository
                 .OrderByDescending(c => c.StartDate)
                 .FirstOrDefaultAsync();
         }
+        public async Task<Dictionary<string, int>> CountActiveContractsByRoomAsync()
+        {
+            return await _dbSet
+                .AsNoTracking() 
+                .Where(c => c.ContractStatus == "Active") 
+                .GroupBy(c => c.RoomID) 
+                .Select(g => new { RoomID = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.RoomID, x => x.Count);
+        }
+
     }
 }

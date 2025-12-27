@@ -7,15 +7,7 @@ namespace BusinessObject.DTOs.RoomDTOs
     {
         public string RoomID { get; init; } = string.Empty;
 
-        public string? RoomName { get; init; }
-
-        public string? BuildingID { get; init; }
-
-        public string? RoomTypeID { get; init; }
-
-        public int? Capacity { get; init; }
-
-        public int? CurrentOccupancy { get; init; }
+        public string? Gender { get; init; }
 
         public string? RoomStatus { get; init; }
 

@@ -13,6 +13,7 @@ namespace BusinessObject.DTOs.RoomDTOs
         public int Capacity { get; init; }
         public int CurrentOccupancy { get; init; }
         public string RoomStatus { get; init; } = string.Empty;
+        public string Gender { get; init; } = string.Empty;
         public bool IsUnderMaintenance { get; init; }
         public bool IsBeingCleaned { get; init; }
     }

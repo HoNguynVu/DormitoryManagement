@@ -68,11 +68,13 @@ namespace API.Services.Implements
             var existing = await _roomUow.Rooms.GetByIdAsync(room.RoomID);
             if (existing != null)
                 return (false, "Room already exists", 409, null);
-
+            await _roomUow.BeginTransactionAsync();
             try
             {
+                room.ChangeMaintenanceStatus(request.IsUnderMaintenance);
+                room.ChangeCleaningStatus(request.IsBeingCleaned);
                 _roomUow.Rooms.Add(room);
-                await _roomUow.SaveChangesAsync();
+                await _roomUow.CommitAsync();
 
                 var response = new RoomResponseDto
                 {
@@ -91,6 +93,7 @@ namespace API.Services.Implements
             }
             catch (Exception ex)
             {
+                await _roomUow.RollbackAsync();
                 return (false, $"Failed to create room: {ex.Message}", 500, null);
             }
         }
@@ -98,53 +101,22 @@ namespace API.Services.Implements
         public async Task<(bool Success, string Message, int StatusCode)> UpdateRoomAsync(UpdateRoomDto request)
         {
             if (request is null) return (false, "Request is null", 400);
-
+            await _roomUow.BeginTransactionAsync();
             try
             {
-                var existing = await _roomUow.Rooms.GetByIdAsync(request.RoomID);
-                if (existing is null) return (false, "Room not found", 404);
-
-                if (!string.IsNullOrWhiteSpace(request.BuildingID) && request.BuildingID != existing.BuildingID)
-                    return (false, "Changing BuildingID is not allowed. Delete and recreate room to move it.", 400);
-
-                if (!string.IsNullOrWhiteSpace(request.RoomName) && request.RoomName != existing.RoomName)
-                    return (false, "Changing RoomName is not allowed. Delete and recreate room to rename it.", 400);
-
-                if (!string.IsNullOrWhiteSpace(request.RoomTypeID) && request.RoomTypeID != existing.RoomTypeID)
+                var room = await _roomUow.Rooms.GetByIdAsync(request.RoomID);
+                if (room is null)
                 {
-                    var newType = await _roomUow.RoomTypes.GetByIdAsync(request.RoomTypeID);
-                    if (newType == null) return (false, "New RoomType not found", 400);
-
-                    try
-                    {
-                        existing.AssignRoomType(newType);
-                    }
-                    catch (InvalidOperationException ioe)
-                    {
-                        return (false, ioe.Message, 400);
-                    }
-                }
-
-                if (request.Capacity.HasValue)
-                {
-                    return (false, "Capacity is managed by RoomType and cannot be updated directly. Change RoomType to modify capacity.", 400);
-                }
-
-                if (request.CurrentOccupancy.HasValue)
-                {
-                    if (request.CurrentOccupancy.Value > existing.Capacity)
-                        return (false, "Current occupancy cannot exceed capacity", 400);
-
-                    existing.CurrentOccupancy = request.CurrentOccupancy.Value;
-                }
-
-                if (!string.IsNullOrWhiteSpace(request.RoomStatus)) existing.RoomStatus = request.RoomStatus;
-                if (request.IsUnderMaintenance.HasValue) existing.IsUnderMaintenance = request.IsUnderMaintenance.Value;
-                if (request.IsBeingCleaned.HasValue) existing.IsBeingCleaned = request.IsBeingCleaned.Value;
-
-                _roomUow.Rooms.Update(existing);
-                await _roomUow.SaveChangesAsync();
-
+                    await _roomUow.RollbackAsync();
+                    return (false, "Room not found", 404);
+                }    
+                room.IsUnderMaintenance = request.IsUnderMaintenance ?? room.IsUnderMaintenance;
+                room.IsBeingCleaned = request.IsBeingCleaned ?? room.IsBeingCleaned;
+                room.ChangeMaintenanceStatus(room.IsUnderMaintenance);
+                room.ChangeCleaningStatus(room.IsBeingCleaned);
+                room.Gender = request.Gender;
+                _roomUow.Rooms.Update(room);
+                await _roomUow.CommitAsync();
                 return (true, "Room updated", 200);
             }
             catch (Exception ex)
@@ -209,10 +181,12 @@ namespace API.Services.Implements
 
                 var pendingDict = await _roomUow.RegistrationForms.CountPendingFormsByRoomAsync();
 
+                var activeContractsDict = await _roomUow.Contracts.CountActiveContractsByRoomAsync();
+
                 var result = new List<AvailableRoomDto>();
                 foreach (var room in rooms)
                 {
-                    var activeCount = await _roomUow.Contracts.CountContractsByRoomIdAndStatus(room.RoomID, "Active");
+                    var activeCount = activeContractsDict.GetValueOrDefault(room.RoomID, 0);
                     var pending = pendingDict.GetValueOrDefault(room.RoomID, 0);
                     var occupied = Math.Max(room.CurrentOccupancy, activeCount);
                     var availableBeds = Math.Max(0, room.Capacity - (occupied + pending));
@@ -258,6 +232,7 @@ namespace API.Services.Implements
                     RoomTypeID = room.RoomTypeID,
                     RoomTypeName = room.RoomType?.TypeName ?? "N/A",
                     Capacity = room.Capacity,
+                    Gender = room.Gender,
                     CurrentOccupancy = room.CurrentOccupancy,
                     RoomStatus = room.RoomStatus,
                     IsUnderMaintenance = room.IsUnderMaintenance,

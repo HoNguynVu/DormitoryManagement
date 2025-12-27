@@ -1,9 +1,10 @@
 ﻿using BusinessObject.Entities;
 using BusinessObject.DTOs.RoomDTOs;
+using API.UnitOfWorks;
 
 namespace API.Services.Interfaces
 {
-    public interface IRoomService
+    public interface IRoomService 
     {
         Task<(bool Success, string Message, int StatusCode, IEnumerable<RegisRoomDTOs>)> GetRoomForRegistration(RoomFilterDto filter);
 

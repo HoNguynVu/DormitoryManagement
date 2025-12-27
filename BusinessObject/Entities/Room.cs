@@ -98,5 +98,37 @@ public partial class Room
         }
     }
 
+    public void ChangeCleaningStatus(bool isBeingCleaned)
+    {
+        IsBeingCleaned = isBeingCleaned;
+        if(isBeingCleaned)
+        {
+            RoomStatus = "Maintenance";
+        }
+        else
+        {
+            if(!IsUnderMaintenance)
+            {
+                RoomStatus = CurrentOccupancy == Capacity ? "Full" : "Available";
+            }
+        }    
+    }
+
+    public void ChangeMaintenanceStatus(bool isUnderMaintenance)
+    {
+        IsUnderMaintenance = isUnderMaintenance;
+        if(isUnderMaintenance)
+        {
+            RoomStatus = "Maintenance";
+        }
+        else
+        {
+            if(!IsBeingCleaned)
+            {
+                RoomStatus = CurrentOccupancy == Capacity ? "Full" : "Available";
+            }
+        }
+    }
+
     public virtual ICollection<MaintenanceRequest> MaintenanceRequests { get; set; } = new List<MaintenanceRequest>();
 }

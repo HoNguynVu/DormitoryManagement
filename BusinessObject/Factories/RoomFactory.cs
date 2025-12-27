@@ -11,7 +11,7 @@ namespace BusinessObject.Factories
             if (roomType == null) throw new ArgumentNullException(nameof(roomType));
 
             var roomName = (request.RoomName ?? string.Empty).Trim();
-            var roomId = $"RM_{request.BuildingId}_{roomName}";
+            var roomId = $"RM-{request.BuildingId}-{roomName}";
 
             return new Room
             {
@@ -21,9 +21,10 @@ namespace BusinessObject.Factories
                 RoomTypeID = request.RoomTypeId,
                 Capacity = roomType.Capacity,
                 CurrentOccupancy = 0,
-                RoomStatus = string.IsNullOrWhiteSpace(request.Status) ? "Available" : request.Status,
-                IsUnderMaintenance = false,
-                IsBeingCleaned = false
+                Gender = request.Gender,
+                RoomStatus = "Available",
+                IsUnderMaintenance = request.IsUnderMaintenance,
+                IsBeingCleaned = request.IsBeingCleaned
             };
         }
     }
