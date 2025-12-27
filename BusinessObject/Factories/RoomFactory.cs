@@ -11,7 +11,7 @@ namespace BusinessObject.Factories
             if (roomType == null) throw new ArgumentNullException(nameof(roomType));
 
             var roomName = (request.RoomName ?? string.Empty).Trim();
-            var roomId = $"RM_{request.BuildingId}_{roomName}";
+            var roomId = $"RM-{request.BuildingId}-{roomName}";
 
             return new Room
             {
