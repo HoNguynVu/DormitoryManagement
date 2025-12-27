@@ -8,6 +8,7 @@ using DataAccess.Interfaces;
 using DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using System.Data;
 
 namespace DataAccess.Repository
 {
@@ -52,6 +53,20 @@ namespace DataAccess.Repository
                 .Include(r => r.RoomType)
                 .Where(r => r.Building.ManagerID == managerId)
                 .ToListAsync();
+        }
+
+        public async Task<(int Total, int Available)> GetRoomCountsByManagerIdAsync(string managerId)
+        {
+            var totalRooms = await _dbSet.Include(r => r.Building)
+                                        .Where(r => r.Building.ManagerID == managerId)
+                                        .CountAsync();
+
+            // Lưu ý: Cần chắc chắn logic Status "Available" là đúng với DB của bạn
+            var availableRooms = await _dbSet.Include(r => r.Building)
+                                            .Where(r => r.Building.ManagerID == managerId && r.RoomStatus == "Available")
+                                            .CountAsync();
+
+            return (totalRooms, availableRooms);
         }
     }
 }

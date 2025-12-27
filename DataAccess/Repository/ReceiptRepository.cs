@@ -1,4 +1,5 @@
 ﻿using BusinessObject.Entities;
+using BusinessObject.Helpers;
 using DataAccess.Interfaces;
 using DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,26 @@ namespace DataAccess.Repository
         public async Task<Receipt?> GetPendingRequestAsync(string releatedId)
         {
             return await _dbSet.FirstOrDefaultAsync(r => r.Status=="Pending" && r.RelatedObjectID == releatedId);
+        }
+
+        public async Task<PagedResult<Receipt>> GetReceiptsByManagerPagedAsync(string managerId, int pageIndex, int pageSize)
+        {
+
+            var query = _dbSet.AsNoTracking()
+                .Include(r => r.Student).ThenInclude(s => s.Contracts).ThenInclude(c => c.Room)
+                .Where(r => r.Student.Contracts.Any(c =>
+                    c.Room.Building.ManagerID == managerId &&
+                    c.ContractStatus == "Active")); 
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(r => r.PrintTime) 
+                .Skip((pageIndex - 1) * pageSize)    
+                .Take(pageSize)                      
+                .ToListAsync();
+
+            return new PagedResult<Receipt>(items, totalCount, pageIndex, pageSize);
         }
     }
 }
