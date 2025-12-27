@@ -1,4 +1,4 @@
-using API.UnitOfWorks;
+﻿using API.UnitOfWorks;
 using BusinessObject.Entities;
 using BusinessObject.DTOs.ReportDTOs;
 using API.Services.Interfaces;
@@ -116,6 +116,38 @@ namespace API.Services.Implements
             }
 
             return result;
+        }
+
+        public async Task<OverviewDashBoardDto> GetOverviewDashBoard()
+        {
+            var studentTask = await _contractUow.Students.GetStudentGrowthStatsAsync();
+
+            // 2. Gọi hàm từ StaffRepo (Đã viết logic đếm Manager + % Tăng trưởng)
+            var managerTask = await _contractUow.BuildingManagers.GetStaffGrowthStatsAsync();
+
+            // 3. Lấy tổng số tòa nhà (Logic đơn giản đếm Count)
+            var buildingTask = await _contractUow.BuildingManagers.CountAsync();
+
+            // 4. Lấy doanh thu tháng này (Logic tính tổng tiền)
+            // Giả sử lấy doanh thu từ ngày 1 của tháng hiện tại
+            var startOfThisMonth = DateOnly.FromDateTime(new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1));
+            var revenueTask = await _contractUow.Receipts.GetRevenueGrowthStatsAsync();
+
+
+            // 5. Map dữ liệu vào DTO trả về
+            return new OverviewDashBoardDto
+            {
+                TotalStudents = studentTask.TotalValue,
+                RateStudent = (decimal)studentTask.GrowthPercent,
+
+                // --- Dữ liệu Manager (Từ Repo mới) ---
+                TotalManager = managerTask.TotalValue,
+                RateManager = (decimal)managerTask.GrowthPercent,
+
+                // --- Dữ liệu Tòa nhà & Doanh thu ---
+                TotalBuilding = buildingTask,
+                TotalRevenue = revenueTask.TotalMoney
+            };
         }
     }
 }

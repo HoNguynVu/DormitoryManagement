@@ -11,5 +11,7 @@ namespace API.Services.Interfaces
         Task<IEnumerable<StudentContractDto>> GetContractsByStudentAsync(string studentId);
         Task<IEnumerable<EquipmentStatusDto>> GetEquipmentStatusByRoomAsync(string roomId);
         Task<IEnumerable<AvailableRoomDto>> GetAvailableRoomsAsync(RoomFilterDto filter);
+
+        Task<OverviewDashBoardDto> GetOverviewDashBoard();
     }
 }
