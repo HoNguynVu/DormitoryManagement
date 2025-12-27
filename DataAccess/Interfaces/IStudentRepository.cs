@@ -1,4 +1,5 @@
-﻿using BusinessObject.Entities;
+﻿using BusinessObject.DTOs.ReportDTOs;
+using BusinessObject.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,5 +14,6 @@ namespace DataAccess.Interfaces
         Task<Student?> GetStudentByAccountIdAsync(string accountId);
         Task<IEnumerable<Student>> GetStudentsWithPriorityAsync(string? priorityId);
         Task<int> CountStudentByManagerIdAsync(string managerId);
+        Task<GrowthStatDto> GetStudentGrowthStatsAsync();
     }
 }

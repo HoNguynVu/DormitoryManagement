@@ -1,4 +1,5 @@
-﻿using BusinessObject.Entities;
+﻿using BusinessObject.DTOs.ReportDTOs;
+using BusinessObject.Entities;
 using BusinessObject.Helpers;
 using System;
 using System.Collections.Generic;
@@ -13,5 +14,7 @@ namespace DataAccess.Interfaces
         Task<Receipt?> GetReceiptByTypeAndRelatedIdAsync(string paymentType, string releatedId);
         Task<Receipt?> GetPendingRequestAsync(string releatedId);
         Task<PagedResult<Receipt>> GetReceiptsByManagerPagedAsync(string managerId, int pageIndex, int pageSize);
+
+        Task<GrowthStatDto> GetRevenueGrowthStatsAsync();
     }
 }

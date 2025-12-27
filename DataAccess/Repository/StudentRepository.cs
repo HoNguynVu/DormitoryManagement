@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using BusinessObject.DTOs.ReportDTOs;
 using BusinessObject.Entities;
 using DataAccess.Interfaces;
 using DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace DataAccess.Repository
 {
@@ -71,6 +72,56 @@ namespace DataAccess.Repository
                     c.ContractStatus == "Active"));
 
             return count;
+        }
+
+        public async Task<GrowthStatDto> GetStudentGrowthStatsAsync()
+        {
+            var now = DateOnly.FromDateTime(DateTime.Now);
+
+            var startOfThisMonth = DateOnly.FromDateTime(new DateTime(now.Year, now.Month, 1));
+
+            // 1. TÍNH SỐ LƯỢNG HIỆN TẠI (Current)
+
+            var currentActiveContracts = await _context.Contracts
+                .CountAsync(c => c.ContractStatus == "Active"
+                              && c.StartDate <= now
+                              && c.EndDate >= now);
+
+            // 2. TÍNH SỐ LƯỢNG THÁNG TRƯỚC (Previous - Snapshot)
+
+            var previousActiveContracts = await _context.Contracts
+                .CountAsync(c => c.ContractStatus== "Active" // Hoặc check trạng thái tại thời điểm đó nếu có log history
+                              && c.StartDate < startOfThisMonth
+                              && c.EndDate >= startOfThisMonth);
+
+            // 3. Trả về kết quả kèm % tăng trưởng
+            return CalculateGrowth(currentActiveContracts, previousActiveContracts);
+        }
+
+        
+
+        // --- Helper tính % tăng trưởng ---
+        private GrowthStatDto CalculateGrowth(int current, int previous)
+        {
+            double growth = 0;
+
+            // Trường hợp tháng trước có dữ liệu
+            if (previous > 0)
+            {
+                growth = (double)(current - previous) / previous * 100;
+            }
+            // Trường hợp tháng trước = 0, tháng này > 0 -> Tăng 100%
+            else if (current > 0)
+            {
+                growth = 100;
+            }
+
+            return new GrowthStatDto
+            {
+                TotalValue = current,
+                GrowthPercent = Math.Round(growth, 1), // Làm tròn 1 số thập phân (VD: 12.5)
+                IsIncrease = growth >= 0
+            };
         }
     }
 }

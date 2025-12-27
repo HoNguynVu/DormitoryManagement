@@ -345,5 +345,29 @@ namespace API.Controllers
 
             return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Managers.xlsx");
         }
+
+        [HttpGet("admin-overview")]
+        public async Task<IActionResult> GetAdminOverview()
+        {
+            try
+            {
+                var result = await _reportService.GetOverviewDashBoard();
+
+                return Ok(new
+                {
+                    Success = true,
+                    Message = "L?y d? li?u th?ng kê thành công",
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    Success = false,
+                    Message = "?ã x?y ra l?i server: " + ex.Message
+                });
+            }
+        }
     }
 }
