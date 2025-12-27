@@ -67,39 +67,15 @@ namespace API.Services.Implements
         {
             if (string.IsNullOrWhiteSpace(roomId)) return Enumerable.Empty<EquipmentStatusDto>();
 
-            // Prefer maintenance uow if it exposes Equipments repo
-            if (_maintenanceUow != null)
-            {
-                var room = await _maintenanceUow.Rooms.GetByIdAsync(roomId);
-                if (room == null) return Enumerable.Empty<EquipmentStatusDto>();
-
-                // Load equipments via room navigation if available
-                var equipments = room.RoomEquipments?
-                    .Where(e => e.RoomID == room.RoomID) 
-                    ?? Enumerable.Empty<RoomEquipment>();
-
-                return equipments.Select(e => new EquipmentStatusDto
-                {
-                    EquipmentID = e.EquipmentID,
-                    EquipmentName = e.Equipment.EquipmentName,
-                    Status = e.Status ?? string.Empty,
-                    RoomID = e.RoomID,
-                    RoomName = room.RoomName
-                });
-            }
-
-            // Fallback: try contractUow rooms
-            var altRoom = await _contractUow.Rooms.GetByIdAsync(roomId);
-            if (altRoom == null) return Enumerable.Empty<EquipmentStatusDto>();
-
-            var altEquipments = altRoom.RoomEquipments ?? Enumerable.Empty<RoomEquipment>();
-            return altEquipments.Select(e => new EquipmentStatusDto
+            var equipments = await _maintenanceUow.RoomEquipments.GetEquipmentsByRoomIdAsync(roomId);
+            return equipments.Select(e => new EquipmentStatusDto
             {
                 EquipmentID = e.EquipmentID,
-                EquipmentName = e.Equipment.EquipmentName,
-                Status = e.Status ?? string.Empty,
+                EquipmentName = e.Equipment?.EquipmentName ?? "Khong xac dinh",
+                Status = e.Status ?? "Chua cap nhat",
+                Quantity = e.Quantity,
                 RoomID = e.RoomID,
-                RoomName = altRoom.RoomName
+                RoomName = e.Room?.RoomName ?? "Khong xac dinh"
             });
         }
 
