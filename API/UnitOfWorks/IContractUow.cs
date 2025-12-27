@@ -7,6 +7,8 @@ namespace API.UnitOfWorks
         public IContractRepository Contracts { get; }
         public IStudentRepository Students { get; }
         public IRoomRepository Rooms { get; }
+
+        public IBuildingRepository Buildings { get; }
         public IViolationRepository Violations { get; }
         public IReceiptRepository Receipts { get; }
         public IPaymentRepository Payments { get; }

@@ -21,6 +21,7 @@ namespace API.UnitOfWorks
         public IStudentRepository Students { get; }
         public IRegistrationFormRepository RegistrationForms { get; }
         public IContractRepository Contracts { get; }
+
         public IRoomRepository Rooms { get; }
         public IRoomTypeRepository RoomTypes { get; }
         public IViolationRepository Violations { get; }
