@@ -68,5 +68,14 @@ namespace DataAccess.Repository
                 .Include(m => m.Equipment)
                 .FirstOrDefaultAsync(m => m.RequestID == maintenanceId);
         }
+
+        public async Task<int> CountUnresolveRequestsByManagerIdAsync(string managerId)
+        {
+            var count = await _dbSet
+                .Include(m => m.Room)
+                .Where(m => m.Room.Building.ManagerID == managerId && m.Status != "Completed")
+                .CountAsync();
+            return count;
+        }
     }
 }

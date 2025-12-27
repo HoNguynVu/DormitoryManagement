@@ -43,5 +43,33 @@ namespace API.Services.Implements
                 Buildings = m.Buildings?.Select(b => new BuildingDto { BuildingID = b.BuildingID, BuildingName = b.BuildingName }) ?? Array.Empty<BuildingDto>()
             };
         }
+
+        public async Task<(bool Success, string Message, int StatusCode, DashboardStatsDTO Data)> GetDashboardStatsAsync(string accountId)
+        {
+            try
+            {
+                var manager = await _buildingUow.BuildingManagers.GetByAccountIdAsync(accountId);
+                if (manager == null)
+                {
+                    return (false, "Building manager not found", 404, null);
+                }
+                var dashboardStats = new DashboardStatsDTO();
+                var roomCount = await _buildingUow.Rooms.GetRoomCountsByManagerIdAsync(manager.ManagerID);
+                dashboardStats.CountRooms = roomCount.Total;
+                dashboardStats.AvailableRooms = roomCount.Available;
+                var billsStats = await _buildingUow.UtilityBills.GetUnpaidBillStatsByManagerIdAsync(manager.ManagerID);
+                dashboardStats.UnpaidUtilityBills = billsStats.Count;
+                dashboardStats.TotalUnpaidAmount = billsStats.TotalAmount;
+                var studentCount = await _buildingUow.Students.CountStudentByManagerIdAsync(manager.ManagerID);
+                dashboardStats.TotalStudents = studentCount;
+                var unresolvedRequests = await _buildingUow.Maintenances.CountUnresolveRequestsByManagerIdAsync(manager.ManagerID);
+                dashboardStats.UnResolveRequests = unresolvedRequests;
+                return (true, "Dashboard statistics retrieved successfully", 200, dashboardStats);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"An error occurred: {ex.Message}", 500, null);
+            }
+        }
     }
 }

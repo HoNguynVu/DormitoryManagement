@@ -44,5 +44,15 @@ namespace DataAccess.Repository
                 .Include(s => s.Account)
                 .FirstOrDefaultAsync(s => s.AccountID == accountId);
         }
+
+        public async Task<int> CountStudentByManagerIdAsync(string managerId)
+        {
+            var count = await _dbSet
+                .CountAsync(s => s.Contracts.Any(c =>
+                    c.Room.Building.ManagerID == managerId &&
+                    c.ContractStatus == "Active"));
+
+            return count;
+        }
     }
 }

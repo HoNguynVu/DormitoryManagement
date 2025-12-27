@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DataAccess.Repository
 {
-    public class UtilityBillRepository  : GenericRepository<UtilityBill>, IUtilityBillRepository
+    public class UtilityBillRepository : GenericRepository<UtilityBill>, IUtilityBillRepository
     {
         public UtilityBillRepository(DormitoryDbContext context) : base(context)
         {
@@ -55,5 +55,17 @@ namespace DataAccess.Repository
             return count;
         }
 
+        public async Task<(int Count, decimal TotalAmount)> GetUnpaidBillStatsByManagerIdAsync(string managerId)
+        {
+            var unpaidBills = await _dbSet.Include(bill => bill.Room)
+                                          .ThenInclude(room => room.Building)
+                                          .Where(bill => bill.Room.Building.ManagerID == managerId && bill.Status == "Unpaid")
+                                          .CountAsync();
+            var totalAmount = await _dbSet.Include(bill => bill.Room)
+                                      .ThenInclude(room => room.Building)
+                                      .Where(bill => bill.Room.Building.ManagerID == managerId && bill.Status == "Unpaid")
+                                      .SumAsync(bill => bill.Amount);
+            return (unpaidBills, totalAmount);
+        }
     }
 }

@@ -15,5 +15,6 @@ namespace DataAccess.Interfaces
         Task<IEnumerable<MaintenanceRequest>> GetMaintenanceFilteredAsync(string? keyword, string? status, string? equipmentName);
 
         Task<MaintenanceRequest?> GetMaintenanceDetailAsync(string maintenanceId);
+        Task<int> CountUnresolveRequestsByManagerIdAsync(string managerId);
     }
 }
