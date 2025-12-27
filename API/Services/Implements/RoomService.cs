@@ -209,10 +209,12 @@ namespace API.Services.Implements
 
                 var pendingDict = await _roomUow.RegistrationForms.CountPendingFormsByRoomAsync();
 
+                var activeContractsDict = await _roomUow.Contracts.CountActiveContractsByRoomAsync();
+
                 var result = new List<AvailableRoomDto>();
                 foreach (var room in rooms)
                 {
-                    var activeCount = await _roomUow.Contracts.CountContractsByRoomIdAndStatus(room.RoomID, "Active");
+                    var activeCount = activeContractsDict.GetValueOrDefault(room.RoomID, 0);
                     var pending = pendingDict.GetValueOrDefault(room.RoomID, 0);
                     var occupied = Math.Max(room.CurrentOccupancy, activeCount);
                     var availableBeds = Math.Max(0, room.Capacity - (occupied + pending));
