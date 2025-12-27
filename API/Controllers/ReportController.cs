@@ -266,11 +266,12 @@ namespace API.Controllers
                 var ws = wb.Worksheets.Add("RoomEquipment");
                 ws.Cell(1, 1).Value = "Ma thiet bi";
                 ws.Cell(1, 2).Value = "Ten thiet bi";
-                ws.Cell(1, 3).Value = "Trang thai";
-                ws.Cell(1, 4).Value = "Ma phong";
-                ws.Cell(1, 5).Value = "Ten phong";
+                ws.Cell(1, 3).Value = "So luong";
+                ws.Cell(1, 4).Value = "Trang thai";
+                ws.Cell(1, 5).Value = "Ma phong";
+                ws.Cell(1, 6).Value = "Ten phong";
 
-                var headerRange = ws.Range(1,1,1,5);
+                var headerRange = ws.Range(1,1,1,6);
                 headerRange.Style.Font.Bold = true;
                 headerRange.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.FromHtml("#D1E7DD");
                 headerRange.Style.Alignment.Horizontal = ClosedXML.Excel.XLAlignmentHorizontalValues.Center;
@@ -282,14 +283,15 @@ namespace API.Controllers
                 {
                     ws.Cell(r, 1).Value = e.EquipmentID;
                     ws.Cell(r, 2).Value = e.EquipmentName;
-                    ws.Cell(r, 3).Value = e.Status;
-                    ws.Cell(r, 4).Value = e.RoomID;
-                    ws.Cell(r, 5).Value = e.RoomName;
+                    ws.Cell(r, 3).Value = e.Quantity;
+                    ws.Cell(r, 4).Value = e.Status;
+                    ws.Cell(r, 5).Value = e.RoomID;
+                    ws.Cell(r, 6).Value = e.RoomName;
                     r++;
                 }
 
-                ws.Range(1,1,r-1,5).Style.Border.OutsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
-                ws.Range(1,1,r-1,5).Style.Border.InsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
+                ws.Range(1,1,r-1,6).Style.Border.OutsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
+                ws.Range(1,1,r-1,6).Style.Border.InsideBorder = ClosedXML.Excel.XLBorderStyleValues.Thin;
                 ws.Columns().AdjustToContents();
             });
 
