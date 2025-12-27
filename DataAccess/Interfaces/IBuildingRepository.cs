@@ -9,5 +9,6 @@ namespace DataAccess.Interfaces
 {
     public interface IBuildingRepository : IGenericRepository<Building>
     {
+        Task<Building?> GetByManagerId(string managerId);
     }
 }

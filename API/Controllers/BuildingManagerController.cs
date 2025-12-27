@@ -63,5 +63,16 @@ namespace API.Controllers
             }
             return StatusCode(statusCode, new { success = false, message = message });
         }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateManager([FromBody] CreateManagerDto createDto)
+        {
+            var (success, message, statusCode) = await _service.CreateManagerAsync(createDto);
+            if (success)
+            {
+                return StatusCode(statusCode, new { success = true, message = message });
+            }
+            return StatusCode(statusCode, new { success = false, message = message });
+        }
     } 
 }

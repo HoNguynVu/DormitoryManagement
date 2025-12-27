@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using BusinessObject.Entities;
 using DataAccess.Interfaces;
 using DataAccess.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace DataAccess.Repository
 {
@@ -13,6 +14,10 @@ namespace DataAccess.Repository
     {
         public BuildingRepository(DormitoryDbContext context) : base(context)
         {
+        }
+        public async Task<Building?> GetByManagerId(string managerId)
+        {
+            return await _dbSet.Where(b => b.ManagerID == managerId).FirstOrDefaultAsync();
         }
     }
 }

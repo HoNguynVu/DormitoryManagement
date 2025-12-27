@@ -3,6 +3,7 @@ using API.UnitOfWorks;
 using BusinessObject.Entities;
 using BusinessObject.DTOs.BuildingManagerDTOs;
 using BusinessObject.Helpers;
+using API.Services.Helpers;
 
 namespace API.Services.Implements
 {
@@ -150,6 +151,69 @@ namespace API.Services.Implements
                 _buildingUow.BuildingManagers.Update(manager);
                 await _buildingUow.CommitAsync();
                 return (true, "Building manager updated successfully", 200);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"An error occurred: {ex.Message}", 500);
+            }
+        }
+
+        public async Task<(bool Success, string Message, int StatusCode)> CreateManagerAsync(CreateManagerDto createDto)
+        {
+            await _buildingUow.BeginTransactionAsync();
+            try
+            {
+                var account = new Account
+                {
+                    UserId = "ACC-" + IdGenerator.GenerateUniqueSuffix(),
+                    Username = createDto.Email,
+                    Email = createDto.Email,
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(createDto.Password),
+                    Role = "Manager",
+                    IsActive = true,
+                    IsEmailVerified = true,
+                    CreatedAt = DateTime.Now,
+                };
+                var manager = new BuildingManager
+                {
+                    ManagerID = "MGR-" + IdGenerator.GenerateUniqueSuffix(),
+                    FullName = createDto.FullName,
+                    Email = createDto.Email,
+                    PhoneNumber = createDto.PhoneNumber,
+                    Address = createDto.Address,
+                    CitizenId = createDto.CitizenId,
+                    DateOfBirth = createDto.DateOfBirth,
+                    AccountID = account.UserId
+                };
+                _buildingUow.Accounts.Add(account);
+                _buildingUow.BuildingManagers.Add(manager);
+                await _buildingUow.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                return (false, $"An error occurred: {ex.Message}", 500);
+            }
+            return (true, "Building manager created successfully", 201);
+        }
+
+        public async Task<(bool Success, string Message, int StatusCode)> DeleteManagerAsync(string managerId)
+        {
+            await _buildingUow.BeginTransactionAsync();
+            try
+            {
+                var manager = await _buildingUow.BuildingManagers.GetByIdAsync(managerId);
+                if (manager == null)
+                {
+                    return (false, "Building manager not found", 404);
+                }
+                var account = await _buildingUow.Accounts.GetByIdAsync(manager.AccountID);
+                if (account != null)
+                {
+                    _buildingUow.Accounts.Delete(account);
+                }
+                _buildingUow.BuildingManagers.Delete(manager);
+                await _buildingUow.CommitAsync();
+                return (true, "Building manager deleted successfully", 200);
             }
             catch (Exception ex)
             {
