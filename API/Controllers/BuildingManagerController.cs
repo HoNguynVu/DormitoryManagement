@@ -74,5 +74,16 @@ namespace API.Controllers
             }
             return StatusCode(statusCode, new { success = false, message = message });
         }
+
+        [HttpDelete("{managerId}")]
+        public async Task<IActionResult> DeleteManager(string managerId)
+        {
+            var (success, message, statusCode) = await _service.DeleteManagerAsync(managerId);
+            if (success)
+            {
+                return StatusCode(statusCode, new { success = true, message = message });
+            }
+            return StatusCode(statusCode, new { success = false, message = message });
+        }
     } 
 }

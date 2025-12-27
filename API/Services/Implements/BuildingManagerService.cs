@@ -204,7 +204,14 @@ namespace API.Services.Implements
                 var manager = await _buildingUow.BuildingManagers.GetByIdAsync(managerId);
                 if (manager == null)
                 {
+                    await _buildingUow.RollbackAsync();
                     return (false, "Building manager not found", 404);
+                }
+                var buildings = await _buildingUow.Buildings.GetByManagerId(managerId);
+                if (buildings != null)
+                {
+                    await _buildingUow.RollbackAsync();
+                    return (false, "Cannot delete manager assigned to buildings", 400);
                 }
                 var account = await _buildingUow.Accounts.GetByIdAsync(manager.AccountID);
                 if (account != null)
