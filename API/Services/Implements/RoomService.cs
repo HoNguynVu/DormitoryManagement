@@ -68,11 +68,13 @@ namespace API.Services.Implements
             var existing = await _roomUow.Rooms.GetByIdAsync(room.RoomID);
             if (existing != null)
                 return (false, "Room already exists", 409, null);
-
+            await _roomUow.BeginTransactionAsync();
             try
             {
+                room.ChangeMaintenanceStatus(request.IsUnderMaintenance);
+                room.ChangeCleaningStatus(request.IsBeingCleaned);
                 _roomUow.Rooms.Add(room);
-                await _roomUow.SaveChangesAsync();
+                await _roomUow.CommitAsync();
 
                 var response = new RoomResponseDto
                 {
@@ -91,6 +93,7 @@ namespace API.Services.Implements
             }
             catch (Exception ex)
             {
+                await _roomUow.RollbackAsync();
                 return (false, $"Failed to create room: {ex.Message}", 500, null);
             }
         }

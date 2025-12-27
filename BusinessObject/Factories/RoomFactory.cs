@@ -22,9 +22,9 @@ namespace BusinessObject.Factories
                 Capacity = roomType.Capacity,
                 CurrentOccupancy = 0,
                 Gender = request.Gender,
-                RoomStatus = string.IsNullOrWhiteSpace(request.Status) ? "Available" : request.Status,
-                IsUnderMaintenance = false,
-                IsBeingCleaned = false
+                RoomStatus = "Available",
+                IsUnderMaintenance = request.IsUnderMaintenance,
+                IsBeingCleaned = request.IsBeingCleaned
             };
         }
     }

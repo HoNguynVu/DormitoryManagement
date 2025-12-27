@@ -11,7 +11,8 @@ namespace BusinessObject.DTOs.RoomDTOs
         [Required]
         public string RoomTypeId { get; set; } = string.Empty;
         public string Gender { get; set; } = string.Empty;
+        public bool IsUnderMaintenance { get; set; } = false;
+        public bool IsBeingCleaned { get; set; } = false;
         public string RoomName { get; set; } = string.Empty;
-        public string Status { get; set; } = "Available";
     }
 }
