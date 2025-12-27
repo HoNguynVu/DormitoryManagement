@@ -13,5 +13,6 @@ namespace API.Services.Interfaces
         Task<IEnumerable<AvailableRoomDto>> GetAvailableRoomsAsync(RoomFilterDto filter);
 
         Task<OverviewDashBoardDto> GetOverviewDashBoard();
+        Task<List<BuildingPerformanceDto>> GetBuildingPerformance();
     }
 }

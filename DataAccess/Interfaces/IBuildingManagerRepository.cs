@@ -9,6 +9,6 @@ namespace DataAccess.Interfaces
     {
         Task<IEnumerable<BuildingManager>> GetAllWithBuildingsAsync();
         Task<BuildingManager?> GetByAccountIdAsync(string accountId);
-        Task<GrowthStatDto> GetStaffGrowthStatsAsync();
+        Task<GrowthStatDto> GetBuildingManagerGrowthStatsAsync();
     }
 }

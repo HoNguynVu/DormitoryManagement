@@ -1,4 +1,4 @@
-using API.Services.Interfaces;
+﻿using API.Services.Interfaces;
 using BusinessObject.DTOs.ReportDTOs;
 using BusinessObject.DTOs.RoomDTOs;
 using Microsoft.AspNetCore.Mvc;
@@ -356,7 +356,7 @@ namespace API.Controllers
                 return Ok(new
                 {
                     Success = true,
-                    Message = "L?y d? li?u th?ng k� th�nh c�ng",
+                    Message = "Lấy dữ liệu thống kê thành công",
                     Data = result
                 });
             }
@@ -365,9 +365,34 @@ namespace API.Controllers
                 return StatusCode(500, new
                 {
                     Success = false,
-                    Message = "?� x?y ra l?i server: " + ex.Message
+                    Message = "Lỗi server: " + ex.Message
                 });
             }
+        }
+
+        [HttpGet("admin-stat-building")]
+        public async Task<IActionResult> GetStatBuilding()
+        {
+            try
+            {
+                var result = await _reportService.GetBuildingPerformance();
+
+                return Ok(new
+                {
+                    Success = true,
+                    Message = "Lấy dữ liệu thống kê thành công",
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    Success = false,
+                    Message = "Lỗi server: " + ex.Message
+                });
+            }
+
         }
     }
 }
