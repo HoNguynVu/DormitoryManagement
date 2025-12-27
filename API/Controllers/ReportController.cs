@@ -243,7 +243,7 @@ namespace API.Controllers
                     ws.Cell(r, 3).Value = s.Email;
                     ws.Cell(r, 4).Value = s.PhoneNumber;
                     ws.Cell(r, 5).Value = s.PriorityID;
-                    ws.Cell(r, 6).Value = s.Priority?.PriorityDescription ?? string.Empty;
+                    ws.Cell(r, 6).Value = s.PriorityName;
                     r++;
                 }
 

@@ -19,9 +19,19 @@ namespace API.Services.Implements
             _registrationUow = registrationUow;
         }
 
-        public async Task<IEnumerable<Student>> GetStudentsByPriorityAsync(string? priorityId = null)
+        public async Task<IEnumerable<StudentPriorityDto>> GetStudentsByPriorityAsync(string? priorityId = null)
         {
-            return await _contractUow.Students.GetStudentsWithPriorityAsync(priorityId);
+            var students = await _contractUow.Students.GetStudentsWithPriorityAsync(priorityId);
+            return students.Select(s => new StudentPriorityDto
+            {
+                StudentID = s.StudentID,
+                FullName = s.FullName,
+                Email = s.Email,
+                PhoneNumber = s.PhoneNumber,
+                PriorityID = s.PriorityID,
+                PriorityName = s.Priority.PriorityDescription
+            });
+
         }
 
         public async Task<IEnumerable<ExpiredContractDto>> GetExpiredContractsAsync(DateOnly olderThan)
