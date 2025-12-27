@@ -12,5 +12,6 @@ namespace API.UnitOfWorks
         public IHealthInsuranceRepository HealthInsurances { get; }
         public IStudentRepository Students { get; }
         public IUtilityBillRepository UtilityBills { get; }
+        public IMaintenanceRepository Maintenances { get; }
     }
 }

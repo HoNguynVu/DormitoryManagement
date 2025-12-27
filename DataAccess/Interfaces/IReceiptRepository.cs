@@ -10,5 +10,6 @@ namespace DataAccess.Interfaces
     public interface IReceiptRepository : IGenericRepository<Receipt>
     {
         Task<Receipt?> GetReceiptByTypeAndRelatedIdAsync(string paymentType, string releatedId);
+        Task<Receipt?> GetPendingRequestAsync(string releatedId);
     }
 }

@@ -22,7 +22,7 @@ namespace API.Services.Implements
             _logger = logger;
         }
 
-        public async Task<(bool Success, string Message, int StatusCode, Contract? Data)> GetCurrentContractAsync(string studentId)
+        public async Task<(bool Success, string Message, int StatusCode, ContractDto? Data)> GetCurrentContractAsync(string studentId)
         {
             if (string.IsNullOrEmpty(studentId))
                 return (false, "Student ID is required.", 400, null);
@@ -36,12 +36,19 @@ namespace API.Services.Implements
                 }
 
                 var contract = await _uow.Contracts.GetActiveContractByStudentId(studentId);
+                if (contract== null)
+                    return (false,"No active contract found",200,null);
 
-                if (contract == null)
+                var contractDto = new ContractDto
                 {
-                    return (true, "No active contract found.", 200, null);
-                }
-                return (true, "Success", 200, contract);
+                    ContractId = contract.ContractID,
+                    RoomName = contract.Room?.RoomName ?? "N/A", 
+                    StudentName = contract.Student?.FullName ?? "N/A",
+                    StartDate = contract.StartDate,
+                    EndDate = contract.EndDate,
+                    Status = contract.ContractStatus,
+                };
+                return (true, "Success", 200, contractDto);
             }
             catch (Exception ex)
             {
@@ -49,46 +56,46 @@ namespace API.Services.Implements
             }
         }
 
-        public async Task<(bool Success, string Message, int StatusCode)> RequestRenewalAsync(string studentId, int monthsToExtend)
+        public async Task<(bool Success, string Message, int StatusCode,string? receiptId)> RequestRenewalAsync(string studentId, int monthsToExtend)
         {
 
             // Validation
             if (string.IsNullOrEmpty(studentId))
-                return (false, "Student ID is required.", 400);
+                return (false, "Student ID is required.", 400,null);
             if (monthsToExtend <= 0)
-                return (false, "Extension duration must be greater than 0.", 400);
+                return (false, "Extension duration must be greater than 0.", 400,null);
             try
             {
                 var student = await _uow.Students.GetByIdAsync(studentId);
                 if (student == null)
                 {
-                    return (false, "Student not found.", 404);
+                    return (false, "Student not found.", 404,null);
                 }
                 // Check hợp đồng active
                 var activeContract = await _uow.Contracts.GetActiveContractByStudentId(studentId);
                 if (activeContract == null)
                 {
-                    return (false, "No active contract found for this student.", 404);
+                    return (false, "No active contract found for this student.", 404,null);
                 }
 
                 // Check pending request
                 bool hasPending = await _uow.Contracts.HasPendingRenewalRequestAsync(studentId);
                 if (hasPending)
                 {
-                    return (false, "A pending renewal request already exists. Please check your invoices.", 409);
+                    return (false, "A pending renewal request already exists. Please check your invoices.", 409,null);
                 }
 
                 // Check violations
                 int violations = await _uow.Violations.CountViolationsByStudentId(studentId);
                 if (violations >= 3)
-                    return (false, $"Cannot renew. Too many violations ({violations}). Contact manager.", 400);
+                    return (false, $"Cannot renew. Too many violations ({violations}). Contact manager.", 400,null);
 
                 if (activeContract.Room == null)
-                    return (false, "Room data is missing, cannot calculate fee.", 422);
+                    return (false, "Room data is missing, cannot calculate fee.", 422, null);
                 // Calculate fee
                 decimal? price = activeContract.Room?.RoomType?.Price;
                 if (price == null)
-                    return (false, "Room type price data is missing, cannot calculate fee.", 422);
+                    return (false, "Room type price data is missing, cannot calculate fee.", 422, null);
 
 
                 decimal totalAmount = (monthsToExtend == 12) ? price.Value : price.Value * 0.5m; // giá phòng theo năm
@@ -109,12 +116,12 @@ namespace API.Services.Implements
                 };
                 _uow.Receipts.Add(newReceipt);
                 await _uow.CommitAsync();
-                return (true, newReceipt.ReceiptID, 201);
+                return (true, newReceipt.ReceiptID, 201,newReceipt.ReceiptID);
             }
             catch (Exception ex)
             {
                 await _uow.RollbackAsync();
-                return (false, $"Internal Server Error: {ex.Message}", 500);
+                return (false, $"Internal Server Error: {ex.Message}", 500, null);
             }
         }
 
@@ -257,12 +264,10 @@ namespace API.Services.Implements
             {
                 return (false, "Months added must be greater than 0.", 400);
             }
-
-            await _uow.BeginTransactionAsync();
             try
             {
                 // 3. Lấy thông tin hợp đồng
-                var contract = await _uow.Contracts.GetByIdAsync(contractId);
+                var contract = await _uow.Contracts.GetDetailContractAsync(contractId);
 
                 if (contract == null)
                 {
@@ -286,9 +291,7 @@ namespace API.Services.Implements
 
                 // 5. Cập nhật và Lưu xuống DB
                 _uow.Contracts.Update(contract);
-                await _uow.CommitAsync();
                 // 6 . Gửi email xác nhận 
-
                 var receipt = await _uow.Receipts.GetReceiptByTypeAndRelatedIdAsync(PaymentConstants.TypeRenewal, contract.ContractID);
                 if (receipt == null)
                 {
@@ -657,6 +660,36 @@ namespace API.Services.Implements
 
                 return (false, $"Error retrieving contract details: {ex.Message}", 500, null);
             }
+        }
+
+        public async Task<(bool Success, string Message, int StatusCode,PendingRequestDto? dto)> GetPendingRenewalRequestAsync(string studentId)
+        {
+            //validate 
+            if (string.IsNullOrEmpty(studentId)) 
+                return (false,"Invalid StudentId",404, null);
+            try
+            {
+                var contract = await _uow.Contracts.GetActiveContractByStudentId(studentId);
+                if (contract == null)
+                    return (false,"Student doesn't have contract",400,null);
+                var receipt = await _uow.Receipts.GetPendingRequestAsync(contract.ContractID);
+                if (receipt == null)
+                    return (false, "Student doesn't have pending request renewal", 400, null);
+                var rawprice = contract.Room?.RoomType?.Price;
+                int months = (receipt.Amount == rawprice) ? 12 : 6;
+                var result = new PendingRequestDto
+                {
+                    ReceiptId = receipt.ReceiptID,
+                    ReceiptDate = receipt.PrintTime,
+                    Months = months,
+                    TotalAmount = receipt.Amount
+                };
+                return (true, "Receipt data retrieved successfully.", 200, result);
+            }
+            catch
+            {
+                return (false,"Internal Server Error",500,null);
+            }   
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using API.Services.Helpers;
 using API.Services.Interfaces;
 using API.UnitOfWorks;
+using BusinessObject.DTOs.EquipmentDTO;
 using BusinessObject.Entities;
 
 namespace API.Services.Implements
@@ -75,6 +76,28 @@ namespace API.Services.Implements
             catch (Exception ex)
             {
                 return (false, $"Lỗi hệ thống: {ex.Message}", 500); 
+            }
+        }
+
+        public async Task<(bool Success, string Message, int StatusCode,IEnumerable<EquipmentOfRoomDTO> dto)> GetEquipmentsByRoomIdAsync(string roomId)
+        {
+            if (string.IsNullOrEmpty(roomId))
+                return (false,"Invalid Room Id",400,Enumerable.Empty<EquipmentOfRoomDTO>());
+            try
+            {
+                var list = await _uow.RoomEquipments.GetEquipmentsByRoomIdAsync(roomId);
+                var result = list.Select(re => new EquipmentOfRoomDTO
+                {
+                    EquipmentID = re.EquipmentID,
+                    Quantity = re.Quantity,
+                    Status = re.Status,
+                    EquipmentName = re.Equipment.EquipmentName
+                }).ToList();
+                return (true, "Lấy dữ liệu thiết bị của phòng thành công", 200, result);
+            }
+            catch
+            {
+                return(false,"Interal Server Error",500,Enumerable.Empty<EquipmentOfRoomDTO>());
             }
         }
     }

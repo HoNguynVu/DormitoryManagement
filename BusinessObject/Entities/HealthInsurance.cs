@@ -36,8 +36,6 @@ namespace BusinessObject.Entities
         [Required]
         [StringLength(128)]
         public string HealthPriceID { get; set; }
-
-        [ForeignKey("HealthPriceID")]
         public virtual HealthInsurancePrice HealthInsurancePrice { get; set; }
         [Required]
         [Column(TypeName = "decimal(18, 2)")]

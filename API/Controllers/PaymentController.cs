@@ -1,4 +1,4 @@
-﻿using API.Services.Interfaces;
+﻿    using API.Services.Interfaces;
 using BusinessObject.DTOs.PaymentDTOs;
 using Microsoft.AspNetCore.Mvc;
 
@@ -45,6 +45,12 @@ namespace API.Controllers
         public async Task<IActionResult> CreateZaloPayLinkForRoomChange(string receiptId)
         {
             var (statusCode, dto) = await _paymentService.CreateZaloPayLinkForRoomChange(receiptId);
+            return StatusCode(statusCode, dto);
+        }
+        [HttpPost("create-zalopay-link/maintenance/{receiptId}")]
+        public async Task<IActionResult> CreateZaloPayLinkForMaintenance(string receiptId)
+        {
+            var (statusCode, dto) = await _paymentService.CreateZaloPayLinkForMaintenance(receiptId);
             return StatusCode(statusCode, dto);
         }
 

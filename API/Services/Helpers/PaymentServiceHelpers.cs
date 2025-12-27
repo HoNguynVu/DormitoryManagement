@@ -31,7 +31,7 @@ namespace API.Services.Implements
                 { "app_time", appTime.ToString() },
                 { "amount", amount.ToString() },
                 { "app_trans_id", appTransId },
-                { "embed_data", JsonConvert.SerializeObject(new { redirecturl = "" }) },
+                { "embed_data", JsonConvert.SerializeObject(new { redirecturl = _zaloConfig.FrontEndUrl }) },
                 { "item", JsonConvert.SerializeObject(items) },
                 { "description", description },
                 { "bank_code", "" },
@@ -71,7 +71,7 @@ namespace API.Services.Implements
             }
         }
 
-        private async Task<(bool Success, string Message, int StatusCode)> HanldeRegisSuccessPayment(string appTransId, string zpTransId)
+        private async Task<(bool Success, string Message, int StatusCode)> HandleRegisSuccessPayment(string appTransId, string zpTransId)
         {
             return await ExecutePaymentTransaction(appTransId, zpTransId, async (receipt) =>
             {
@@ -79,11 +79,11 @@ namespace API.Services.Implements
             });
         }
 
-        private async Task<(bool Success, string Message, int StatusCode)> HanldeRenewalSuccessPayment(string appTransId, string zpTransId)
+        private async Task<(bool Success, string Message, int StatusCode)> HandleRenewalSuccessPayment(string appTransId, string zpTransId)
         {
             return await ExecutePaymentTransaction(appTransId, zpTransId, async (receipt) =>
             {
-                var contract = await _paymentUow.Contracts.GetByIdAsync(receipt.RelatedObjectID);
+                var contract = await _paymentUow.Contracts.GetDetailContractAsync(receipt.RelatedObjectID);
 
                 // 2. Kiểm tra dữ liệu Hợp đồng và Phòng
                 if (contract == null)
@@ -101,7 +101,7 @@ namespace API.Services.Implements
                 }
 
                 // 4. Tính toán số tháng (Dùng .Value để lấy giá trị thực)
-                int months = (int)(receipt.Amount / rawPrice.Value);
+                int months = (receipt.Amount == rawPrice) ? 12 : 6;
 
                 if (months <= 0)
                 {
@@ -112,7 +112,7 @@ namespace API.Services.Implements
             });
         }
 
-        private async Task<(bool Success, string Message, int StatusCode)> HanldeUtilitySuccessPayment(string appTransId, string zpTransId)
+        private async Task<(bool Success, string Message, int StatusCode)> HandleUtilitySuccessPayment(string appTransId, string zpTransId)
         {
             return await ExecutePaymentTransaction(appTransId, zpTransId, async (receipt) =>
             {
@@ -121,11 +121,19 @@ namespace API.Services.Implements
             });
         }
 
-        private async Task<(bool Success, string Message, int StatusCode)> HanldeInsuranceSuccessPayment(string appTransId, string zpTransId)
+        private async Task<(bool Success, string Message, int StatusCode)> HandleInsuranceSuccessPayment(string appTransId, string zpTransId)
         {
             return await ExecutePaymentTransaction(appTransId, zpTransId, async (receipt) =>
             {
                 return await _healthInsuranceService.ConfirmInsurancePaymentAsync(receipt.RelatedObjectID);
+            });
+        }
+
+        private async Task<(bool Success, string Message, int StatusCode)> HanldeMaintenanceSuccessPayment(string appTransId, string zpTransId)
+        {
+            return await ExecutePaymentTransaction(appTransId, zpTransId, async (receipt) =>
+            {
+                return await _maintenanceService.ConfirmPaymentMaintenanceFee(receipt.RelatedObjectID);
             });
         }
 
@@ -168,6 +176,8 @@ namespace API.Services.Implements
                     return (false, $"Lỗi khi cập nhật phòng: {ex.Message}", 500);
                 }
           
+
+                return  (true, "Room change payment confirmed successfully.", 200);
             });
         }
 

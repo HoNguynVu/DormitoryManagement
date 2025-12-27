@@ -5,6 +5,7 @@ using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;
 using System.Globalization;
+using System.Net.Mail;
 namespace API.Services.Implements
 {
     public class EmailService : IEmailService
@@ -100,6 +101,7 @@ namespace API.Services.Implements
         {
             var culture = new CultureInfo("vi-VN");
             var message = new MimeMessage();
+            message.From.Add(new MailboxAddress("NoReply", _config["Email:From"]));
             message.To.Add(new MailboxAddress(dto.StudentName, dto.StudentEmail));
             message.Subject = $"[KTX] Xác nhận thanh toán phí đăng ký phòng {dto.RoomName}";
 
@@ -130,6 +132,7 @@ namespace API.Services.Implements
         {
             var culture = new CultureInfo("vi-VN");
             var message = new MimeMessage();
+            message.From.Add(new MailboxAddress("NoReply", _config["Email:From"]));
             message.To.Add(new MailboxAddress(dto.StudentName, dto.StudentEmail));
             message.Subject = $"[KTX] Biên lai thu phí gia hạn hợp đồng {dto.ContractCode}";
 
@@ -162,15 +165,16 @@ namespace API.Services.Implements
         {
             var culture = new CultureInfo("vi-VN");
             var message = new MimeMessage();
+            message.From.Add(new MailboxAddress("NoReply", _config["Email:From"]));
             message.To.Add(new MailboxAddress(dto.StudentName, dto.StudentEmail));
-            message.Subject = $"[BHYT] Xác nhận đăng ký và thanh toán BHYT {dto.InsurancePeriod}";
+            message.Subject = $"[BHYT] Xác nhận đăng ký và thanh toán BHYT năm {dto.Year}";
 
             var bodyBuilder = new BodyBuilder();
             bodyBuilder.HtmlBody = $@"
             <div style='font-family: Arial, sans-serif; color: #333;'>
                 <h2 style='color: #17a2b8;'>XÁC NHẬN THANH TOÁN BHYT</h2>
                 <p>Chào bạn <strong>{dto.StudentName}</strong>,</p>
-                <p>Bạn đã đăng ký và thanh toán thành công Bảo hiểm Y tế cho giai đoạn <strong>{dto.InsurancePeriod}</strong>.</p>
+                <p>Bạn đã đăng ký và thanh toán thành công Bảo hiểm Y tế cho năm <strong>{dto.Year}</strong>.</p>
             
                 <table style='width: 100%; border: 1px solid #ddd; margin-bottom: 20px;'>
                     <tr><td style='padding: 8px; border-bottom: 1px solid #ddd;'>Hiệu lực từ:</td><td style='padding: 8px; border-bottom: 1px solid #ddd;'>{dto.CoverageStartDate:dd/MM/yyyy}</td></tr>
@@ -191,6 +195,7 @@ namespace API.Services.Implements
         {
             var culture = new CultureInfo("vi-VN");
             var message = new MimeMessage();
+            message.From.Add(new MailboxAddress("NoReply", _config["Email:From"]));
             message.To.Add(new MailboxAddress(dto.StudentName, dto.StudentEmail));
             message.Subject = $"[Hóa Đơn] Xác nhận thanh toán điện nước tháng {dto.BillingMonth}";
 
@@ -313,7 +318,7 @@ namespace API.Services.Implements
                 })
                 .CreateScoped("https://mail.google.com/");
             var accessToken = await credential.UnderlyingCredential.GetAccessTokenForRequestAsync();
-            using var client = new SmtpClient();
+            using var client = new MailKit.Net.Smtp.SmtpClient();
             await client.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
             await client.AuthenticateAsync(new SaslMechanismOAuth2(_config["Email:From"], accessToken));
             await client.SendAsync(emailMessage);

@@ -17,12 +17,12 @@ namespace API.Services.Implements
             _uow = uow;
             _roomEquipmentService = roomEquipmentService;
         }
-        public async Task<(bool Success, string Message, int StatusCode)> CreateRequestAsync(CreateMaintenanceDto dto)
+        public async Task<(bool Success, string Message, int StatusCode,string? requestMaintenanceId)> CreateRequestAsync(CreateMaintenanceDto dto)
         {
             // Validation đầu vào
             if (dto == null || string.IsNullOrEmpty(dto.StudentId) || string.IsNullOrEmpty(dto.Description))
             {
-                return (false, "Thông tin yêu cầu không hợp lệ (Thiếu StudentId hoặc Mô tả).", 400);
+                return (false, "Thông tin yêu cầu không hợp lệ (Thiếu StudentId hoặc Mô tả).", 400,null);
             }
             await _uow.BeginTransactionAsync();
             try
@@ -32,7 +32,7 @@ namespace API.Services.Implements
 
                 if (contract == null || contract.Room == null)
                 {
-                    return (false, "Sinh viên chưa có hợp đồng phòng hiệu lực, không thể gửi yêu cầu.", 403);
+                    return (false, "Sinh viên chưa có hợp đồng phòng hiệu lực, không thể gửi yêu cầu.", 403,null); ;
                 }
                 if (!string.IsNullOrEmpty(dto.EquipmentId))
                 {
@@ -42,7 +42,7 @@ namespace API.Services.Implements
                     }
                     catch (Exception ex)
                     {
-                        return (false, ex.Message, 400);
+                        return (false, ex.Message, 400,null);
                     }
                 }
 
@@ -53,6 +53,7 @@ namespace API.Services.Implements
                     StudentID = dto.StudentId,
                     RoomID = contract.Room.RoomID,
                     Description = dto.Description,
+                    EquipmentID = dto.EquipmentId,
                     Status = "Pending",            
                     RequestDate = DateTime.Now,
                     RepairCost = 0             
@@ -61,11 +62,11 @@ namespace API.Services.Implements
                 _uow.Maintenances.Add(request);
                 await _uow.CommitAsync();
 
-                return (true, "Gửi yêu cầu bảo trì thành công.", 201);
+                return (true, "Gửi yêu cầu bảo trì thành công.", 201,request.RequestID);
             }
             catch (Exception ex)
             {
-                return (false, $"Lỗi hệ thống: {ex.Message}", 500);
+                return (false, $"Lỗi hệ thống: {ex.Message}", 500, null);
             }
         }
 
@@ -88,7 +89,8 @@ namespace API.Services.Implements
                     Description = m.Description,
                     Status = m.Status,
                     IssueDate = DateOnly.FromDateTime(m.RequestDate),
-                    ResolvedDate = m.ResolvedDate.HasValue ? DateOnly.FromDateTime(m.ResolvedDate.Value) : null
+                    ResolvedDate = m.ResolvedDate.HasValue ? DateOnly.FromDateTime(m.ResolvedDate.Value) : null,
+                    RepairCost = m.RepairCost,
                 }).ToList();
                 return (true, "Lấy danh sách thành công.", 200, result);
             }
@@ -137,7 +139,7 @@ namespace API.Services.Implements
                     return (false, ex.Message, 400);
                 }
                 // 4. Xử lý Logic khi trạng thái là "Completed"
-                if (dto.NewStatus == "Completed")
+                if (dto.NewStatus == "Wait Payment")
                 {
                     request.ResolvedDate = DateTime.Now;
                     request.RepairCost = dto.RepairCost;
@@ -150,6 +152,7 @@ namespace API.Services.Implements
                             ReceiptID = "RE-" + IdGenerator.GenerateUniqueSuffix(),
                             StudentID = request.StudentID,
                             Amount = dto.RepairCost,
+                            RelatedObjectID = request.RequestID,
                             PaymentType = PaymentConstants.TypeMaintenanceFee, // Đánh dấu loại thanh toán
                             Status = "Pending",             // Chờ thanh toán
                             Content = $"Phí sửa chữa cho yêu cầu {request.RequestID}: {request.Description}",
@@ -195,7 +198,9 @@ namespace API.Services.Implements
                     Description = m.Description,
                     Status = m.Status,
                     IssueDate = DateOnly.FromDateTime(m.RequestDate),
-                    ResolvedDate = m.ResolvedDate.HasValue ? DateOnly.FromDateTime(m.ResolvedDate.Value) : null
+                    ResolvedDate = m.ResolvedDate.HasValue ? DateOnly.FromDateTime(m.ResolvedDate.Value) : null,
+                    RepairCost = m.RepairCost,
+                    
                 }).ToList();
                 return (true, "Lấy danh sách thành công.", 200, result);
             }
@@ -225,7 +230,7 @@ namespace API.Services.Implements
                     IssueDate = DateOnly.FromDateTime(request.RequestDate),
                     ResolvedDate = request.ResolvedDate.HasValue ? DateOnly.FromDateTime(request.ResolvedDate.Value) : null,
                     ManagerNote = request.ManagerNote,
-                    Amount = request.RepairCost
+                    RepairCost = request.RepairCost,
                 };
                 return (true, "Lấy chi tiết thành công.", 200, dto);
             }
@@ -248,6 +253,42 @@ namespace API.Services.Implements
             catch (Exception ex)
             {
                 return (false, $"Lỗi truy vấn: {ex.Message}", 500, new Dictionary<string, int>());
+            }
+        }
+
+        public async Task<(bool Success, string Message, int StatusCode)> ConfirmPaymentMaintenanceFee(string maintainanceId)
+        {
+            if (string.IsNullOrEmpty(maintainanceId))
+                 return (false, "Invalid Maintenance ID", 400);
+            try
+            {
+                var maintenance = await _uow.Maintenances.GetByIdAsync(maintainanceId);
+                if (maintenance == null)
+                    return (false, "Maintenance not found", 404);
+                maintenance.Status = "Completed";
+                _uow.Maintenances.Update(maintenance);
+                return (true, "Confirm Payment Mainteanance Successfully", 200);
+            }
+            catch
+            {
+                return (false, "Internal Server Error", 500);
+            }
+        }
+
+        public async Task<(bool Success, string Message, int StatusCode,string? receiptId)> GetReceiptPendingMaintenance(string maintainanceId)
+        {
+            if (string.IsNullOrEmpty(maintainanceId))
+                return (false, "Invalid Maintenance Id", 400,null);
+            try
+            {
+                var receipt =await _uow.Receipts.GetPendingRequestAsync(maintainanceId);
+                if (receipt == null)
+                    return (false, "Receipt not found", 404,null);
+                return (true, "Receipt retrived successfully", 200, receipt.ReceiptID);
+            }
+            catch
+            {
+                return (false,"Internal Server Error",500,null);
             }
         }
     }
