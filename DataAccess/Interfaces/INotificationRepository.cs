@@ -9,5 +9,6 @@ namespace DataAccess.Interfaces
 {
     public interface INotificationRepository : IGenericRepository<Notification>
     {
+        Task<List<Notification>> GetLastestNotificationsByAccountIdAsync(string accountId);
     }
 }

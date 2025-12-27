@@ -88,5 +88,14 @@ namespace API.Controllers
                 return StatusCode(statusCode, new { success = true, message, data = availableRooms });
             return StatusCode(statusCode, new { success = false, message });
         }
+
+        [HttpGet("manager/{accountId}")]
+        public async Task<IActionResult> GetAllRoomsForManager(string accountId)
+        {
+            var (success, message, statusCode, rooms) = await _roomService.GetAllRoomsForManagerAsync(accountId);
+            if (success)
+                return StatusCode(statusCode, new { success = true, message, data = rooms });
+            return StatusCode(statusCode, new { success = false, message });
+        }
     }
 }

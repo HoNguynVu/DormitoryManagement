@@ -11,5 +11,7 @@ namespace API.UnitOfWorks
         INotificationRepository Notifications { get; }
         IStudentRepository Students { get; }
         IReceiptRepository Receipts { get; }
+        IBuildingManagerRepository BuildingManagers { get; }
+        IRoomRepository Rooms { get; }
     }
 }

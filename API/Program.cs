@@ -8,6 +8,7 @@ using DataAccess.Interfaces;
 using DataAccess.Models;
 using DataAccess.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -39,6 +40,7 @@ builder.Services.AddDbContext<DormitoryDbContext>(options =>
 // 4. Core Services
 builder.Services.AddControllers();
 builder.Services.AddSignalR(); // Chỉ gọi 1 lần ở đây
+builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
 builder.Services.AddHttpClient();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -61,6 +63,7 @@ builder.Services.AddScoped<IParameterUow>(sp => sp.GetRequiredService<UnitOfWork
 builder.Services.AddScoped<IStudentUow>(sp => sp.GetRequiredService<UnitOfWork>());
 builder.Services.AddScoped<IRoomTypeUow>(sp => sp.GetRequiredService<UnitOfWork>()); 
 builder.Services.AddScoped<IRoomEquipmentUow>(sp => sp.GetRequiredService<UnitOfWork>());
+builder.Services.AddScoped<INotificationUow>(sp => sp.GetRequiredService<UnitOfWork>());
 
 
 // 6. Business Services
@@ -82,6 +85,7 @@ builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<IBuildingService, BuildingService>();
 builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
 builder.Services.AddScoped<IRoomEquipmentService, RoomEquipmentService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 // 7. Repositories (Nếu UoW đã bao gồm Repo thì có thể không cần dòng này, nhưng giữ lại nếu code cũ cần)
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
@@ -97,8 +101,6 @@ builder.Services.Configure<ZaloPaySettings>(builder.Configuration.GetSection("Za
 
 // Đăng ký IOptions<ZaloPaySettings>
 
-
-
 // 10. Authentication (JWT)
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -109,11 +111,40 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
+
+            // Đảm bảo khớp với appsettings.json
             ValidIssuer = builder.Configuration["AppSettings:Issuer"],
             ValidAudience = builder.Configuration["AppSettings:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Token"] ?? string.Empty)
-            )
+            ),
+
+            // QUAN TRỌNG: Chấp nhận độ lệch giờ bằng 0 để test chính xác
+            ClockSkew = TimeSpan.Zero
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            // 👇 THÊM ĐOẠN NÀY ĐỂ DEBUG LỖI 401 👇
+            OnAuthenticationFailed = context =>
+            {
+                Console.WriteLine("❌ AUTH FAILED: " + context.Exception.Message);
+                return Task.CompletedTask;
+            },
+            // 👆 KẾT THÚC DEBUG 👆
+
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+
+                // Logic nhận token cho SignalR
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/notificationHub"))
+                {
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
         };
     });
 
@@ -132,7 +163,7 @@ builder.Services.AddSingleton(VnPaySettings =>
         FrontEndUrl = config["FrontEndUrl"] ?? string.Empty
     };
 });
-builder.Services.AddHttpClient();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

@@ -6,6 +6,7 @@ namespace DataAccess.Interfaces
     {
         Task<IEnumerable<Violation>> GetViolationsByStudentId(string studentId);
         Task<IEnumerable<Violation>> GetPendingViolations();
+        Task<IEnumerable<Violation>> GetByManagerId(string managerid);
         Task<int> CountViolationsByStudentId(string studentId);
     }
 }

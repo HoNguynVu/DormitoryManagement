@@ -6,6 +6,7 @@ using BusinessObject.DTOs.ConfirmDTOs;
 using BusinessObject.DTOs.ContractDTOs;
 using BusinessObject.DTOs.EquipmentDTO;
 using BusinessObject.Entities;
+using DocumentFormat.OpenXml.Office.Y2022.FeaturePropertyBag;
 
 namespace API.Services.Implements
 {
@@ -415,12 +416,12 @@ namespace API.Services.Implements
             }
         }
 
-        public async Task<(bool Success, string Message, int StatusCode)> ChangeRoomAsync(ChangeRoomRequestDto request)
+        public async Task<(bool Success, string Message, int StatusCode, string? ReceiptId, string? Type)> ChangeRoomAsync(ChangeRoomRequestDto request)
         {
             // Validation
             if (request == null || string.IsNullOrEmpty(request.StudentId) || string.IsNullOrEmpty(request.NewRoomId))
             {
-                return (false, "Invalid request. StudentId and NewRoomId are required.", 400);
+                return (false, "Invalid request. StudentId and NewRoomId are required.", 400, null, null);
             }
 
             await _uow.BeginTransactionAsync();
@@ -430,33 +431,33 @@ namespace API.Services.Implements
                 var activeContract = await _uow.Contracts.GetActiveContractByStudentId(request.StudentId);
                 if (activeContract == null)
                 {
-                    return (false, "No active contract found for this student.", 404);
+                    return (false, "No active contract found for this student.", 404, null, null);
                 }
 
                 var oldRoom = activeContract.Room;
                 if (oldRoom == null)
                 {
-                    return (false, "Current room data is missing.", 422);
+                    return (false, "Current room data is missing.", 422, null, null);
                 }
 
                 // 2. Check if new room is the same as current
                 if (activeContract.RoomID == request.NewRoomId)
                 {
-                    return (false, "New room is the same as current room.", 400);
+                    return (false, "New room is the same as current room.", 400, null, null);
                 }
 
                 // 3. Get new room
                 var newRoom = await _uow.Rooms.GetByIdAsync(request.NewRoomId);
                 if (newRoom == null)
                 {
-                    return (false, "New room not found.", 404);
+                    return (false, "New room not found.", 404, null, null);
                 }
 
                 // 4. Check new room availability
                 var activeCountInNewRoom = await _uow.Contracts.CountContractsByRoomIdAndStatus(request.NewRoomId, "Active");
                 if (activeCountInNewRoom >= newRoom.Capacity)
                 {
-                    return (false, "New room is full. Cannot change to this room.", 400);
+                    return (false, "New room is full. Cannot change to this room.", 400, null, null);
                 }
 
                 // 5. Get old and new room prices
@@ -465,7 +466,7 @@ namespace API.Services.Implements
 
                 if (oldRoomPrice == 0 || newRoomPrice == 0)
                 {
-                    return (false, "Room price data is missing.", 422);
+                    return (false, "Room price data is missing.", 422, null, null);
                 }
 
                 // 6. Calculate remaining days in contract
@@ -475,7 +476,7 @@ namespace API.Services.Implements
 
                 if (remainingDays <= 0)
                 {
-                    return (false, "Contract has expired or expiring today. Cannot change room.", 400);
+                    return (false, "Contract has expired or expiring today. Cannot change room.", 400, null, null);
                 }
 
                 // 7. Calculate price adjustment based on reason and price difference
@@ -542,10 +543,15 @@ namespace API.Services.Implements
                     }
                 }
 
+                string? createdReceiptId = null;
+                string? type = "None";
+                string responseMessage = "";
 
                 // 8. Create receipt if there's price adjustment
                 if (priceAdjustment != 0)
                 {
+                    bool isCharge = priceAdjustment > 0;
+                    type = isCharge ? "Charge" : "Refund";
                     var receipt = new Receipt
                     {
                         ReceiptID = "RE-" + IdGenerator.GenerateUniqueSuffix(),
@@ -557,124 +563,46 @@ namespace API.Services.Implements
                         PrintTime = DateTime.Now,
                         Content = receiptContent + (string.IsNullOrEmpty(request.ManagerNote) ? "" : $" Ghi chú: {request.ManagerNote}")
                     };
+                    if (isCharge) receipt.Content += $"CMD|{request.NewRoomId}|{receiptContent}";
 
                     _uow.Receipts.Add(receipt);
+                    createdReceiptId = receipt.ReceiptID;
+
+                    if (isCharge)
+                    {
+                        responseMessage = $" A payment receipt {createdReceiptId} has been created and is pending payment.";
+                    }
+                    else
+                    {
+                        var payment = new Payment
+                        {
+                            PaymentID = IdGenerator.GenerateUniqueSuffix(),
+                            ReceiptID = receipt.ReceiptID,
+                            Amount = Math.Abs(priceAdjustment),
+                            PaymentDate = DateTime.Now,
+                            PaymentMethod = "Cash", // Hoàn tiền mặt
+                            Status = "Success",
+                            TransactionID = "REFUND-CASH"
+                        };
+                        _uow.Payments.Add(payment);
+
+                        await RoomTransactionHelper.SwapRoomLogicAsync(_uow, activeContract, request.NewRoomId);
+                        responseMessage = $"Đã hoàn tiền {Math.Abs(priceAdjustment):N0} VND và đổi phòng thành công.";
+                    }
+                }
+                else
+                {
+                    await RoomTransactionHelper.SwapRoomLogicAsync(_uow, activeContract, request.NewRoomId);
+                    responseMessage = "Đổi phòng thành công (Không phát sinh chi phí).";
                 }
 
                 await _uow.CommitAsync();
-
-                string responseMessage = priceAdjustment > 0
-                    ? $"Yêu cầu đổi phòng đã được chấp nhận. Sinh viên cần thanh toán thêm {priceAdjustment:N0} VND."
-                    : priceAdjustment < 0
-                        ? $"Yêu cầu đổi phòng đã được chấp nhận. Hoàn tiền {Math.Abs(priceAdjustment):N0} VND cho sinh viên."
-                        : "Yêu cầu đổi phòng đã được chấp nhận";
-
-                return (true, responseMessage, 200);
+                return (true, responseMessage, 200, createdReceiptId, type);
             }
             catch (Exception ex)
             {
                 await _uow.RollbackAsync();
-                return (false, $"Internal Server Error: {ex.Message}", 500);
-            }
-        }
-
-        public async Task<(bool Success, string Message, int StatusCode)> ConfirmRefundAsync(ConfirmRefundDto request)
-        {
-            // Validation
-            if (request == null || string.IsNullOrEmpty(request.ReceiptId))
-            {
-                return (false, "Invalid request. ReceiptId is required.", 400);
-            }
-
-            if (string.IsNullOrEmpty(request.RefundMethod))
-            {
-                return (false, "RefundMethod is required (BankTransfer, Cash, etc.).", 400);
-            }
-
-            await _uow.BeginTransactionAsync();
-            try
-            {
-                // 1. Get receipt
-                var receipt = await _uow.Receipts.GetByIdAsync(request.ReceiptId);
-                if (receipt == null)
-                {
-                    return (false, "Receipt not found.", 404);
-                }
-
-                // 2. Validate receipt type
-                if (receipt.PaymentType != "RoomChangeRefund")
-                {
-                    return (false, "This receipt is not a refund receipt.", 400);
-                }
-
-                // 3.
-                var student = await _uow.Students.GetByIdAsync(receipt.StudentID);
-                if (student == null)
-                {
-                    return (false, "Student not found.", 404);
-                }
-
-                var activeContract = await _uow.Contracts.GetActiveContractByStudentId(student.StudentID);
-                if (activeContract == null)
-                {
-                    return (false, "Associated contract not found.", 404);
-                }
-                // 8. Update contract
-                activeContract.RoomID = request.ReceiptId;
-                _uow.Contracts.Update(activeContract);
-                var oldRoom = await _uow.Rooms.GetByIdAsync(activeContract.RoomID);
-                if (oldRoom == null)
-                {
-                    return (false, "Old room data is missing.", 422);
-                }
-                var newRoom = await _uow.Rooms.GetByIdAsync(request.NewRoomId);
-                if (newRoom == null)
-                {
-                    return (false, "New room not found.", 404);
-                }
-                // 9. Update old room occupancy
-                if (oldRoom.CurrentOccupancy > 0)
-                {
-                    oldRoom.CurrentOccupancy -= 1;
-                }
-                if (oldRoom.CurrentOccupancy < oldRoom.Capacity && oldRoom.RoomStatus == "Full")
-                {
-                    oldRoom.RoomStatus = "Available";
-                }
-                _uow.Rooms.Update(oldRoom);
-
-                //10.Update new room occupancy
-                newRoom.CurrentOccupancy += 1;
-                if (newRoom.CurrentOccupancy >= newRoom.Capacity)
-                {
-                    newRoom.RoomStatus = "Full";
-                }
-                _uow.Rooms.Update(newRoom);
-
-                // Update content with refund confirmation info
-                var confirmationNote = $" | Đã hoàn tiền qua {request.RefundMethod}";
-                if (!string.IsNullOrEmpty(request.TransactionReference))
-                {
-                    confirmationNote += $" - Mã GD: {request.TransactionReference}";
-                }
-                if (!string.IsNullOrEmpty(request.ManagerNote))
-                {
-                    confirmationNote += $" - Ghi chú: {request.ManagerNote}";
-                }
-                confirmationNote += $" - Xác nhận lúc: {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
-
-                receipt.Content += confirmationNote;
-
-                _uow.Receipts.Update(receipt);
-
-                await _uow.CommitAsync();
-
-                return (true, $"Đã xác nhận hoàn tiền {receipt.Amount:N0} VND cho sinh viên {receipt.StudentID}.", 200);
-            }
-            catch (Exception ex)
-            {
-                await _uow.RollbackAsync();
-                return (false, $"Internal Server Error: {ex.Message}", 500);
+                return (false, $"Internal Server Error: {ex.Message}", 500, null, null);
             }
         }
 

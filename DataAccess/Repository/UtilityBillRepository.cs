@@ -37,5 +37,23 @@ namespace DataAccess.Repository
                                .ToListAsync();
         }
 
+        public async Task<UtilityBill?> GetLastMonthBillAsync(string roomId, int month, int year)
+        {
+            int lastMonth = month - 1;
+            int lastMonthYear = year;
+            if (lastMonth == 0)
+            {
+                lastMonth = 12;
+                lastMonthYear -= 1;
+            }
+            return await _dbSet.FirstOrDefaultAsync(bill => bill.RoomID == roomId && bill.Month == lastMonth && bill.Year == lastMonthYear);
+        }
+
+        public async Task<int> CountUnpaidBillByRoomAsync(string roomId)
+        {
+            var count = await _dbSet.CountAsync(bill => bill.RoomID == roomId && bill.Status == "Unpaid");
+            return count;
+        }
+
     }
 }

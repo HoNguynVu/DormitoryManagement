@@ -7,5 +7,6 @@ namespace DataAccess.Interfaces
     public interface IBuildingManagerRepository : IGenericRepository<BuildingManager>
     {
         Task<IEnumerable<BuildingManager>> GetAllWithBuildingsAsync();
+        Task<BuildingManager?> GetByAccountIdAsync(string accountId);
     }
 }

@@ -6,5 +6,8 @@ namespace API.UnitOfWorks
         IViolationRepository Violations { get; }
         IStudentRepository Students { get; }
         IContractRepository Contracts { get; }
+        IBuildingManagerRepository BuildingManagers { get; }
+        INotificationRepository Notifications { get; }
+        IAccountRepository Accounts { get; }
     }
 }

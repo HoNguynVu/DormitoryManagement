@@ -36,7 +36,7 @@ namespace API.Controllers
             }
             return StatusCode(result.StatusCode, new { message = result.Message });
         }
-        
+
         [HttpPost("ResendOTPVerifyEmail")]
         public async Task<IActionResult> ResendOTPVerifyEmail(string email)
         {
@@ -60,7 +60,8 @@ namespace API.Controllers
                     accessToken = result.accessToken,
                     refreshToken = result.refreshToken,
                     userId = result.userId,
-                    hasActiveContract = result.hasActiveContract
+                    hasActiveContract = result.hasActiveContract,
+                    hasTerminatedContract = result.hasTerminatedContract
                 });
             }
             return StatusCode(result.StatusCode, new { message = result.Message });
@@ -110,7 +111,7 @@ namespace API.Controllers
             return StatusCode(result.StatusCode, new { message = result.Message });
         }
 
-        [HttpPost("Refresh")]
+        [HttpGet("Refresh/{refreshToken}")]
         public async Task<IActionResult> RefreshToken(string refreshToken)
         {
             var result = await _authService.GetAccessToken(refreshToken);
@@ -129,6 +130,17 @@ namespace API.Controllers
         public async Task<IActionResult> Logout(string refreshToken)
         {
             var result = await _authService.LogOut(refreshToken);
+            if (result.Success)
+            {
+                return StatusCode(result.StatusCode, new { message = result.Message });
+            }
+            return StatusCode(result.StatusCode, new { message = result.Message });
+        }
+
+        [HttpPost("RegisterManager")]
+        public async Task<IActionResult> RegisterManager([FromBody] RegisterManagerAndAdminDTO registerManagerRequest)
+        {
+            var result = await _authService.RegisterManagerAsync(registerManagerRequest);
             if (result.Success)
             {
                 return StatusCode(result.StatusCode, new { message = result.Message });

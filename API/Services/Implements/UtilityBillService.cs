@@ -18,7 +18,7 @@ namespace API.Services.Implements
         private readonly IHubContext<NotificationHub> _hubContext;
         private readonly IEmailService _emailService;
         private readonly ILogger<IUtilityBillService> _logger;
-        public UtilityBillService(IUtilityBillUow utilityBillUow, IHubContext<NotificationHub> hubContext,IEmailService emailService,ILogger<IUtilityBillService> logger)
+        public UtilityBillService(IUtilityBillUow utilityBillUow, IHubContext<NotificationHub> hubContext, IEmailService emailService, ILogger<IUtilityBillService> logger)
         {
             _utilityBillUow = utilityBillUow;
             _hubContext = hubContext;
@@ -28,7 +28,7 @@ namespace API.Services.Implements
 
         private string NotiMessage(int month, int year)
         {
-            return $"Your utility bill for {month}/{year} is now available. Please check your BILLS for details and make the payment on time to avoid any late fees.";
+            return $"Hóa đơn điện nước {month}/{year} của bạn đã có. Hãy bấm vào mục Điện Nước để tiến hành thanh toán.";
         }
 
         public async Task<(bool Success, string Message, int StatusCode)> CreateUtilityBill(CreateBillDTO dto)
@@ -80,7 +80,7 @@ namespace API.Services.Implements
                 var accountId = contract.Student.AccountID;
                 var newNoti = NotificationServiceHelpers.CreateNew(
                     accountId: accountId,
-                    title: "New Utility Bill Available",
+                    title: "Hóa đơn điện nước mới!",
                     message: newMessage,
                     type: "UtilityBill"
                 );
@@ -138,17 +138,19 @@ namespace API.Services.Implements
             {
                 _utilityBillUow.UtilityBills.Update(bill);
                 await _utilityBillUow.CommitAsync();
-                var receipt = await _utilityBillUow.Receipts.GetReceiptByTypeAndRelatedIdAsync(PaymentConstants.TypeUtility,billId);
-                if (receipt == null) 
+                var receipt = await _utilityBillUow.Receipts.GetReceiptByTypeAndRelatedIdAsync(PaymentConstants.TypeUtility, billId);
+                if (receipt == null)
                 {
                     return (false, "Receipt not found", 404);
                 }
                 var student = await _utilityBillUow.Students.GetByIdAsync(receipt.Student.StudentID);
-                if (student == null) {
+                if (student == null)
+                {
                     return (false, "Student not found", 404);
                 }
                 var parameter = await _utilityBillUow.Parameters.GetActiveParameterAsync();
-                if (parameter == null) {
+                if (parameter == null)
+                {
                     return (false, "Parameter not found", 404);
                 }
                 var emailDto = new UtilityPaymentSuccessDto
@@ -166,13 +168,13 @@ namespace API.Services.Implements
                     ElectricIndexOld = bill.ElectricityOldIndex,
                     ElectricIndexNew = bill.ElectricityNewIndex,
                     ElectricUsage = bill.ElectricityUsage,
-                    ElectricAmount = bill.ElectricityUsage*parameter.DefaultElectricityPrice,
+                    ElectricAmount = bill.ElectricityUsage * parameter.DefaultElectricityPrice,
 
                     // Mapping chỉ số NƯỚC
                     WaterIndexOld = bill.WaterOldIndex,
                     WaterIndexNew = bill.WaterNewIndex,
                     WaterUsage = bill.WaterUsage,
-                    WaterAmount = bill.WaterUsage*parameter.DefaultWaterPrice,
+                    WaterAmount = bill.WaterUsage * parameter.DefaultWaterPrice,
 
                     // Tổng tiền
                     TotalAmount = bill.Amount
@@ -198,7 +200,7 @@ namespace API.Services.Implements
             {
                 return (false, "AccountId is required", 400, Enumerable.Empty<UtilityBill>());
             }
-            
+
             var account = await _utilityBillUow.Accounts.GetByIdAsync(accountId);
             if (account == null)
             {
@@ -216,7 +218,7 @@ namespace API.Services.Implements
             {
                 return (false, "No active contract found for this student", 404, Enumerable.Empty<UtilityBill>());
             }
-            var billsOfRoom = await _utilityBillUow.UtilityBills.GetByRoomAsync(contract.RoomID);    
+            var billsOfRoom = await _utilityBillUow.UtilityBills.GetByRoomAsync(contract.RoomID);
 
             var unpaidBills = billsOfRoom.Where(b => b.Status != PaymentConstants.BillPaid).ToList();
             return (true, "Bills retrieved successfully", 200, unpaidBills);
@@ -271,6 +273,94 @@ namespace API.Services.Implements
                 dtoList.Add(dto);
             }
             return (true, "Utility bills retrieved successfully", 200, dtoList);
+        }
+
+        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<ManagerGetBillDTO> listBill)> GetBillsForManagerAsync(ManagerGetBillRequest request)
+        {
+            if (string.IsNullOrEmpty(request.AccountId))
+            {
+                return (false, "ManagerId is required", 400, Enumerable.Empty<ManagerGetBillDTO>());
+            }
+            var manager = await _utilityBillUow.BuildingManagers.GetByAccountIdAsync(request.AccountId);
+            if (manager == null)
+            {
+                return (false, "Manager not found", 404, Enumerable.Empty<ManagerGetBillDTO>());
+            }
+
+            var rooms = await _utilityBillUow.Rooms.GetRoomByManagerIdAsync(manager.ManagerID);
+            if (rooms == null || !rooms.Any())
+            {
+                return (false, "No rooms found for this manager", 404, Enumerable.Empty<ManagerGetBillDTO>());
+            }
+            var dtoList = new List<ManagerGetBillDTO>();
+            try
+            {
+                foreach (var room in rooms)
+                {
+                    var bill = await _utilityBillUow.UtilityBills.GetByRoomAndPeriodAsync(room.RoomID, request.Month, request.Year);
+                    if (bill != null)
+                    {
+                        var dto = new ManagerGetBillDTO
+                        {
+                            RoomID = room.RoomID,
+                            RoomName = room.RoomName,
+                            ElectricityOldIndex = bill.ElectricityOldIndex,
+                            ElectricityNewIndex = bill.ElectricityNewIndex,
+                            WaterOldIndex = bill.WaterOldIndex,
+                            WaterNewIndex = bill.WaterNewIndex,
+                            ElectricityUsage = bill.ElectricityUsage,
+                            WaterUsage = bill.WaterUsage,
+                            Amount = bill.Amount,
+                            Status = bill.Status
+                        };
+                        dtoList.Add(dto);
+                    }
+                    else
+                    {
+                        var dto = new ManagerGetBillDTO
+                        {
+                            RoomID = room.RoomID,
+                            RoomName = room.RoomName,
+                            Status = "No Bill"
+                        };
+                        dtoList.Add(dto);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Error retrieving bills: {ex.Message}", 500, Enumerable.Empty<ManagerGetBillDTO>());
+            }
+            return (true, "Bills retrieved successfully", 200, dtoList);
+        }
+
+        public async Task<(bool Success, string Message, int StatusCode, Parameter para)> GetActiveParameter()
+        {
+            var parameter = await _utilityBillUow.Parameters.GetActiveParameterAsync();
+            if (parameter == null)
+            {
+                return (false, "Active parameter not found", 404, null);
+            }
+            return (true, "Active parameter retrieved successfully", 200, parameter);
+        }
+
+        public async Task<(bool Success, string Message, int StatusCode, LastMonthIndexDTO dto)> GetLastMonthIndex(RequestLastMonthIndexDTO request)
+        {
+            if (string.IsNullOrEmpty(request.RoomId))
+            {
+                return (false, "RoomId is required", 400, null);
+            }
+            var lastBill = await _utilityBillUow.UtilityBills.GetLastMonthBillAsync(request.RoomId, request.Month, request.Year);
+            if (lastBill == null)
+            {
+                return (false, "No previous bill found for this room", 404, null);
+            }
+            var resultDto = new LastMonthIndexDTO
+            {
+                LastElectricIndex = lastBill.ElectricityNewIndex,
+                LastWaterIndex = lastBill.WaterNewIndex
+            };
+            return (true, "Last month indices retrieved successfully", 200, resultDto);
         }
     }
 }

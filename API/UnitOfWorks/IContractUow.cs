@@ -9,6 +9,7 @@ namespace API.UnitOfWorks
         public IRoomRepository Rooms { get; }
         public IViolationRepository Violations { get; }
         public IReceiptRepository Receipts { get; }
+        public IPaymentRepository Payments { get; }
         public IAccountRepository Accounts { get; }
         public INotificationRepository Notifications { get; }
         public IBuildingManagerRepository BuildingManagers { get; }

@@ -9,6 +9,7 @@ namespace API.Services.Interfaces
         Task<(bool Success, string Message, int StatusCode)> UpdateStudent(StudentUpdateInfoDTO infoDTO);
         Task<(bool Success, string Message, int StatusCode)> CreateRelativesForStudent(CreateRelativeDTO relativeDTO);
         Task<(bool Success, string Message, int StatusCode)> UpdateRelativesForStudent(UpdateRelativeDTO relativeDTO);
-        //Task<(bool Success, string Message, int StatusCode)> DeleteRelative(string relativeId);
+        Task<(bool Success, string Message, int StatusCode)> DeleteRelative(string relativeId);
+        Task<(bool Success, string Message, int StatusCode, GetDashboardStudent dto)> GetDashboardByStudentId(string accountId);
     }
 }

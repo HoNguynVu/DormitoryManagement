@@ -35,5 +35,38 @@ namespace API.Controllers
             }
             return StatusCode(result.StatusCode, new { message = result.Message });
         }
+
+        [HttpPost("by-manager")]
+        public async Task<IActionResult> GetUtilityBillsByManager([FromBody] ManagerGetBillRequest request)
+        {
+            var result = await utilityBillService.GetBillsForManagerAsync(request);
+            if (result.Success)
+            {
+                return StatusCode(result.StatusCode, new { message = result.Message, data = result.listBill });
+            }
+            return StatusCode(result.StatusCode, new { message = result.Message });
+        }
+
+        [HttpGet("active-parameter")]
+        public async Task<IActionResult> GetActiveParameter()
+        {
+            var result = await utilityBillService.GetActiveParameter();
+            if (result.Success)
+            {
+                return StatusCode(result.StatusCode, new { message = result.Message, data = result.para });
+            }
+            return StatusCode(result.StatusCode, new { message = result.Message });
+        }
+
+        [HttpPost("last-month-index")]
+        public async Task<IActionResult> GetLastMonthIndex([FromBody] RequestLastMonthIndexDTO request)
+        {
+            var result = await utilityBillService.GetLastMonthIndex(request);
+            if (result.Success)
+            {
+                return StatusCode(result.StatusCode, new { message = result.Message, data = result.dto });
+            }
+            return StatusCode(result.StatusCode, new { message = result.Message });
+        }
     }
 }

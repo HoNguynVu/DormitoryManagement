@@ -27,5 +27,12 @@ namespace DataAccess.Repository
                 .Include(bm => bm.Buildings)
                 .FirstOrDefaultAsync(bm => bm.ManagerID == id);
         }
+
+        public async Task<BuildingManager?> GetByAccountIdAsync(string accountId)
+        {
+            return await _dbSet
+                .Include(bm => bm.Buildings)
+                .FirstOrDefaultAsync(bm => bm.AccountID == accountId);
+        }
     }
 }

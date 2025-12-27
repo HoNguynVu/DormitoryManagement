@@ -1,5 +1,6 @@
 ﻿using API.Services.Interfaces;
 using BusinessObject.DTOs.ViolationDTOs;
+using DocumentFormat.OpenXml.ExtendedProperties;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -81,6 +82,30 @@ namespace API.Controllers
         public async Task<IActionResult> GetPendingViolations()
         {
             var result = await _violationService.GetPendingViolationsAsync();
+            return StatusCode(result.StatusCode, new
+            {
+                success = result.Success,
+                message = result.Message,
+                data = result.Data
+            });
+        }
+
+        [HttpGet("manager/dashboard/{accountId}")]
+        public async Task<IActionResult> GetViolationDashboard(string accountId)
+        {
+            var result = await _violationService.GetViolationStatsByManagerAsync(accountId);
+            return StatusCode(result.StatusCode, new
+            {
+                success = result.Success,
+                message = result.Message,
+                data = result.Data
+            });
+        }
+
+        [HttpGet("manager/{accountId}")]
+        public async Task<IActionResult> GetAllViolationsByManager(string accountId)
+        {
+            var result = await _violationService.GetAllViolationsByManagerAsync(accountId);
             return StatusCode(result.StatusCode, new
             {
                 success = result.Success,

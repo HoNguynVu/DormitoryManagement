@@ -146,7 +146,7 @@ namespace API.Services.Implements
             // 📌 Tìm OTP active theo code và purpose
             var UserId = (await _authUow.Accounts.GetAccountByUsername(request.Email))?.UserId;
             var otpRecord = await _authUow.OtpCodes.GetActiveOtp(UserId, "EmailVerify");
-            
+
             if (otpRecord == null)
             {
                 return (false, "Invalid or inactive OTP.", 400);
@@ -156,7 +156,7 @@ namespace API.Services.Implements
             {
                 return (false, "OTP has expired.", 400);
             }
-            
+
             var account = await _authUow.Accounts.GetByIdAsync(UserId);
             // 📌 Cập nhật trạng thái verify email
             account.IsEmailVerified = true;
@@ -225,55 +225,82 @@ namespace API.Services.Implements
             }
             return (true, "A new OTP has been sent to your email.", 200);
         }
-        public async Task<(bool Success, string Message, int StatusCode, string accessToken, string refreshToken, string userId, bool hasActiveContract)> LoginAsync(LoginRequest loginRequest)
+        public async Task<(bool Success, string Message, int StatusCode, string accessToken, string refreshToken, string userId, bool hasActiveContract, bool hasTerminatedContract)> LoginAsync(LoginRequest loginRequest)
         {
             var user = await _authUow.Accounts.GetAccountByUsername(loginRequest.Email);
-            
-            if (user == null || !BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.PasswordHash))
-                return (false, "Invalid email or password.", 401, null, null, null, false);
-            var student = await _authUow.Students.GetStudentByEmailAsync(loginRequest.Email);
-            if (student == null)
-            {
-                return (false, "Student profile not found for this account.", 500, null, null, null, false);
-            }
 
-            if (!user.IsEmailVerified)
+            if (user == null || !BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.PasswordHash))
+                return (false, "Invalid email or password.", 401, null, null, null, false, false);
+            if(user.Role =="Student")
             {
+                var student = await _authUow.Students.GetStudentByEmailAsync(loginRequest.Email);
+                if (student == null)
+                {
+                    return (false, "Student profile not found for this account.", 500, null, null, null, false, false);
+                }
+
+                if (!user.IsEmailVerified)
+                {
+                    await _authUow.BeginTransactionAsync();
+                    try
+                    {
+                        _authUow.Accounts.Delete(user);
+                        _authUow.Students.Delete(student);
+                        await _authUow.CommitAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        await _authUow.RollbackAsync();
+                        return (false, $"Database error during registration: {ex.Message}", 500, null, null, null, false, false);
+
+                    }
+
+                    return (false, "Your email is not verified yet. Please register again", 401, null, null, null, false, false);
+                }
+                var accessToken = GenerateJwtToken(user);
+                RefreshToken refreshToken = CreateRefreshToken(user.UserId);
+                if (string.IsNullOrEmpty(user.UserId))
+                    throw new InvalidOperationException("UserId is null or empty.");
                 await _authUow.BeginTransactionAsync();
                 try
                 {
-                    _authUow.Accounts.Delete(user);
-                    _authUow.Students.Delete(student);
+                    _authUow.RefreshTokens.RevokeRefreshToken(user.UserId);
+                    _authUow.RefreshTokens.Add(refreshToken);
                     await _authUow.CommitAsync();
                 }
                 catch (Exception ex)
                 {
                     await _authUow.RollbackAsync();
-                    return (false, $"Database error during registration: {ex.Message}", 500, null, null, null, false);
-
+                    return (false, $"Database error during login: {ex.Message}", 500, null, null, null, false, false);
                 }
-                
-                return (false, "Your email is not verified yet. Please register again", 401, null, null, null, false);
-            }  
-            var accessToken = GenerateJwtToken(user);
-            RefreshToken refreshToken = CreateRefreshToken(user.UserId);
-            if (string.IsNullOrEmpty(user.UserId))
-                throw new InvalidOperationException("UserId is null or empty.");
-            await _authUow.BeginTransactionAsync();
-            try
-            {
-                _authUow.RefreshTokens.RevokeRefreshToken(user.UserId);
-                _authUow.RefreshTokens.Add(refreshToken);
-                await _authUow.CommitAsync();
+                bool hasActiveContract = await _authUow.Contracts.GetActiveContractByStudentId(student.StudentID) != null;
+                var lastContract = await _authUow.Contracts.GetLastContractByStudentIdAsync(student.StudentID);
+                bool hasTerminatedContract = lastContract != null && lastContract.ContractStatus == "Terminated";
+                var message = $"Welcome back, {student.FullName}!";
+                return (true, message, 200, accessToken, refreshToken.Token, user.UserId, hasActiveContract, hasTerminatedContract);
             }
-            catch (Exception ex)
+
+            else
             {
-                await _authUow.RollbackAsync();
-                return (false, $"Database error during login: {ex.Message}", 500, null, null, null, false);
+                var accessToken = GenerateJwtToken(user);
+                RefreshToken refreshToken = CreateRefreshToken(user.UserId);
+                if (string.IsNullOrEmpty(user.UserId))
+                    throw new InvalidOperationException("UserId is null or empty.");
+                await _authUow.BeginTransactionAsync();
+                try
+                {
+                    _authUow.RefreshTokens.RevokeRefreshToken(user.UserId);
+                    _authUow.RefreshTokens.Add(refreshToken);
+                    await _authUow.CommitAsync();
+                }
+                catch (Exception ex)
+                {
+                    await _authUow.RollbackAsync();
+                    return (false, $"Database error during login: {ex.Message}", 500, null, null, null, false, false);
+                }
+                var message = $"Welcome back!";
+                return (true, message, 200, accessToken, refreshToken.Token, user.UserId, false, false);
             }
-            bool hasActiveContract = await _authUow.Contracts.GetActiveContractByStudentId(student.StudentID) != null;
-            var message = $"Welcome back, {student.FullName}!";
-            return (true, message, 200, accessToken, refreshToken.Token, user.UserId, hasActiveContract);
         }
         public async Task<(bool Success, string Message, int StatusCode)> ForgotPasswordAsync(ForgotPasswordRequest forgotPasswordRequest)
         {
@@ -296,7 +323,7 @@ namespace API.Services.Implements
                 ExpiresAt = DateTime.UtcNow.AddMinutes(10),
                 IsActive = true
             };
-            
+
             await _authUow.BeginTransactionAsync();
             try
             {
@@ -367,7 +394,7 @@ namespace API.Services.Implements
             {
                 return (false, "Incorrect OTP.", 400);
             }
-            otpRecord.IsActive = false; 
+            otpRecord.IsActive = false;
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(resetPasswordRequest.password);
             await _authUow.BeginTransactionAsync();
             try
@@ -468,6 +495,39 @@ namespace API.Services.Implements
             }
             var newAccessToken = GenerateJwtToken(user);
             return (true, "Access token generated successfully.", 200, newAccessToken);
+        }
+        public async Task<(bool Success, string Message, int StatusCode)> RegisterManagerAsync(RegisterManagerAndAdminDTO registerRequest)
+        {
+            // 📌 Kiểm tra account đã tồn tại theo email
+            var existingAccount = await _authUow.Accounts.GetAccountByUsername(registerRequest.email);
+            if (existingAccount != null)
+            {
+                return (false, "Account with this email already exists.", 409);
+            }
+            // 📌 Nếu tài khoản chưa tồn tại → tạo tài khoản mới
+            var newAccount = new Account
+            {
+                UserId = "AC-" + IdGenerator.GenerateUniqueSuffix(),
+                Email = registerRequest.email,
+                Username = registerRequest.email,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerRequest.password),
+                Role = "Manager",
+                CreatedAt = DateTime.UtcNow,
+                IsActive = true,
+                IsEmailVerified = true  // Mặc định đã verify
+            };
+            await _authUow.BeginTransactionAsync();
+            try
+            {
+                _authUow.Accounts.Add(newAccount);
+                await _authUow.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await _authUow.RollbackAsync();
+                return (false, $"Database error during registration: {ex.Message}", 500);
+            }
+            return (true, "Manager account created successfully.", 201);
         }
     }
 }

@@ -17,6 +17,7 @@ namespace API.Services.Implements
         private readonly ZaloPaySettings _zaloConfig;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IPaymentUow _paymentUow;
+        private readonly IContractUow _contractUow;
         private readonly ILogger<PaymentService> _logger;
         private readonly IHealthInsuranceService _healthInsuranceService;
         private readonly IRegistrationService _registrationService;
@@ -25,7 +26,8 @@ namespace API.Services.Implements
         private readonly IMaintenanceService _maintenanceService;
         public PaymentService(IOptions<ZaloPaySettings> zaloConfig,
             IHttpClientFactory httpClientFactory, 
-            IPaymentUow paymentUow, 
+            IPaymentUow paymentUow,
+            IContractUow contractUow,
             ILogger<PaymentService> logger,
             IHealthInsuranceService healthInsuranceService,
             IRegistrationService registrationService,
@@ -36,6 +38,7 @@ namespace API.Services.Implements
             _zaloConfig = zaloConfig.Value;
             _httpClientFactory = httpClientFactory;
             _paymentUow = paymentUow;
+            _contractUow = contractUow;
             _healthInsuranceService = healthInsuranceService;
             _registrationService = registrationService;
             _contractService = contractService;
@@ -500,7 +503,7 @@ namespace API.Services.Implements
                 // 1. Validate Input
                 if (cbdata == null || string.IsNullOrEmpty(cbdata.Data) || string.IsNullOrEmpty(cbdata.Mac))
                 {
-                    return (-1, "Dữ lSiệu callback không hợp lệ.");
+                    return (-1, "Dữ liệu callback không hợp lệ.");
                 }
 
                 string dataStr = cbdata.Data;

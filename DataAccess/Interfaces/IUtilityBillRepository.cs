@@ -13,5 +13,7 @@ namespace DataAccess.Interfaces
         Task<UtilityBill?> GetLastMonthBillAsync(string roomId);
         Task<bool> IsBillExistsAsync (string roomId, int month, int year);
         Task<IEnumerable<UtilityBill>> GetByRoomAsync(string roomId);
+        Task<UtilityBill?> GetLastMonthBillAsync(string roomId, int month, int year);
+        Task<int> CountUnpaidBillByRoomAsync(string roomId);
     }
 }

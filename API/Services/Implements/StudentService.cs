@@ -1,6 +1,7 @@
 ﻿using API.Services.Helpers;
 using API.Services.Interfaces;
 using API.UnitOfWorks;
+using BusinessObject.DTOs.ContractDTOs;
 using BusinessObject.DTOs.StudentDTOs;
 using BusinessObject.Entities;
 
@@ -74,7 +75,7 @@ namespace API.Services.Implements
             }
             return (true, "Student updated successfully.", 200);
         }
-        
+
         public async Task<(bool Success, string Message, int StatusCode)> CreateRelativesForStudent(CreateRelativeDTO relativeDTO)
         {
             if (relativeDTO == null || string.IsNullOrEmpty(relativeDTO.StudentID))
@@ -130,6 +131,77 @@ namespace API.Services.Implements
                 return (false, $"Failed to update relative: {ex.Message}", 500);
             }
             return (true, "Relative updated successfully.", 200);
+        }
+
+        public async Task<(bool Success, string Message, int StatusCode)> DeleteRelative(string relativeId)
+        {
+            if (string.IsNullOrEmpty(relativeId))
+                return (false, "Relative ID is required.", 400);
+            var relative = await _uow.Relatives.GetByIdAsync(relativeId);
+            if (relative == null)
+                return (false, "Relative not found.", 404);
+            await _uow.BeginTransactionAsync();
+            try
+            {
+                _uow.Relatives.Delete(relative);
+                await _uow.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await _uow.RollbackAsync();
+                return (false, $"Failed to delete relative: {ex.Message}", 500);
+            }
+            return (true, "Relative deleted successfully.", 200);
+        }
+
+        public async Task<(bool Success, string Message, int StatusCode, GetDashboardStudent dto)> GetDashboardByStudentId(string accountId)
+        {
+            if (string.IsNullOrEmpty(accountId))
+                return (false, "Student ID is required.", 400, null);
+            var student = await _uow.Students.GetStudentByAccountIdAsync(accountId);
+            if (student == null)
+            {
+                return (false, "Student not found.", 404, null);
+            }
+            var result = new GetDashboardStudent();
+            var contract = await _uow.Contracts.GetLastContractByStudentIdAsync(student.StudentID);
+            if (contract == null)
+            {
+                return (false, "No contract found for the student.", 404, null);
+            }
+            var contractDetail = new ContractDetailByStudentDto
+            {
+                ContractID = contract.ContractID,
+                Status = contract.ContractStatus,
+                StartDate = contract.StartDate,
+                EndDate = contract.EndDate ?? DateOnly.MinValue,
+
+                ManagerID = contract.Room?.Building?.ManagerID ?? "N/A",
+                ManagerName = contract.Room?.Building?.Manager?.FullName ?? "N/A",
+                ManagerEmail = contract.Room?.Building?.Manager?.Email ?? "N/A",
+                ManagerPhone = contract.Room?.Building?.Manager?.PhoneNumber ?? "N/A",
+
+                RoomName = contract.Room?.RoomName ?? "N/A",
+                BuildingName = contract.Room?.Building?.BuildingName ?? "N/A",
+                RoomTypeName = contract.Room?.RoomType?.TypeName ?? "N/A",
+                RoomPrice = contract.Room?.RoomType?.Price ?? 0,
+            };
+            result.CurrentContract = contractDetail;
+
+            result.CountUnpaidBills = await _uow.UtilityBills.CountUnpaidBillByRoomAsync(contract.RoomID);
+            result.CountViolations = await _uow.Violations.CountViolationsByStudentId(student.StudentID);
+            var insurance = await _uow.HealthInsurances.GetActiveInsuranceByStudentIdAsync(student.StudentID);
+            if (insurance != null)
+            {
+                result.InsuranceStatus = "Active";
+                result.InsuranceEndDate = insurance.EndDate;
+            }
+            else
+            {
+                result.InsuranceStatus = "Inactive";
+                result.InsuranceEndDate = null;
+            }
+            return (true, "Dashboard data retrieved successfully.", 200, result);
         }
     }
 }

@@ -76,5 +76,27 @@ public partial class Room
         this.RoomType = newType;
     }
 
+    public void AddOccupant()
+    {
+        if (CurrentOccupancy >= Capacity)
+            throw new InvalidOperationException("Cannot add occupant: room is at full capacity.");
+        CurrentOccupancy++;
+        if (CurrentOccupancy == Capacity)
+        {
+            RoomStatus = "Full";
+        }
+    }
+
+    public void RemoveOccupant()
+    {
+        if (CurrentOccupancy <= 0)
+            throw new InvalidOperationException("Cannot remove occupant: room is already empty.");
+        CurrentOccupancy--;
+        if (RoomStatus == "Full")
+        {
+            RoomStatus = "Available";
+        }
+    }
+
     public virtual ICollection<MaintenanceRequest> MaintenanceRequests { get; set; } = new List<MaintenanceRequest>();
 }
