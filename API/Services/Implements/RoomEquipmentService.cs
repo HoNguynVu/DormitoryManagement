@@ -3,6 +3,7 @@ using API.Services.Interfaces;
 using API.UnitOfWorks;
 using BusinessObject.DTOs.EquipmentDTO;
 using BusinessObject.Entities;
+using System.Linq.Expressions;
 
 namespace API.Services.Implements
 {
@@ -12,6 +13,24 @@ namespace API.Services.Implements
         public RoomEquipmentService(IRoomEquipmentUow uow)
         {
             _uow = uow;
+        }
+
+        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<string>? list)> GetAllEquipment()
+        {
+            try
+            {
+                var list = await _uow.Equipments.GetAllAsync();
+                if (list == null)
+                {
+                    return (false, "Không thể tải danh sách thiết bị", 400, null);
+                }
+                var result = list.Select(l => l.EquipmentName).ToList();
+                return (true,"Lấy danh sách thiết bị thành công",200,result);
+            }
+            catch
+            {
+                return (false,"Internal Server Error",500,null);
+            }
         }
         public async Task<(bool Success, string Message, int StatusCode)> ChangeStatusAsync(string roomId, string equipmentId, int quantity, string fromStatus, string toStatus)
         {
