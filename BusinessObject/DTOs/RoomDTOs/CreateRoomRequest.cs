@@ -10,7 +10,7 @@ namespace BusinessObject.DTOs.RoomDTOs
 
         [Required]
         public string RoomTypeId { get; set; } = string.Empty;
-
+        public string Gender { get; set; } = string.Empty;
         public string RoomName { get; set; } = string.Empty;
         public string Status { get; set; } = "Available";
     }
