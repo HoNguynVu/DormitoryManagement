@@ -330,9 +330,9 @@ namespace API.Controllers
                     ws.Cell(r, 3).Value = m.Email;
                     ws.Cell(r, 4).Value = m.PhoneNumber;
                     ws.Cell(r, 5).Value = m.Address;
-                    ws.Cell(r, 6).Value = m.Buildings?.Count() ?? 0;
+                    ws.Cell(r, 6).Value = m.BuildingDto.BuildingID;
 
-                    var buildingNames = m.Buildings?.Select(b => b.BuildingName).ToArray() ?? Array.Empty<string>();
+                    var buildingNames = m.BuildingDto.BuildingName != null ? new List<string> { m.BuildingDto.BuildingName } : new List<string>();
                     ws.Cell(r, 7).Value = string.Join(", ", buildingNames);
 
                     r++;

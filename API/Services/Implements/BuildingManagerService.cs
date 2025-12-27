@@ -24,8 +24,14 @@ namespace API.Services.Implements
                 FullName = m.FullName,
                 Email = m.Email,
                 PhoneNumber = m.PhoneNumber,
+                CitizenId = m.CitizenId,
+                DateOfBirth = m.DateOfBirth ?? DateTime.MinValue,
                 Address = m.Address,
-                Buildings = m.Buildings?.Select(b => new BuildingDto { BuildingID = b.BuildingID, BuildingName = b.BuildingName }) ?? Array.Empty<BuildingDto>()
+                BuildingDto = new BuildingDto
+                {
+                    BuildingID = m.Buildings?.FirstOrDefault()?.BuildingID ?? "",
+                    BuildingName = m.Buildings?.FirstOrDefault()?.BuildingName ?? ""
+                }
             });
         }
 
@@ -40,8 +46,14 @@ namespace API.Services.Implements
                 FullName = m.FullName,
                 Email = m.Email,
                 PhoneNumber = m.PhoneNumber,
+                CitizenId = m.CitizenId,
+                DateOfBirth = m.DateOfBirth ?? DateTime.MinValue,
                 Address = m.Address,
-                Buildings = m.Buildings?.Select(b => new BuildingDto { BuildingID = b.BuildingID, BuildingName = b.BuildingName }) ?? Array.Empty<BuildingDto>()
+                BuildingDto = new BuildingDto
+                {
+                    BuildingID = m.Buildings?.FirstOrDefault()?.BuildingID ?? "",
+                    BuildingName = m.Buildings?.FirstOrDefault()?.BuildingName ?? ""
+                }
             };
         }
 
