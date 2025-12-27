@@ -11,8 +11,6 @@ namespace API.Controllers
     public class ContractController : ControllerBase
     {
         private readonly IContractService _contractService;
-
-        public ContractController(IContractService contractService)
         private readonly IPaymentService _paymentService;
         public ContractController(IContractService contractService, IPaymentService paymentService)
         {
@@ -46,8 +44,6 @@ namespace API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetContractById([FromRoute] string id)
         {
-            // Lưu ý: Code cũ của bạn định nghĩa route "detail/{contractId}" nhưng lại dùng [FromQuery].
-            // Chuẩn REST là dùng [FromRoute]
             var result = await _contractService.GetDetailContract(id);
             if (!result.Success)
             {
@@ -149,58 +145,6 @@ namespace API.Controllers
                 receiptId = result.receiptId
             });
         }
-            if (result.Type == "Charge" && !string.IsNullOrEmpty(result.ReceiptId))
-            {
-                var paymentRes = await _paymentService.CreateZaloPayLinkForRoomChange(result.ReceiptId);
-
-                if (paymentRes.StatusCode == 200 && paymentRes.dto.IsSuccess)
-                {
-                    paymentUrl = paymentRes.dto.PaymentUrl;
-                    appTransId = paymentRes.dto.PaymentId;
-                }
-                else
-                {
-                    // Lỗi khi gọi ZaloPay (nhưng Receipt đã tạo rồi)
-                    return StatusCode(paymentRes.StatusCode, new
-                    {
-                        success = true,
-                        message = "Tạo yêu cầu đổi phòng thành công nhưng lỗi tạo link thanh toán.",
-                        paymentError = paymentRes.dto.Message,
-                        receiptId = result.ReceiptId
-                    });
-                }
-        // PUT: api/contract/{id}/extension
-        // Xác nhận gia hạn (Cập nhật thời gian hợp đồng)
-        [HttpPut("{id}/extension")]
-        public async Task<IActionResult> ConfirmExtension([FromRoute] string id, [FromBody] ConfirmExtensionDto request)
-        {
-            if (request == null || request.MonthsAdded <= 0)
-            {
-                return BadRequest(new { message = "Số tháng gia hạn phải lớn hơn 0." });
-            }
-
-            var result = await _contractService.ConfirmContractExtensionAsync(id, request.MonthsAdded);
-
-            if (!result.Success)
-            // BƯỚC 3: Trả về kết quả cho FE
-            return Ok(new
-            {
-                success = true,
-                message = result.Message,
-                receiptId = result.ReceiptId,
-                type = result.Type, // "Charge", "Refund", "None"
-                paymentUrl = paymentUrl,
-                appTransId = appTransId
-            });
-        }
-                return StatusCode(result.StatusCode, new { message = result.Message });
-            }
-
-        [HttpGet("detail/{contractId}")]
-        public async Task<IActionResult> GetDetailContract(string contractId)
-            return Ok(new { message = result.Message });
-        }
-
         // POST: api/contract/rejections
         // Từ chối gia hạn. Đây là một hành động xử lý (Process).
         [HttpPost("rejections")]
@@ -230,7 +174,7 @@ namespace API.Controllers
 
         // POST: api/contract/room-transfers
         // Đổi phòng = Tạo ra một yêu cầu chuyển phòng (Transaction)
-        [HttpPost("room-transfers")]
+        [HttpPost("change-room")]
         public async Task<IActionResult> ChangeRoom([FromBody] ChangeRoomRequestDto request)
         {
             if (request == null)
@@ -244,28 +188,41 @@ namespace API.Controllers
             {
                 return StatusCode(result.StatusCode, new { success = false, message = result.Message });
             }
+            string? paymentUrl = null;
+            string? appTransId = null;
 
-            return Ok(new { success = true, message = result.Message });
-        }
-
-        // POST: api/contract/refunds
-        // Xác nhận hoàn tiền
-        [HttpPost("refunds")]
-        public async Task<IActionResult> ConfirmRefund([FromBody] ConfirmRefundDto request)
-        {
-            if (request == null)
+            if (result.Type == "Charge" && !string.IsNullOrEmpty(result.ReceiptId))
             {
-                return BadRequest(new { success = false, message = "Request body is required." });
+                var paymentRes = await _paymentService.CreateZaloPayLinkForRoomChange(result.ReceiptId);
+
+                if (paymentRes.StatusCode == 200 && paymentRes.dto.IsSuccess)
+                {
+                    paymentUrl = paymentRes.dto.PaymentUrl;
+                    appTransId = paymentRes.dto.PaymentId;
+                }
+                else
+                {
+                    // Lỗi khi gọi ZaloPay (nhưng Receipt đã tạo rồi)
+                    return StatusCode(paymentRes.StatusCode, new
+                    {
+                        success = true,
+                        message = "Tạo yêu cầu đổi phòng thành công nhưng lỗi tạo link thanh toán.",
+                        paymentError = paymentRes.dto.Message,
+                        receiptId = result.ReceiptId
+                    });
+                }
             }
 
-            var result = await _contractService.ConfirmRefundAsync(request);
-
-            if (!result.Success)
+            // BƯỚC 3: Trả về kết quả cho FE
+            return Ok(new
             {
-                return StatusCode(result.StatusCode, new { success = false, message = result.Message });
-            }
-
-            return Ok(new { success = true, message = result.Message });
+                success = true,
+                message = result.Message,
+                receiptId = result.ReceiptId,
+                type = result.Type, // "Charge", "Refund", "None"
+                paymentUrl = paymentUrl,
+                appTransId = appTransId
+            });
         }
     }
 }
