@@ -206,6 +206,8 @@ namespace API.Services.Implements
                 result["Total"] = total;
                 result["Active"] = result.ContainsKey("Active") ? result["Active"] : 0;
                 result["Expired"] = result.ContainsKey("Expired") ? result["Expired"] : 0;
+                var warningCount = await _uow.Contracts.CountWarningContractsAsync(daysThreshold: 14);
+                result["Warning"] = warningCount;
                 return (true, "Success", 200, result);
             }
             catch (Exception ex)
