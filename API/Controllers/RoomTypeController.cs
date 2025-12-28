@@ -51,5 +51,24 @@ namespace API.Controllers
                 message = message
             });
         }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateRoomType([FromBody] CreateRoomTypeDTO createRoomTypeDTO)
+        {
+            var (success, message, statusCode) = await _roomTypeService.CreateRoomTypeAsync(createRoomTypeDTO);
+            if (success)
+            {
+                return StatusCode(statusCode, new
+                {
+                    success = true,
+                    message = message
+                });
+            }
+            return StatusCode(statusCode, new
+            {
+                success = false,
+                message = message
+            });
+        }
     }
 }

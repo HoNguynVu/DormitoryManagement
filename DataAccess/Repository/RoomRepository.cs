@@ -75,5 +75,10 @@ namespace DataAccess.Repository
                 .Include(r => r.RoomType)
                 .ToListAsync();
         }
+
+        public async Task<bool> HasAnyRoomByTypeAsync(string typeId)
+        {
+            return await _dbSet.AnyAsync(r => r.RoomTypeID == typeId);
+        }
     }
 }

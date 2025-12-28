@@ -1,4 +1,5 @@
-﻿using API.Services.Interfaces;
+﻿using API.Services.Helpers;
+using API.Services.Interfaces;
 using API.UnitOfWorks;
 using BusinessObject.DTOs.RoomTypeDTOs;
 using BusinessObject.Entities;
@@ -66,6 +67,56 @@ namespace API.Services.Implements
             {
                 await _roomTypeUow.RollbackAsync();
                 return (false, $"An error occurred while updating the room type: {ex.Message}", 500);
+            }
+        }
+
+        public async Task<(bool Success, string Message, int StatusCode)> CreateRoomTypeAsync(CreateRoomTypeDTO createRoomTypeDTO)
+        {
+            await _roomTypeUow.BeginTransactionAsync();
+            try
+            {
+                var newRoomType = new RoomType
+                {
+                    RoomTypeID = "RT-" + IdGenerator.GenerateUniqueSuffix(),
+                    TypeName = createRoomTypeDTO.TypeName,
+                    Description = createRoomTypeDTO.Description,
+                    Capacity = createRoomTypeDTO.Capacity,
+                    Price = createRoomTypeDTO.Price
+                };
+                _roomTypeUow.RoomTypes.Add(newRoomType);
+                await _roomTypeUow.CommitAsync();
+                return (true, "Room type created successfully.", 201);
+            }
+            catch (Exception ex)
+            {
+                await _roomTypeUow.RollbackAsync();
+                return (false, $"An error occurred while creating the room type: {ex.Message}", 500);
+            }
+        }
+
+        public async Task<(bool Success, string Message, int StatusCode)> DeleteRoomTypeAsync(string typeId)
+        {
+            await _roomTypeUow.BeginTransactionAsync();
+            try
+            {
+                var existingType = await _roomTypeUow.RoomTypes.GetByIdAsync(typeId);
+                if (existingType == null)
+                {
+                    return (false, "Room type not found.", 404);
+                }
+                var hasRooms = await _roomTypeUow.Rooms.HasAnyRoomByTypeAsync(typeId);
+                if (hasRooms)
+                {
+                    return (false, "Cannot delete room type. There are rooms associated with this type.", 400);
+                }
+                _roomTypeUow.RoomTypes.Delete(existingType);
+                await _roomTypeUow.CommitAsync();
+                return (true, "Room type deleted successfully.", 200);
+            }
+            catch (Exception ex)
+            {
+                await _roomTypeUow.RollbackAsync();
+                return (false, $"An error occurred while deleting the room type: {ex.Message}", 500);
             }
         }
     }

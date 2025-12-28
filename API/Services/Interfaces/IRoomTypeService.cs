@@ -7,5 +7,7 @@ namespace API.Services.Interfaces
     {
         Task<(bool Success, string Message, int StatusCode, IEnumerable<GetRoomTypeDTO>)> GetAllRoomTypesAsync();
         Task<(bool Success, string Message, int StatusCode)> UpdateRoomTypeAsync(UpdateRoomTypeDTO createRoomTypeDTO);
+        Task<(bool Success, string Message, int StatusCode)> CreateRoomTypeAsync(CreateRoomTypeDTO createRoomTypeDTO);
+        Task<(bool Success, string Message, int StatusCode)> DeleteRoomTypeAsync(string typeId);
     }
 }
