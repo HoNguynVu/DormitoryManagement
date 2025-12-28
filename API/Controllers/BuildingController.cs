@@ -91,5 +91,24 @@ namespace API.Controllers
                 message = message
             });
         }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateBuilding([FromBody] UpdateBuildingDto updateDto)
+        {
+            var (success, message, statusCode) = await _buildingService.UpdateBuildingAsync(updateDto);
+            if (success)
+            {
+                return StatusCode(statusCode, new
+                {
+                    success = true,
+                    message = message
+                });
+            }
+            return StatusCode(statusCode, new
+            {
+                success = false,
+                message = message
+            });
+        }
     }
 }

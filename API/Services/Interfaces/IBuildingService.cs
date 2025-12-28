@@ -10,5 +10,6 @@ namespace API.Services.Interfaces
         Task<(bool Success, string Message, int StatusCode, IEnumerable<BuildingWithManagerDto> Data)> GetBuildingWithManagerAsync(string buildingId);
         Task<(bool Success, string Message, int StatusCode, IEnumerable<RoomResponseDto> Data)> GetRoomByManagerId(string managerId);
         Task<(bool Success, string Message, int StatusCode)> CreateBuildingAsync(CreateBuildingDto createDto);
+        Task<(bool Success, string Message, int StatusCode)> UpdateBuildingAsync(UpdateBuildingDto updateDto);
     }
 }

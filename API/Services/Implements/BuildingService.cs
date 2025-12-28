@@ -116,5 +116,39 @@ namespace API.Services.Implements
                 return (false, $"An error occurred while creating the building: {ex.Message}", 500);
             }
         }
+
+        public async Task<(bool Success, string Message, int StatusCode)> UpdateBuildingAsync(UpdateBuildingDto updateDto)
+        {
+            await _buildingUow.BeginTransactionAsync();
+            try
+            {
+                var building = await _buildingUow.Buildings.GetByIdAsync(updateDto.BuildingID);
+                if (building == null)
+                {
+                    await _buildingUow.RollbackAsync();
+                    return (false, "Building not found.", 404);
+                }
+                var manager = await _buildingUow.BuildingManagers.GetByIdAsync(updateDto.ManagerID);
+                if (manager == null)
+                {
+                    await _buildingUow.RollbackAsync();
+                    return (false, "Manager not found.", 404);
+                }
+                var isManagerAssigned = await _buildingUow.Buildings.IsManagerAssigned(updateDto.ManagerID);
+                if (isManagerAssigned && building.ManagerID != updateDto.ManagerID)
+                {
+                    await _buildingUow.RollbackAsync();
+                    return (false, "This manager is already assigned to another building.", 400);
+                }
+                building.ManagerID = updateDto.ManagerID;
+                _buildingUow.Buildings.Update(building);
+                await _buildingUow.CommitAsync();
+                return (true, "Building updated successfully.", 200);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"An error occurred while updating the building: {ex.Message}", 500);
+            }
+        }
     }
 }
