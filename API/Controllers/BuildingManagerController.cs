@@ -31,6 +31,15 @@ namespace API.Controllers
             return Ok(new { success = true, data = m });
         }
 
+        [HttpGet("account/{accountId}")]
+        public async Task<IActionResult> GetByAccountId(string accountId)
+        {
+            if (string.IsNullOrWhiteSpace(accountId)) return BadRequest(new { success = false, message = "Manager id is required" });
+            var m = await _service.GetManagerByAccountIdAsync(accountId);
+            if (m == null) return NotFound(new { success = false, message = "Manager not found" });
+            return Ok(new { success = true, data = m });
+        }
+
         [HttpGet("dashboard-stats/{accountId}")]
         public async Task<IActionResult> GetDashboardStats(string accountId)
         {

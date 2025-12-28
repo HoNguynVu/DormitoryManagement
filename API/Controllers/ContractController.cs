@@ -24,10 +24,12 @@ namespace API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetContracts(
             [FromQuery] string? keyword,
-            [FromQuery] string? buildingName,
-            [FromQuery] string? status)
+            [FromQuery] string? buildingId,
+            [FromQuery] string? status,
+            [FromQuery] DateOnly? startDate,
+            [FromQuery] DateOnly? endDate)
         {
-            var result = await _contractService.GetContractFiltered(keyword, buildingName, status);
+            var result = await _contractService.GetContractFiltered(keyword, buildingId, status,startDate,endDate);
             if (!result.Success)
             {
                 return StatusCode(result.StatusCode, new { message = result.Message });

@@ -91,7 +91,7 @@ namespace DataAccess.Repository
                 .CountAsync();
         }
 
-        public async Task<IEnumerable<Contract>> GetContractsFilteredAsync(string? keyword, string? buildingId, string? status)
+        public async Task<IEnumerable<Contract>> GetContractsFilteredAsync(string? keyword, string? buildingId, string? status, DateOnly? startDate,DateOnly? endDate)
         {
             // 1. Kh?i t?o Query
             var query = _context.Contracts
@@ -120,9 +120,17 @@ namespace DataAccess.Repository
                 query = query.Where(c => c.ContractStatus == status);
             }
 
+            if (startDate.HasValue)
+            {
+                query = query.Where(c => c.EndDate >= startDate.Value);
+            }
 
+            if (endDate.HasValue)
+            {
+                query = query.Where(c => c.EndDate <= endDate.Value);
+            }
             return await query
-                .OrderByDescending(c => c.StartDate) // M?i nh?t lên ??u
+                .OrderByDescending(c => c.StartDate) 
                 .ToListAsync();
         }
 
