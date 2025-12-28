@@ -13,5 +13,7 @@ namespace API.UnitOfWorks
 
         public IRoomEquipmentRepository RoomEquipments { get; }
         public IEquipmentRepository Equipments { get; }
+
+        public INotificationRepository Notifications { get; }
     }
 }

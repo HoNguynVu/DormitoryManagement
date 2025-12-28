@@ -47,6 +47,7 @@ namespace DataAccess.Repository
             return await _dbSet
                 .Include(h=>h.Hospital)
                 .Include(h=>h.Student)
+                .ThenInclude(a=>a.Account)
                 .Include(h=>h.HealthInsurancePrice)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(h=>h.InsuranceID == insuranceId);

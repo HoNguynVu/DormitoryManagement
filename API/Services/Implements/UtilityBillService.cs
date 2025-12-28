@@ -179,6 +179,14 @@ namespace API.Services.Implements
                     // Tổng tiền
                     TotalAmount = bill.Amount
                 };
+                var account = student.Account;
+                var newNoti = NotificationServiceHelpers.CreateNew(
+                    accountId: account.UserId,
+                    title: "Thanh toán phí điện nước",
+                    message: $"Bạn đã thanh toán thành công cho hóa đơn điện nước tháng {bill.Month}/{bill.Year}. ",
+                    type: "Bill"
+                );
+                _utilityBillUow.Notifications.Add(newNoti);
                 try
                 {
                     await _emailService.SendUtilityPaymentEmailAsync(emailDto);
