@@ -19,5 +19,7 @@ namespace API.Services.Interfaces
         Task<(bool Success, string Message, int StatusCode, string? ReceiptId, string? Type)> ChangeRoomAsync(ChangeRoomRequestDto request);
         //Student
         Task<(bool Success, string Message, int StatusCode, ContractDetailByStudentDto? dto)> GetContractDetailByStudentAsync(string accountId);
+        Task<(bool Success, string Message)> RemindBulkExpiringAsync();
+        Task<(bool Success, string Message)> RemindSingleStudentAsync(string studentId);
     }
 }

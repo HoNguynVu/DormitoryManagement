@@ -224,5 +224,26 @@ namespace API.Controllers
                 appTransId = appTransId
             });
         }
+        [HttpPost("remind-bulk")]
+        public async Task<IActionResult> RemindExpiringContracts()
+        {
+            var result = await _contractService.RemindBulkExpiringAsync();
+            if (!result.Success)
+            {
+                return BadRequest(new { message = result.Message });
+            }
+            return Ok(new { message = result.Message });
+        }
+
+        [HttpPost("remind-single/{studentId}")]
+        public async Task<IActionResult> RemindSingleStudent([FromRoute] string studentId)
+        {
+            var result = await _contractService.RemindSingleStudentAsync(studentId);
+            if (!result.Success)
+            {
+                return BadRequest(new { message = result.Message });
+            }
+            return Ok(new { message = result.Message });
+        }
     }
 }

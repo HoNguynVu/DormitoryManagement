@@ -1,4 +1,5 @@
-﻿using API.Services.Common;
+﻿using API.Hubs;
+using API.Services.Common;
 using API.Services.Helpers;
 using API.Services.Interfaces;
 using API.UnitOfWorks;
@@ -7,6 +8,7 @@ using BusinessObject.DTOs.ContractDTOs;
 using BusinessObject.DTOs.EquipmentDTO;
 using BusinessObject.Entities;
 using DocumentFormat.OpenXml.Office.Y2022.FeaturePropertyBag;
+using Microsoft.AspNetCore.SignalR;
 
 namespace API.Services.Implements
 {
@@ -14,11 +16,13 @@ namespace API.Services.Implements
     {
         private readonly IContractUow _uow;
         private readonly IEmailService _emailService;
+        private readonly IHubContext<NotificationHub> _hubContext;
         private readonly ILogger<IContractService> _logger;
-        public ContractService(IContractUow contractUow, IEmailService emailService, ILogger<IContractService> logger)
+        public ContractService(IContractUow contractUow, IEmailService emailService, IHubContext<NotificationHub> hubContext, ILogger<IContractService> logger)
         {
             _uow = contractUow;
             _emailService = emailService;
+            _hubContext = hubContext;
             _logger = logger;
         }
 
@@ -692,6 +696,85 @@ namespace API.Services.Implements
             {
                 return (false,"Internal Server Error",500,null);
             }   
+        }
+        public async Task<(bool Success, string Message)> RemindBulkExpiringAsync()
+        {
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var threshold = today.AddDays(14);
+
+            var allContracts = await _uow.Contracts.GetAllAsync();
+
+            var targets = allContracts.Where(c =>
+                (c.ContractStatus == "Active" && c.EndDate.HasValue && c.EndDate <= threshold) ||
+                (c.ContractStatus == "Expired")
+            ).ToList();
+
+            if (!targets.Any()) return (true, "Không có hợp đồng nào cần nhắc nhở.");
+
+            foreach (var contract in targets)
+            {
+                await SendNotificationInternalAsync(contract);
+            }
+
+            return (true, $"Đã gửi nhắc nhở thành công cho {targets.Count} sinh viên.");
+        }
+
+        public async Task<(bool Success, string Message)> RemindSingleStudentAsync(string studentId)
+        {
+            var contract = await _uow.Contracts.GetLastContractByStudentIdAsync(studentId);
+            if (contract == null) return (false, "Không tìm thấy dữ liệu hợp đồng.");
+
+            await SendNotificationInternalAsync(contract);
+            return (true, "Đã gửi nhắc nhở thành công.");
+        }
+
+        private async Task SendNotificationInternalAsync(Contract contract)
+        {
+            try
+            {
+                var student = await _uow.Students.GetByIdAsync(contract.StudentID);
+
+                if (student == null || string.IsNullOrEmpty(student.AccountID))
+                {
+                    _logger.LogWarning($"Không thể gửi thông báo. Sinh viên {contract.StudentID} chưa có tài khoản hệ thống (AccountID is null).");
+                    return;
+                }
+
+                bool isExpired = contract.ContractStatus == "Expired";
+
+                string title = isExpired
+                    ? "CẢNH BÁO: Hợp đồng đã quá hạn"
+                    : "Nhắc nhở: Sắp hết hạn hợp đồng";
+
+                string dateStr = contract.EndDate.HasValue ? contract.EndDate.Value.ToString("dd/MM/yyyy") : "N/A";
+
+                string content = isExpired
+                    ? $"Hợp đồng tại phòng {contract.Room?.RoomName ?? contract.RoomID} đã hết hạn. Vui lòng liên hệ quản lý."
+                    : $"Hợp đồng tại phòng {contract.Room?.RoomName ?? contract.RoomID} sắp hết hạn vào ngày {dateStr}. Vui lòng gia hạn.";
+
+   
+                // 1. Tạo Entity Notification
+                var notification = NotificationServiceHelpers.CreateNew(
+                    student.AccountID,
+                    title,
+                    content,
+                    "ContractReminder"
+                );
+
+                await _uow.BeginTransactionAsync();
+
+                _uow.Notifications.Add(notification);
+                await _uow.CommitAsync();
+
+                
+                await _hubContext.Clients.User(student.AccountID)
+                    .SendAsync("ReceiveNotification", notification);
+            }
+            catch (Exception ex)
+            {
+                await _uow.RollbackAsync();
+                _logger.LogError(ex, $"Lỗi gửi thông báo cho SV {contract.StudentID}");
+            }
         }
     }
 }
