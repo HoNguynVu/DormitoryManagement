@@ -10,5 +10,7 @@ namespace API.UnitOfWorks
         IOtpRepository OtpCodes { get; }
         IStudentRepository Students { get; }
         IContractRepository Contracts { get; }
+        IBuildingManagerRepository BuildingManagers { get; }
+        IBuildingRepository Buildings { get; }
     }
 }
