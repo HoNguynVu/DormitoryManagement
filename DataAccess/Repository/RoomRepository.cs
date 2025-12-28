@@ -68,5 +68,12 @@ namespace DataAccess.Repository
 
             return (totalRooms, availableRooms);
         }
+
+        public async Task<IEnumerable<Room>> GetRoomsByTypeIdAsync(string typeId)
+        {
+            return await _dbSet
+                .Include(r => r.RoomType)
+                .ToListAsync();
+        }
     }
 }

@@ -2,8 +2,9 @@
 
 namespace API.UnitOfWorks
 {
-    public interface IRoomTypeUow
+    public interface IRoomTypeUow : ITransactionManager
     {
         IRoomTypeRepository RoomTypes { get; }
+        IRoomRepository Rooms { get; }
     }
 }

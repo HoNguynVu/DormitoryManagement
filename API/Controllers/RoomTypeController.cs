@@ -1,4 +1,5 @@
 ﻿using API.Services.Interfaces;
+using BusinessObject.DTOs.RoomTypeDTOs;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -23,6 +24,25 @@ namespace API.Controllers
                     success = true,
                     message = message,
                     data = roomTypes
+                });
+            }
+            return StatusCode(statusCode, new
+            {
+                success = false,
+                message = message
+            });
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateRoomType([FromBody] UpdateRoomTypeDTO updateRoomTypeDTO)
+        {
+            var (success, message, statusCode) = await _roomTypeService.UpdateRoomTypeAsync(updateRoomTypeDTO);
+            if (success)
+            {
+                return StatusCode(statusCode, new
+                {
+                    success = true,
+                    message = message
                 });
             }
             return StatusCode(statusCode, new
