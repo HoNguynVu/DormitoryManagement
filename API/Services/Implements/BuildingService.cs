@@ -150,5 +150,28 @@ namespace API.Services.Implements
                 return (false, $"An error occurred while updating the building: {ex.Message}", 500);
             }
         }
+
+        public async Task<(bool Success, string Message, int StatusCode, AllBuildingStatsForAdmin Data)> GetBuildingsStats()
+        {
+            try
+            {
+                var totalRooms = await _buildingUow.Rooms.CountRooms();
+                var totalAvailableRooms = await _buildingUow.Rooms.CountAvailableRooms();
+                var totalFullRooms = await _buildingUow.Rooms.CountRoomsFull();
+                var totalMaintenanceRooms = await _buildingUow.Rooms.CountMaintenanceRooms();
+                var stats = new AllBuildingStatsForAdmin
+                {
+                    TotalRooms = totalRooms,
+                    TotalAvailableRooms = totalAvailableRooms,
+                    TotalFullRooms = totalFullRooms,
+                    TotalMaintenanceRooms = totalMaintenanceRooms
+                };
+                return (true, "Building statistics retrieved successfully.", 200, stats);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"An error occurred while retrieving building statistics: {ex.Message}", 500, null);
+            }
+        }
     }
 }

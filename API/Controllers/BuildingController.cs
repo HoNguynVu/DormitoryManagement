@@ -110,5 +110,25 @@ namespace API.Controllers
                 message = message
             });
         }
+
+        [HttpGet("stats/admin")]
+        public async Task<IActionResult> GetBuildingStats()
+        {
+            var (success, message, statusCode, data) = await _buildingService.GetBuildingsStats();
+            if (success)
+            {
+                return StatusCode(statusCode, new
+                {
+                    success = true,
+                    message = message,
+                    data = data
+                });
+            }
+            return StatusCode(statusCode, new
+            {
+                success = false,
+                message = message
+            });
+        }
     }
 }

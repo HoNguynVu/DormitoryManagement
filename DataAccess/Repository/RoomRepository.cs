@@ -80,5 +80,25 @@ namespace DataAccess.Repository
         {
             return await _dbSet.AnyAsync(r => r.RoomTypeID == typeId);
         }
+
+        public async Task<int> CountRooms()
+        { 
+            return await _dbSet.CountAsync();
+        }
+
+        public async Task<int> CountAvailableRooms()
+        {
+            return await _dbSet.CountAsync(r => r.RoomStatus == "Available");
+        }
+
+        public async Task<int> CountRoomsFull()
+        {
+            return await _dbSet.CountAsync(r => r.CurrentOccupancy == r.Capacity);
+        }
+
+        public async Task<int> CountMaintenanceRooms()
+        {
+            return await _dbSet.CountAsync(r => r.RoomStatus == "Maintenance");
+        }
     }
 }
