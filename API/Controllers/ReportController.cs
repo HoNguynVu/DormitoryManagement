@@ -1,4 +1,4 @@
-using API.Services.Interfaces;
+﻿using API.Services.Interfaces;
 using BusinessObject.DTOs.ReportDTOs;
 using BusinessObject.DTOs.RoomDTOs;
 using Microsoft.AspNetCore.Mvc;
@@ -243,7 +243,7 @@ namespace API.Controllers
                     ws.Cell(r, 3).Value = s.Email;
                     ws.Cell(r, 4).Value = s.PhoneNumber;
                     ws.Cell(r, 5).Value = s.PriorityID;
-                    ws.Cell(r, 6).Value = s.Priority?.PriorityDescription ?? string.Empty;
+                    ws.Cell(r, 6).Value = s.PriorityName;
                     r++;
                 }
 
@@ -344,6 +344,55 @@ namespace API.Controllers
             });
 
             return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Managers.xlsx");
+        }
+
+        [HttpGet("admin-overview")]
+        public async Task<IActionResult> GetAdminOverview()
+        {
+            try
+            {
+                var result = await _reportService.GetOverviewDashBoard();
+
+                return Ok(new
+                {
+                    Success = true,
+                    Message = "Lấy dữ liệu thống kê thành công",
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    Success = false,
+                    Message = "Lỗi server: " + ex.Message
+                });
+            }
+        }
+
+        [HttpGet("admin-stat-building")]
+        public async Task<IActionResult> GetStatBuilding()
+        {
+            try
+            {
+                var result = await _reportService.GetBuildingPerformance();
+
+                return Ok(new
+                {
+                    Success = true,
+                    Message = "Lấy dữ liệu thống kê thành công",
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    Success = false,
+                    Message = "Lỗi server: " + ex.Message
+                });
+            }
+
         }
     }
 }

@@ -56,5 +56,16 @@ namespace API.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet("equipments")]
+        public async Task<IActionResult> GetAllEquipment()
+        {
+           var result = await _roomEquipmentService.GetAllEquipment();
+            return StatusCode(result.StatusCode, new
+            {
+                message = result.Message,
+                data = result.list
+            });
+        }
     }
 }

@@ -1,4 +1,4 @@
-using API.UnitOfWorks;
+﻿using API.UnitOfWorks;
 using BusinessObject.Entities;
 using BusinessObject.DTOs.ReportDTOs;
 using API.Services.Interfaces;
@@ -19,9 +19,19 @@ namespace API.Services.Implements
             _registrationUow = registrationUow;
         }
 
-        public async Task<IEnumerable<Student>> GetStudentsByPriorityAsync(string? priorityId = null)
+        public async Task<IEnumerable<StudentPriorityDto>> GetStudentsByPriorityAsync(string? priorityId = null)
         {
-            return await _contractUow.Students.GetStudentsWithPriorityAsync(priorityId);
+            var students = await _contractUow.Students.GetStudentsWithPriorityAsync(priorityId);
+            return students.Select(s => new StudentPriorityDto
+            {
+                StudentID = s.StudentID,
+                FullName = s.FullName,
+                Email = s.Email,
+                PhoneNumber = s.PhoneNumber,
+                PriorityID = s.PriorityID,
+                PriorityName = s.Priority.PriorityDescription
+            });
+
         }
 
         public async Task<IEnumerable<ExpiredContractDto>> GetExpiredContractsAsync(DateOnly olderThan)
@@ -106,6 +116,34 @@ namespace API.Services.Implements
             }
 
             return result;
+        }
+
+        public async Task<OverviewDashBoardDto> GetOverviewDashBoard()
+        {
+            var studentTask = await _contractUow.Students.GetStudentGrowthStatsAsync();
+
+            var managerTask = await _contractUow.BuildingManagers.GetBuildingManagerGrowthStatsAsync();
+            var buildingTask = await _contractUow.BuildingManagers.CountAsync();
+
+            var startOfThisMonth = DateOnly.FromDateTime(new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1));
+            var revenueTask = await _contractUow.Receipts.GetRevenueGrowthStatsAsync();
+
+            return new OverviewDashBoardDto
+            {
+                TotalStudents = studentTask.TotalValue,
+                RateStudent = (decimal)studentTask.GrowthPercent,
+
+                TotalManager = managerTask.TotalValue,
+                RateManager = (decimal)managerTask.GrowthPercent,
+
+                TotalBuilding = buildingTask,
+                TotalRevenue = revenueTask.TotalMoney
+            };
+        }
+        public async Task<List<BuildingPerformanceDto>> GetBuildingPerformance()
+        {
+            var data = await _contractUow.Buildings.GetBuildingPerformanceAsync();
+            return data.OrderByDescending(b => b.BuildingName).ToList();
         }
     }
 }
