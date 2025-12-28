@@ -7,6 +7,7 @@ using BusinessObject.DTOs.ContractDTOs;
 using BusinessObject.DTOs.HealthInsuranceDTOs;
 using BusinessObject.Entities;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System.Diagnostics.Contracts;
 
 namespace API.Services.Implements
 {
@@ -141,6 +142,15 @@ namespace API.Services.Implements
 
                 // 3. Cập nhật thông tin bản ghi
                 insurance.Status = "Active";
+                var account = insurance.Student.Account;
+                var newNoti = NotificationServiceHelpers.CreateNew(
+                    accountId: account.UserId,
+                    title: "Thanh toán bảo hiểm y tế",
+                    message: $"Bạn đã thanh toán thành công cho bảo hiểm y tế năm {insurance.StartDate.Year}",
+                    type: "Bill"
+                );
+
+                _uow.Notifications.Add(newNoti);
                 _uow.HealthInsurances.Update(insurance);
 
                 var emailDto = new HealthInsurancePurchaseDto
