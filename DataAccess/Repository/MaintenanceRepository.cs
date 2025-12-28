@@ -35,13 +35,16 @@ namespace DataAccess.Repository
                .ToListAsync();
         }
 
-        public async Task<IEnumerable<MaintenanceRequest>> GetMaintenanceFilteredAsync(string? keyword, string? status, string? equipmentName)
+        public async Task<IEnumerable<MaintenanceRequest>> GetMaintenanceFilteredAsync(string? keyword, string? status, string? equipmentName,string? buildingId)
         {
             var query = _dbSet
                 .Include(m => m.Student)
                 .Include(m => m.Room)
+                    .ThenInclude(r=>r.Building)
                 .Include(m => m.Equipment)
                 .AsQueryable();
+            if(!string.IsNullOrEmpty(buildingId))
+                query = query.Where(m=>m.Room.Building.BuildingID==buildingId);
             if (!string.IsNullOrEmpty(keyword))
             {
                 query = query.Where(m =>

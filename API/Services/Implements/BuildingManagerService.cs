@@ -1,9 +1,10 @@
+using API.Services.Helpers;
 using API.Services.Interfaces;
 using API.UnitOfWorks;
-using BusinessObject.Entities;
 using BusinessObject.DTOs.BuildingManagerDTOs;
+using BusinessObject.Entities;
 using BusinessObject.Helpers;
-using API.Services.Helpers;
+using DocumentFormat.OpenXml.ExtendedProperties;
 
 namespace API.Services.Implements
 {
@@ -39,6 +40,28 @@ namespace API.Services.Implements
         public async Task<BuildingManagerDto?> GetManagerByIdAsync(string managerId)
         {
             var m = await _buildingUow.BuildingManagers.GetByIdAsync(managerId);
+            if (m == null) return null;
+
+            return new BuildingManagerDto
+            {
+                ManagerID = m.ManagerID,
+                FullName = m.FullName,
+                Email = m.Email,
+                PhoneNumber = m.PhoneNumber,
+                CitizenId = m.CitizenId,
+                DateOfBirth = m.DateOfBirth ?? DateTime.MinValue,
+                Address = m.Address,
+                BuildingDto = new BuildingDto
+                {
+                    BuildingID = m.Buildings?.FirstOrDefault()?.BuildingID ?? "",
+                    BuildingName = m.Buildings?.FirstOrDefault()?.BuildingName ?? ""
+                }
+            };
+        }
+
+        public async Task<BuildingManagerDto?> GetManagerByAccountIdAsync(string accountId)
+        {
+            var m = await _buildingUow.BuildingManagers.GetByAccountIdAsync(accountId);
             if (m == null) return null;
 
             return new BuildingManagerDto

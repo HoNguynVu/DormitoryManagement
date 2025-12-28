@@ -180,11 +180,11 @@ namespace API.Services.Implements
             }
         }
 
-        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<SummaryMaintenanceDto> dto)> GetMaintenanceFiltered(string? keyword, string? status, string? equipmentName)
+        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<SummaryMaintenanceDto> dto)> GetMaintenanceFiltered(string? keyword, string? status, string? equipmentName,string? buildingId)
         {
             try
             {
-                var requests = await _uow.Maintenances.GetMaintenanceFilteredAsync(keyword, status, equipmentName);
+                var requests = await _uow.Maintenances.GetMaintenanceFilteredAsync(keyword, status, equipmentName,buildingId);
                 if (requests == null || !requests.Any())
                 {
                     return (true, "Không tìm thấy yêu cầu nào.", 200, Enumerable.Empty<SummaryMaintenanceDto>());

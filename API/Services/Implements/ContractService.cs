@@ -172,13 +172,12 @@ namespace API.Services.Implements
             }
         }
 
-        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<SummaryContractDto> dto)> GetContractFiltered(string? keyword, string? buildingName, string? status)
+        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<SummaryContractDto> dto)> GetContractFiltered(string? keyword, string? buildingId, string? status, DateOnly? startDate,DateOnly? endDate)
         {
             var result = new List<SummaryContractDto>();
-            await _uow.BeginTransactionAsync();
             try
             {
-                var contracts = await _uow.Contracts.GetContractsFilteredAsync(keyword, buildingName, status);
+                var contracts = await _uow.Contracts.GetContractsFilteredAsync(keyword, buildingId, status,startDate,endDate);
                 result = contracts.Select(c => new SummaryContractDto
                 {
                     ContractID = c.ContractID,
