@@ -10,5 +10,7 @@ namespace API.UnitOfWorks
         public IHealthInsuranceRepository HealthInsurances { get; }
         public IUtilityBillRepository UtilityBills { get; }
         public IViolationRepository Violations { get; }
+
+        public INotificationRepository Notifications { get; }
     }
 }
