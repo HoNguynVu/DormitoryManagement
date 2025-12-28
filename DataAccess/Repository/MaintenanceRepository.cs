@@ -20,7 +20,9 @@ namespace DataAccess.Repository
         {
             return await _dbSet
                 .Include(m => m.Student)
+                .ThenInclude(m=>m.Account)
                 .Include(m => m.Room)
+                .Include(m => m.Equipment)
                 .FirstOrDefaultAsync(m => m.RequestID == maintenanceId);
         }
 

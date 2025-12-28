@@ -5,6 +5,7 @@ using API.UnitOfWorks;
 using BusinessObject.DTOs.ContractDTOs;
 using BusinessObject.DTOs.MaintenanceDTOs;
 using BusinessObject.Entities;
+using System.Diagnostics.Contracts;
 
 namespace API.Services.Implements
 {
@@ -262,10 +263,20 @@ namespace API.Services.Implements
                  return (false, "Invalid Maintenance ID", 400);
             try
             {
-                var maintenance = await _uow.Maintenances.GetByIdAsync(maintainanceId);
+                var maintenance = await _uow.Maintenances.GetMaintenanceByIdAsync(maintainanceId);
                 if (maintenance == null)
                     return (false, "Maintenance not found", 404);
                 maintenance.Status = "Completed";
+
+                var account = maintenance.Student.Account;
+                var newNoti = NotificationServiceHelpers.CreateNew(
+                    accountId: account.UserId,
+                    title: "Thanh toán phí sửa chữa",
+                    message: $"Bạn đã thanh toán thành công cho phí sữa chữa thiết bị {maintenance.Equipment.EquipmentName} với mã yêu cầu {maintenance.RequestID}. ",
+                    type: "Bill"
+                );
+
+                _uow.Notifications.Add(newNoti);
                 _uow.Maintenances.Update(maintenance);
                 return (true, "Confirm Payment Mainteanance Successfully", 200);
             }

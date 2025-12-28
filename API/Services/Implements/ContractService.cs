@@ -292,7 +292,7 @@ namespace API.Services.Implements
                 var account = contract.Student.Account;
                 var newNoti = NotificationServiceHelpers.CreateNew(
                     accountId: account.UserId,
-                    title: "Thanh toán thành công cho gia hạn hợp đồng",
+                    title: "Thanh toán gia hạn hợp đồng",
                     message: $"Bạn đã thanh toán thành công cho gia hạn hợp đồng. Hợp đồng mới có hiệu lực đến {contract.EndDate.Value.Day}/{contract.EndDate.Value.Month}/{contract.EndDate.Value.Year}",
                     type: "Bill"
                 );
