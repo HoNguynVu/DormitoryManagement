@@ -23,5 +23,6 @@ namespace DataAccess.Interfaces
         Task<Dictionary<string, int>> CountContractsByStatusAsync();
         Task<Contract?> GetLastContractByStudentIdAsync(string studentId);
         Task<Dictionary<string, int>> CountActiveContractsByRoomAsync();
+        Task<int> CountWarningContractsAsync(int daysThreshold);
     }
 }

@@ -11,6 +11,7 @@ namespace DataAccess.Interfaces
     public interface IBuildingRepository : IGenericRepository<Building>
     {
         Task<Building?> GetByManagerId(string managerId);
+        Task<bool> IsManagerAssigned(string managerId);
         Task<List<BuildingPerformanceDto>> GetBuildingPerformanceAsync();
     }
 }

@@ -179,6 +179,18 @@ namespace DataAccess.Repository
                 .Select(g => new { RoomID = g.Key, Count = g.Count() })
                 .ToDictionaryAsync(x => x.RoomID, x => x.Count);
         }
+        public async Task<int> CountWarningContractsAsync(int daysThreshold)
+        {
+            DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+            DateOnly warningDate = today.AddDays(daysThreshold);
+            return await _dbSet
+                .AsNoTracking()
+                .Where(c => c.ContractStatus == "Active" &&
+                            c.EndDate != null &&
+                            c.EndDate >= today &&
+                            c.EndDate <= warningDate)
+                .CountAsync();
+        }
 
     }
 }

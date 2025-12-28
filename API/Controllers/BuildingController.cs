@@ -1,4 +1,5 @@
 ﻿using API.Services.Interfaces;
+using BusinessObject.DTOs.BuildingDTOs;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -56,6 +57,64 @@ namespace API.Controllers
         public async Task<IActionResult> GetRoomsByManagerId(string managerId)
         {
             var (success, message, statusCode, data) = await _buildingService.GetRoomByManagerId(managerId);
+            if (success)
+            {
+                return StatusCode(statusCode, new
+                {
+                    success = true,
+                    message = message,
+                    data = data
+                });
+            }
+            return StatusCode(statusCode, new
+            {
+                success = false,
+                message = message
+            });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateBuilding([FromBody] CreateBuildingDto createDto)
+        {
+            var (success, message, statusCode) = await _buildingService.CreateBuildingAsync(createDto);
+            if (success)
+            {
+                return StatusCode(statusCode, new
+                {
+                    success = true,
+                    message = message
+                });
+            }
+            return StatusCode(statusCode, new
+            {
+                success = false,
+                message = message
+            });
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateBuilding([FromBody] UpdateBuildingDto updateDto)
+        {
+            var (success, message, statusCode) = await _buildingService.UpdateBuildingAsync(updateDto);
+            if (success)
+            {
+                return StatusCode(statusCode, new
+                {
+                    success = true,
+                    message = message
+                });
+            }
+            return StatusCode(statusCode, new
+            {
+                success = false,
+                message = message
+            });
+        }
+
+        [HttpGet("stats/admin")]
+        public async Task<IActionResult> GetBuildingStats()
+        {
+            var (success, message, statusCode, data) = await _buildingService.GetBuildingsStats();
             if (success)
             {
                 return StatusCode(statusCode, new
