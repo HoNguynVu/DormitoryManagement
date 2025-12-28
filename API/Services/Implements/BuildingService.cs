@@ -1,4 +1,5 @@
-﻿using API.Services.Interfaces;
+﻿using API.Services.Helpers;
+using API.Services.Interfaces;
 using API.UnitOfWorks;
 using BusinessObject.DTOs.BuildingDTOs;
 using BusinessObject.DTOs.RoomDTOs;
@@ -78,6 +79,41 @@ namespace API.Services.Implements
             catch (Exception ex)
             {
                 return (false, $"An error occurred while retrieving rooms: {ex.Message}", 500, Enumerable.Empty<BusinessObject.DTOs.RoomDTOs.RoomResponseDto>());
+            }
+        }
+
+        public async Task<(bool Success, string Message, int StatusCode)> CreateBuildingAsync(CreateBuildingDto createDto)
+        {
+            await _buildingUow.BeginTransactionAsync();
+            try
+            {
+                var manager = await _buildingUow.BuildingManagers.GetByIdAsync(createDto.ManagerID);
+                if (manager == null)
+                {
+                    await _buildingUow.RollbackAsync();
+                    return (false, "Manager not found.", 404);
+                }
+
+                var isManagerAssigned = await _buildingUow.Buildings.IsManagerAssigned(createDto.ManagerID);
+                if (isManagerAssigned)
+                {
+                    await _buildingUow.RollbackAsync();
+                    return (false, "This manager is already assigned to another building.", 400);
+                }
+
+                var newBuilding = new Building
+                {
+                    BuildingID = "BLD-" + IdGenerator.GenerateUniqueSuffix(),
+                    BuildingName = createDto.BuildingName,
+                    ManagerID = createDto.ManagerID
+                };
+                _buildingUow.Buildings.Add(newBuilding);
+                await _buildingUow.CommitAsync();
+                return (true, "Building created successfully.", 201);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"An error occurred while creating the building: {ex.Message}", 500);
             }
         }
     }

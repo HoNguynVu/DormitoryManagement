@@ -1,4 +1,5 @@
 ﻿using API.Services.Interfaces;
+using BusinessObject.DTOs.BuildingDTOs;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -63,6 +64,25 @@ namespace API.Controllers
                     success = true,
                     message = message,
                     data = data
+                });
+            }
+            return StatusCode(statusCode, new
+            {
+                success = false,
+                message = message
+            });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateBuilding([FromBody] CreateBuildingDto createDto)
+        {
+            var (success, message, statusCode) = await _buildingService.CreateBuildingAsync(createDto);
+            if (success)
+            {
+                return StatusCode(statusCode, new
+                {
+                    success = true,
+                    message = message
                 });
             }
             return StatusCode(statusCode, new

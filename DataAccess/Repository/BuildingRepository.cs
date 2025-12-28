@@ -19,5 +19,9 @@ namespace DataAccess.Repository
         {
             return await _dbSet.Where(b => b.ManagerID == managerId).FirstOrDefaultAsync();
         }
+        public async Task<bool> IsManagerAssigned(string managerId)
+        {
+            return await _dbSet.AnyAsync(b => b.ManagerID == managerId);
+        }
     }
 }
