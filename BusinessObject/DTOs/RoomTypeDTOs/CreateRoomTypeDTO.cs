@@ -6,12 +6,11 @@ using System.Threading.Tasks;
 
 namespace BusinessObject.DTOs.RoomTypeDTOs
 {
-    public class GetRoomTypeDTO
+    public class CreateRoomTypeDTO
     {
-        public string RoomTypeID { get; set; } = string.Empty;
         public string TypeName { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public int Capacity { get; set; }
         public decimal Price { get; set; }
+        public int Capacity { get; set; }
     }
 }
