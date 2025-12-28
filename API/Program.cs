@@ -93,6 +93,7 @@ builder.Services.AddScoped<IViolationRepository, ViolationRepository>();
 
 // 8. Background Services
 builder.Services.AddHostedService<ContractExpirationWorker>();
+builder.Services.AddHostedService<ContractStatusWorker>();
 
 // ============================================================
 // 9. CẤU HÌNH ZALOPAY (SỬA LỖI TẠI ĐÂY)
