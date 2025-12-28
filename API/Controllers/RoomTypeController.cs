@@ -70,5 +70,24 @@ namespace API.Controllers
                 message = message
             });
         }
+
+        [HttpDelete("{typeId}")]
+        public async Task<IActionResult> DeleteRoomType([FromRoute] string typeId)
+        {
+            var (success, message, statusCode) = await _roomTypeService.DeleteRoomTypeAsync(typeId);
+            if (success)
+            {
+                return StatusCode(statusCode, new
+                {
+                    success = true,
+                    message = message
+                });
+            }
+            return StatusCode(statusCode, new
+            {
+                success = false,
+                message = message
+            });
+        }
     }
 }
