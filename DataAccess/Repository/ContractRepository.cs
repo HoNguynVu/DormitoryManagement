@@ -138,6 +138,7 @@ namespace DataAccess.Repository
         {
             return await _dbSet
                 .Include(c => c.Student)
+                    .ThenInclude(a=>a.Account)
                 .Include(c => c.Room)
                     .ThenInclude(r => r.Building)
                 .Include(c => c.Room)

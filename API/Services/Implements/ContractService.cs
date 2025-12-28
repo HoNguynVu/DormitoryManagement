@@ -289,7 +289,15 @@ namespace API.Services.Implements
                         contract.ContractStatus = "Active";
                     }
                 }
+                var account = contract.Student.Account;
+                var newNoti = NotificationServiceHelpers.CreateNew(
+                    accountId: account.UserId,
+                    title: "Thanh toán thành công cho gia hạn hợp đồng",
+                    message: $"Bạn đã thanh toán thành công cho gia hạn hợp đồng. Hợp đồng mới có hiệu lực đến {contract.EndDate.Value.Day}/{contract.EndDate.Value.Month}/{contract.EndDate.Value.Year}",
+                    type: "Bill"
+                );
 
+                _uow.Notifications.Add(newNoti);
                 // 5. Cập nhật và Lưu xuống DB
                 _uow.Contracts.Update(contract);
                 // 6 . Gửi email xác nhận 
