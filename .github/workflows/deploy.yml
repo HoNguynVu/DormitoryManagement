@@ -1,0 +1,39 @@
+name: Deploy .NET Core App to Azure
+
+on:
+  push:
+    branches:
+      - master 
+
+env:
+  AZURE_WEBAPP_NAME: 'Dormitory'  # ⚠️ Thay bằng tên App Service bạn tạo ở PHẦN 1 - Bước 2
+  DOTNET_VERSION: '8.0'                      # ⚠️ Thay bằng version .NET của bạn (6.x, 7.x, 8.x)
+  PATH_TO_PROJECT: './API'       # ⚠️ Đường dẫn tới thư mục chứa file .csproj (nếu code để ở root thì để '.')
+
+jobs:
+  build-and-deploy:
+    runs-on: windows-latest # Dùng windows để tương thích tốt nhất
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore dependencies
+      run: dotnet restore "${{ env.PATH_TO_PROJECT }}"
+
+    - name: Build
+      run: dotnet build "${{ env.PATH_TO_PROJECT }}" --configuration Release --no-restore
+
+    - name: Publish
+      run: dotnet publish "${{ env.PATH_TO_PROJECT }}" -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+
+    - name: Deploy to Azure Web App
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        package: ${{env.DOTNET_ROOT}}/myapp
