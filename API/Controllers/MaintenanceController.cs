@@ -37,7 +37,8 @@ namespace API.Controllers
             [FromQuery] string? studentId,
             [FromQuery] string? keyword,
             [FromQuery] string? status,
-            [FromQuery] string? equipmentName)
+            [FromQuery] string? equipmentName,
+            [FromQuery] string? buildingId)
         {
             bool success ;
             string message;
@@ -49,7 +50,7 @@ namespace API.Controllers
             }
             else
             {
-                (success, message, statusCode, data) = await _maintenanceService.GetMaintenanceFiltered(keyword, status, equipmentName);
+                (success, message, statusCode, data) = await _maintenanceService.GetMaintenanceFiltered(keyword, status, equipmentName,buildingId);
             }
    
             if (!success)
