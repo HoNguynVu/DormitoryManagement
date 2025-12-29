@@ -48,6 +48,21 @@ namespace DataAccess.Repository
                 .OrderByDescending(c => c.StartDate)
                 .FirstOrDefaultAsync();
         }
+
+        public async Task<Contract?> GetActiveAndNearExpiringContractByStudentId(string studentId)
+        {
+            DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+            DateOnly nearExpiringDate = today.AddDays(30);
+            return await _dbSet
+                .Include(c => c.Student)
+                .Include(c => c.Room)
+                    .ThenInclude(r => r.RoomType)
+                .Where(c => c.StudentID == studentId &&
+                           c.ContractStatus == "Active" || c.ContractStatus == "NearExpiration")
+                .OrderByDescending(c => c.StartDate)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<bool> HasPendingRenewalRequestAsync(string studentId)
         {
             return await _context.Receipts

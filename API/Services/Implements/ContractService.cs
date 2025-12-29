@@ -76,7 +76,7 @@ namespace API.Services.Implements
                     return (false, "Student not found.", 404,null);
                 }
                 // Check hợp đồng active
-                var activeContract = await _uow.Contracts.GetActiveContractByStudentId(studentId);
+                var activeContract = await _uow.Contracts.GetActiveAndNearExpiringContractByStudentId(studentId);
                 if (activeContract == null)
                 {
                     return (false, "No active contract found for this student.", 404,null);
@@ -288,10 +288,7 @@ namespace API.Services.Implements
                 else
                 {
                     contract.EndDate = today.AddMonths(monthsAdded);
-                    if (contract.ContractStatus == "Expired")
-                    {
-                        contract.ContractStatus = "Active";
-                    }
+                    contract.ContractStatus = "Active";
                 }
                 var account = contract.Student.Account;
                 var newNoti = NotificationServiceHelpers.CreateNew(

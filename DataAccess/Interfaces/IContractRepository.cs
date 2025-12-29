@@ -13,6 +13,7 @@ namespace DataAccess.Interfaces
         Task<IEnumerable<Contract>> GetContractsByStudentId(string studentId);
         Task<int> CountContractsByRoomIdAndStatus(string roomId, string status);
         Task<Contract?> GetActiveContractByStudentId(string studentId);
+        Task<Contract?> GetActiveAndNearExpiringContractByStudentId(string studentId);
         Task<bool> HasPendingRenewalRequestAsync(string studentId);
         Task<IEnumerable<Contract>> GetExpiredContractsAsync(DateOnly olderThan);
         Task<IEnumerable<Contract>> GetExpiringContractsByManagerIdAsync(DateOnly fromDate, DateOnly beforeDate, string managerId);
