@@ -124,7 +124,7 @@ namespace API.Services.Implements
                 var receiptDtos = pagedReceipts.Items.Select(r =>
                 {
                     var activeContract = r.Student?.Contracts?
-                        .FirstOrDefault(c => c.ContractStatus == "Active");
+                        .FirstOrDefault(c => c.ContractStatus == "Active" || c.ContractStatus == "NearExpiration");
 
                     return new ReceiptForManagerDTO
                     {

@@ -34,7 +34,7 @@ namespace DataAccess.Repository
                 .Include(r => r.Student).ThenInclude(s => s.Contracts).ThenInclude(c => c.Room)
                 .Where(r => r.Student.Contracts.Any(c =>
                     c.Room.Building.ManagerID == managerId &&
-                    c.ContractStatus == "Active"));
+                    c.ContractStatus == "Active" || c.ContractStatus == "NearExpiration"));
 
             var totalCount = await query.CountAsync();
 

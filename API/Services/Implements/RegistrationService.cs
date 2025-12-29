@@ -109,7 +109,6 @@ namespace API.Services.Implements
             {
                 return (false, "Registration form not found.", 404);
             }
-            registration.Status = PaymentConstants.StatusSuccess;
             var newContract = new Contract
             {
                 ContractID = "CT-" + IdGenerator.GenerateUniqueSuffix(),
@@ -124,11 +123,21 @@ namespace API.Services.Implements
             {
                 return (false, "Room not found.", 404);
             }
+
+            var receipt = await _registrationUow.Receipts.GetReceiptByTypeAndRelatedIdAsync(PaymentConstants.TypeRegis, registration.FormID);
+            if (receipt == null)
+                {
+                return (false, "Associated receipt not found.", 404);
+            }
             await _registrationUow.BeginTransactionAsync();
             try
             {
+                
+                decimal depositAmount = receipt != null ? receipt.Amount : 0;
+                receipt.Status = PaymentConstants.StatusSuccess;
                 registration.Status = "Confirmed";
                 room.AddOccupant();
+                _registrationUow.Receipts.Update(receipt);
                 _registrationUow.Rooms.Update(room);        
                 _registrationUow.RegistrationForms.Update(registration);
                 _registrationUow.Contracts.Add(newContract);
@@ -138,10 +147,7 @@ namespace API.Services.Implements
                 var student = await _registrationUow.Students.GetByIdAsync(registration.StudentID);
                 if (student == null)
                     return (false, "Student not found.", 404);
-                var receipt = await _registrationUow.Receipts.GetReceiptByTypeAndRelatedIdAsync(PaymentConstants.TypeRegis,newContract.ContractID);
-                if (receipt == null)
-                    return (false, "Receipt not found.", 404);
-                decimal depositAmount = receipt != null ? receipt.Amount : 0;
+                
                 var emailDto = new DormRegistrationSuccessDto
                 {
                     StudentEmail = student.Email,

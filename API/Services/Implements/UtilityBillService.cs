@@ -132,17 +132,20 @@ namespace API.Services.Implements
             {
                 return (false, "Bill is already paid", 400);
             }
+            var receipt = await _utilityBillUow.Receipts.GetReceiptByTypeAndRelatedIdAsync(PaymentConstants.TypeUtility, billId);
+            if (receipt == null)
+            {
+                return (false, "Receipt not found", 404);
+            }
             bill.Status = "Paid";
+            receipt.Status = PaymentConstants.StatusSuccess;
             await _utilityBillUow.BeginTransactionAsync();
             try
             {
+                _utilityBillUow.Receipts.Update(receipt);
                 _utilityBillUow.UtilityBills.Update(bill);
                 await _utilityBillUow.CommitAsync();
-                var receipt = await _utilityBillUow.Receipts.GetReceiptByTypeAndRelatedIdAsync(PaymentConstants.TypeUtility, billId);
-                if (receipt == null)
-                {
-                    return (false, "Receipt not found", 404);
-                }
+                
                 var student = await _utilityBillUow.Students.GetByIdAsync(receipt.Student.StudentID);
                 if (student == null)
                 {

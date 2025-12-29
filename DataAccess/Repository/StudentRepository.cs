@@ -69,7 +69,7 @@ namespace DataAccess.Repository
             var count = await _dbSet
                 .CountAsync(s => s.Contracts.Any(c =>
                     c.Room.Building.ManagerID == managerId &&
-                    c.ContractStatus == "Active"));
+                    (c.ContractStatus == "Active" || c.ContractStatus == "NearExpiration")));
 
             return count;
         }

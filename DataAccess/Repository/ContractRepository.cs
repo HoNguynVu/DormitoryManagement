@@ -44,7 +44,7 @@ namespace DataAccess.Repository
                 .Include(c => c.Room)
                     .ThenInclude(r => r.RoomType)
                 .Where(c => c.StudentID == studentId && 
-                           (c.ContractStatus == "Active" || c.ContractStatus == "Pending"))
+                           (c.ContractStatus == "Active" || c.ContractStatus == "NearExpiration"))
                 .OrderByDescending(c => c.StartDate)
                 .FirstOrDefaultAsync();
         }
