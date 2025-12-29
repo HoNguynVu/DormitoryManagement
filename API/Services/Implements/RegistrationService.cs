@@ -109,6 +109,7 @@ namespace API.Services.Implements
             {
                 return (false, "Registration form not found.", 404);
             }
+            registration.Status = PaymentConstants.StatusSuccess;
             var newContract = new Contract
             {
                 ContractID = "CT-" + IdGenerator.GenerateUniqueSuffix(),
