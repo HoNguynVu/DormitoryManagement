@@ -29,7 +29,7 @@ namespace API.Services.Implements
             try
             {
                 // Kiểm tra xem Sinh viên có đang ở KTX không (Phải có hợp đồng Active)
-                var contract = await _uow.Contracts.GetActiveContractByStudentId(dto.StudentId);
+                var contract = await _uow.Contracts.GetActiveAndNearExpiringContractByStudentId(dto.StudentId);
 
                 if (contract == null || contract.Room == null)
                 {
