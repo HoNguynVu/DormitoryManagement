@@ -62,7 +62,8 @@ namespace API.Controllers
                     userId = result.userId,
                     hasActiveContract = result.hasActiveContract,
                     hasTerminatedContract = result.hasTerminatedContract,
-                    BuildingName = result.BuildingName
+                    buildingName = result.BuildingName,
+                    buildingID = result.BuildingID
                 });
             }
             return StatusCode(result.StatusCode, new { message = result.Message });

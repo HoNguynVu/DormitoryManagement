@@ -225,20 +225,21 @@ namespace API.Services.Implements
             }
             return (true, "A new OTP has been sent to your email.", 200);
         }
-        public async Task<(bool Success, string Message, int StatusCode, string accessToken, string refreshToken, string userId, bool hasActiveContract, bool hasTerminatedContract, string BuildingName)> LoginAsync(LoginRequest loginRequest)
+        public async Task<(bool Success, string Message, int StatusCode, string accessToken, string refreshToken, string userId, bool hasActiveContract, bool hasTerminatedContract, string BuildingName, string BuildingID)> LoginAsync(LoginRequest loginRequest)
         {
             var user = await _authUow.Accounts.GetAccountByUsername(loginRequest.Email);
 
             string buildingName = null;
+            string buildingID = null;
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.PasswordHash))
-                return (false, "Invalid email or password.", 401, null, null, null, false, false, null);
+                return (false, "Invalid email or password.", 401, null, null, null, false, false, null, null);
             if(user.Role =="Student")
             {
                 var student = await _authUow.Students.GetStudentByEmailAsync(loginRequest.Email);
                 if (student == null)
                 {
-                    return (false, "Student profile not found for this account.", 500, null, null, null, false, false, null);
+                    return (false, "Student profile not found for this account.", 500, null, null, null, false, false, null, null);
                 }
 
                 if (!user.IsEmailVerified)
@@ -253,11 +254,11 @@ namespace API.Services.Implements
                     catch (Exception ex)
                     {
                         await _authUow.RollbackAsync();
-                        return (false, $"Database error during registration: {ex.Message}", 500, null, null, null, false, false, null);
+                        return (false, $"Database error during registration: {ex.Message}", 500, null, null, null, false, false, null, null);
 
                     }
 
-                    return (false, "Your email is not verified yet. Please register again", 401, null, null, null, false, false, null);
+                    return (false, "Your email is not verified yet. Please register again", 401, null, null, null, false, false, null, null);
                 }
                 var accessToken = GenerateJwtToken(user);
                 RefreshToken refreshToken = CreateRefreshToken(user.UserId);
@@ -273,13 +274,13 @@ namespace API.Services.Implements
                 catch (Exception ex)
                 {
                     await _authUow.RollbackAsync();
-                    return (false, $"Database error during login: {ex.Message}", 500, null, null, null, false, false, null);
+                    return (false, $"Database error during login: {ex.Message}", 500, null, null, null, false, false, null, null);
                 }
                 bool hasActiveContract = await _authUow.Contracts.GetActiveContractByStudentId(student.StudentID) != null;
                 var lastContract = await _authUow.Contracts.GetLastContractByStudentIdAsync(student.StudentID);
                 bool hasTerminatedContract = lastContract != null && lastContract.ContractStatus == "Terminated";
                 var message = $"Welcome back, {student.FullName}!";
-                return (true, message, 200, accessToken, refreshToken.Token, user.UserId, hasActiveContract, hasTerminatedContract, null);
+                return (true, message, 200, accessToken, refreshToken.Token, user.UserId, hasActiveContract, hasTerminatedContract, null, null);
             }
 
             else
@@ -302,6 +303,7 @@ namespace API.Services.Implements
                         if (building != null)
                         {
                             buildingName = building.BuildingName; 
+                            buildingID = building.BuildingID;
                         }
                     }
                 }
@@ -319,10 +321,10 @@ namespace API.Services.Implements
                 catch (Exception ex)
                 {
                     await _authUow.RollbackAsync();
-                    return (false, $"Database error during login: {ex.Message}", 500, null, null, null, false, false, null);
+                    return (false, $"Database error during login: {ex.Message}", 500, null, null, null, false, false, null, null);
                 }
                 var message = $"Welcome back!";
-                return (true, message, 200, accessToken, refreshToken.Token, user.UserId, false, false, buildingName);
+                return (true, message, 200, accessToken, refreshToken.Token, user.UserId, false, false, buildingName, buildingID);
             }
         }
         public async Task<(bool Success, string Message, int StatusCode)> ForgotPasswordAsync(ForgotPasswordRequest forgotPasswordRequest)

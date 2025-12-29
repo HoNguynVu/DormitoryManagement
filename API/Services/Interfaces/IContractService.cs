@@ -10,7 +10,7 @@ namespace API.Services.Interfaces
         Task<(bool Success, string Message, int StatusCode)> TerminateContractNowAsync(string studentId);
         //Manager
         Task<(bool Success, string Message, int StatusCode, IEnumerable<SummaryContractDto> dto)> GetContractFiltered(string? keyword, string? buildingName,string? status, DateOnly? startDate,DateOnly? endDate);
-        Task<(bool Success, string Message, int StatusCode, Dictionary<string, int> stat)> GetOverviewContract();
+        Task<(bool Success, string Message, int StatusCode, Dictionary<string, int> stat)> GetOverviewContract(string? buildingId);
         Task<(bool Success, string Message, int StatusCode)> ConfirmContractExtensionAsync(string contractId, int monthsAdded);
         Task<(bool Success, string Message, int StatusCode)> RejectRenewalAsync(RejectRenewalDto dto);
         Task<(bool Success, string Message, int StatusCode, DetailContractDto dto)> GetDetailContract(string contractId);

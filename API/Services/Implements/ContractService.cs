@@ -198,13 +198,13 @@ namespace API.Services.Implements
             }
         }
 
-        public async Task<(bool Success, string Message, int StatusCode, Dictionary<string, int> stat)> GetOverviewContract()
+        public async Task<(bool Success, string Message, int StatusCode, Dictionary<string, int> stat)> GetOverviewContract(string? buildingId = null)
         {
             var result = new Dictionary<string, int>();
             await _uow.BeginTransactionAsync();
             try
             {
-                result = await _uow.Contracts.CountContractsByStatusAsync();
+                result = await _uow.Contracts.CountContractsByStatusAsync(buildingId);
                 var total = result.Values.Sum();
                 result["Total"] = total;
                 result["Active"] = result.ContainsKey("Active") ? result["Active"] : 0;

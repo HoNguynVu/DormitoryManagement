@@ -60,9 +60,9 @@ namespace API.Controllers
 
         // GET: api/contract/overview
         [HttpGet("overview")]
-        public async Task<IActionResult> GetContractOverview()
+        public async Task<IActionResult> GetContractOverview([FromQuery] string? buildingId)
         {
-            var result = await _contractService.GetOverviewContract();
+            var result = await _contractService.GetOverviewContract(buildingId);
             if (!result.Success)
             {
                 return StatusCode(result.StatusCode, new { message = result.Message });

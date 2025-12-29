@@ -147,13 +147,21 @@ namespace DataAccess.Repository
                 .FirstOrDefaultAsync(c => c.ContractID == contractId);
         }
 
-        public async Task<Dictionary<string, int>> CountContractsByStatusAsync()
+        public async Task<Dictionary<string, int>> CountContractsByStatusAsync(string? buildingId = null)
         {
-            var result = await _dbSet
+            var query = _dbSet.AsQueryable();
+
+            if (!string.IsNullOrEmpty(buildingId))
+            {
+                query = query.Where(c => c.Room.BuildingID == buildingId);
+            }
+
+            var result = await query
                 .GroupBy(c => c.ContractStatus)
                 .Select(g => new { Status = g.Key, Count = g.Count() })
                 .AsNoTracking()
                 .ToListAsync();
+
             return result.ToDictionary(x => x.Status, x => x.Count);
         }
 

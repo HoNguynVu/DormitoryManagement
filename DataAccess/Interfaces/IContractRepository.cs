@@ -20,7 +20,7 @@ namespace DataAccess.Interfaces
 
         Task<IEnumerable<Contract>> GetContractsFilteredAsync(string? keyword, string? buildingId, string? status, DateOnly? startDate,DateOnly? endDate);
         Task<Contract?> GetDetailContractAsync(string contractId);
-        Task<Dictionary<string, int>> CountContractsByStatusAsync();
+        Task<Dictionary<string, int>> CountContractsByStatusAsync(string? buildingId = null);
         Task<Contract?> GetLastContractByStudentIdAsync(string studentId);
         Task<Dictionary<string, int>> CountActiveContractsByRoomAsync();
         Task<int> CountWarningContractsAsync(int daysThreshold);
