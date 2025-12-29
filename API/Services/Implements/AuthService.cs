@@ -276,7 +276,7 @@ namespace API.Services.Implements
                     await _authUow.RollbackAsync();
                     return (false, $"Database error during login: {ex.Message}", 500, null, null, null, false, false, null, null);
                 }
-                bool hasActiveContract = await _authUow.Contracts.GetActiveContractByStudentId(student.StudentID) != null;
+                bool hasActiveContract = await _authUow.Contracts.GetActiveAndNearExpiringContractByStudentId(student.StudentID) != null;
                 var lastContract = await _authUow.Contracts.GetLastContractByStudentIdAsync(student.StudentID);
                 bool hasTerminatedContract = lastContract != null && lastContract.ContractStatus == "Terminated";
                 var message = $"Welcome back, {student.FullName}!";

@@ -221,7 +221,7 @@ namespace API.Services.Implements
                 return (false, "Student not found", 404, Enumerable.Empty<UtilityBill>());
             }
 
-            var contract = await _utilityBillUow.Contracts.GetActiveContractByStudentId(student.StudentID);
+            var contract = await _utilityBillUow.Contracts.GetActiveAndNearExpiringContractByStudentId(student.StudentID);
             if (contract == null)
             {
                 return (false, "No active contract found for this student", 404, Enumerable.Empty<UtilityBill>());
@@ -251,7 +251,7 @@ namespace API.Services.Implements
                 return (false, "Student not found", 404, Enumerable.Empty<UtilityBillDetailForStudent>());
             }
 
-            var contract = await _utilityBillUow.Contracts.GetActiveContractByStudentId(student.StudentID);
+            var contract = await _utilityBillUow.Contracts.GetActiveAndNearExpiringContractByStudentId(student.StudentID);
             if (contract == null)
             {
                 return (false, "No active contract found for this student", 404, Enumerable.Empty<UtilityBillDetailForStudent>());
