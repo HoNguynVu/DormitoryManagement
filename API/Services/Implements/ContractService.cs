@@ -484,12 +484,18 @@ namespace API.Services.Implements
 
                 // 6. Calculate remaining days in contract
                 var today = DateOnly.FromDateTime(DateTime.Now);
-                var endDate = activeContract.EndDate ?? today.AddMonths(6); // default 6 months if no end date
-                var remainingDays = endDate.DayNumber - today.DayNumber;
+                if (!activeContract.EndDate.HasValue)
+                {
+                    return (false, "This contract does not have an end date. The difference in cost cannot be calculated.", 422, null, null);
+                }
+
+                var endDate = activeContract.EndDate.Value;
+
+                int remainingDays = (endDate.ToDateTime(new TimeOnly(0, 0)) - DateTime.Now).Days;
 
                 if (remainingDays <= 0)
                 {
-                    return (false, "Contract has expired or expiring today. Cannot change room.", 400, null, null);
+                    return (false, "Your contract has expired or is due today. Please renew it before changing rooms.", 400, null, null);
                 }
 
                 // 7. Calculate price adjustment based on reason and price difference
@@ -576,7 +582,7 @@ namespace API.Services.Implements
                         PrintTime = DateTime.Now,
                         Content = receiptContent + (string.IsNullOrEmpty(request.ManagerNote) ? "" : $" Ghi chú: {request.ManagerNote}")
                     };
-                    if (isCharge) receipt.Content += $"CMD|{request.NewRoomId}|{receiptContent}";
+                    if (isCharge) receipt.Content += $"CMD|{request.NewRoomId}";
 
                     _uow.Receipts.Add(receipt);
                     createdReceiptId = receipt.ReceiptID;
