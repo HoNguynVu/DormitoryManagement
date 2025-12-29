@@ -284,6 +284,7 @@ namespace API.Services.Implements
                 if (contract.EndDate.HasValue && contract.EndDate.Value >= today)
                 {
                     contract.EndDate = contract.EndDate.Value.AddMonths(monthsAdded);
+                    contract.ContractStatus = "Active";
                 }
                 else
                 {

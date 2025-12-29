@@ -116,7 +116,7 @@ namespace API.Services.Implements
                 RoomID = registration.RoomID,
                 StartDate = DateOnly.FromDateTime(DateTime.UtcNow),
                 ContractStatus = "Active",
-                EndDate = DateOnly.FromDateTime(DateTime.UtcNow).AddMonths(6)
+                EndDate = DateOnly.FromDateTime(DateTime.UtcNow).AddMonths(12)
             };
             var room = await _registrationUow.Rooms.GetByIdAsync(registration.RoomID);
             if (room == null)
