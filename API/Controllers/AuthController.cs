@@ -61,7 +61,8 @@ namespace API.Controllers
                     refreshToken = result.refreshToken,
                     userId = result.userId,
                     hasActiveContract = result.hasActiveContract,
-                    hasTerminatedContract = result.hasTerminatedContract
+                    hasTerminatedContract = result.hasTerminatedContract,
+                    BuildingName = result.BuildingName
                 });
             }
             return StatusCode(result.StatusCode, new { message = result.Message });

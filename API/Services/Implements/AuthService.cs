@@ -225,18 +225,20 @@ namespace API.Services.Implements
             }
             return (true, "A new OTP has been sent to your email.", 200);
         }
-        public async Task<(bool Success, string Message, int StatusCode, string accessToken, string refreshToken, string userId, bool hasActiveContract, bool hasTerminatedContract)> LoginAsync(LoginRequest loginRequest)
+        public async Task<(bool Success, string Message, int StatusCode, string accessToken, string refreshToken, string userId, bool hasActiveContract, bool hasTerminatedContract, string BuildingName)> LoginAsync(LoginRequest loginRequest)
         {
             var user = await _authUow.Accounts.GetAccountByUsername(loginRequest.Email);
 
+            string buildingName = null;
+
             if (user == null || !BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.PasswordHash))
-                return (false, "Invalid email or password.", 401, null, null, null, false, false);
+                return (false, "Invalid email or password.", 401, null, null, null, false, false, null);
             if(user.Role =="Student")
             {
                 var student = await _authUow.Students.GetStudentByEmailAsync(loginRequest.Email);
                 if (student == null)
                 {
-                    return (false, "Student profile not found for this account.", 500, null, null, null, false, false);
+                    return (false, "Student profile not found for this account.", 500, null, null, null, false, false, null);
                 }
 
                 if (!user.IsEmailVerified)
@@ -251,11 +253,11 @@ namespace API.Services.Implements
                     catch (Exception ex)
                     {
                         await _authUow.RollbackAsync();
-                        return (false, $"Database error during registration: {ex.Message}", 500, null, null, null, false, false);
+                        return (false, $"Database error during registration: {ex.Message}", 500, null, null, null, false, false, null);
 
                     }
 
-                    return (false, "Your email is not verified yet. Please register again", 401, null, null, null, false, false);
+                    return (false, "Your email is not verified yet. Please register again", 401, null, null, null, false, false, null);
                 }
                 var accessToken = GenerateJwtToken(user);
                 RefreshToken refreshToken = CreateRefreshToken(user.UserId);
@@ -271,17 +273,38 @@ namespace API.Services.Implements
                 catch (Exception ex)
                 {
                     await _authUow.RollbackAsync();
-                    return (false, $"Database error during login: {ex.Message}", 500, null, null, null, false, false);
+                    return (false, $"Database error during login: {ex.Message}", 500, null, null, null, false, false, null);
                 }
                 bool hasActiveContract = await _authUow.Contracts.GetActiveContractByStudentId(student.StudentID) != null;
                 var lastContract = await _authUow.Contracts.GetLastContractByStudentIdAsync(student.StudentID);
                 bool hasTerminatedContract = lastContract != null && lastContract.ContractStatus == "Terminated";
                 var message = $"Welcome back, {student.FullName}!";
-                return (true, message, 200, accessToken, refreshToken.Token, user.UserId, hasActiveContract, hasTerminatedContract);
+                return (true, message, 200, accessToken, refreshToken.Token, user.UserId, hasActiveContract, hasTerminatedContract, null);
             }
 
             else
             {
+                if (user.Role == "Manager")
+                {
+                    // Giả sử bạn có Repository BuildingManagers và Buildings trong UnitOfWork
+                    // Nếu dùng DbContext trực tiếp thì thay _authUow.Context...
+
+                    // Tìm Profile Manager theo AccountID
+                    var managerProfile = await _authUow.BuildingManagers
+                        .FirstOrDefaultAsync(m => m.AccountID == user.UserId);
+
+                    if (managerProfile != null)
+                    {
+                        // Tìm Tòa nhà theo ManagerID
+                        var building = await _authUow.Buildings
+                            .FirstOrDefaultAsync(b => b.ManagerID == managerProfile.ManagerID);
+
+                        if (building != null)
+                        {
+                            buildingName = building.BuildingName; 
+                        }
+                    }
+                }
                 var accessToken = GenerateJwtToken(user);
                 RefreshToken refreshToken = CreateRefreshToken(user.UserId);
                 if (string.IsNullOrEmpty(user.UserId))
@@ -296,10 +319,10 @@ namespace API.Services.Implements
                 catch (Exception ex)
                 {
                     await _authUow.RollbackAsync();
-                    return (false, $"Database error during login: {ex.Message}", 500, null, null, null, false, false);
+                    return (false, $"Database error during login: {ex.Message}", 500, null, null, null, false, false, null);
                 }
                 var message = $"Welcome back!";
-                return (true, message, 200, accessToken, refreshToken.Token, user.UserId, false, false);
+                return (true, message, 200, accessToken, refreshToken.Token, user.UserId, false, false, buildingName);
             }
         }
         public async Task<(bool Success, string Message, int StatusCode)> ForgotPasswordAsync(ForgotPasswordRequest forgotPasswordRequest)
