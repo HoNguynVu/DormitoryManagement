@@ -70,6 +70,22 @@ namespace DataAccess.Repository
             return CalculateGrowthDecimal(currentRevenue, lastMonthRevenue);
         }
 
+        public async Task<(Receipt?, Payment?)> GetReceiptAndDateAsync(string appTransId)
+        {
+            // Bước 1: Lấy Payment trước để có Time và ReceiptID
+            var payment = await _context.Payments
+                .FirstOrDefaultAsync(p => p.PaymentID == appTransId);
+
+            if (payment == null) return (null, null);
+
+            // Bước 2: Lấy Receipt dựa trên ID vừa tìm được
+            var receipt = await _context.Receipts // _dbSet của bạn là Receipts
+                .FirstOrDefaultAsync(r => r.ReceiptID == payment.ReceiptID);
+
+            // Bước 3: Trả về cả 2
+            return (receipt, payment);
+        }
+
         // --- Helper tính % cho số tiền (Decimal) ---
         private GrowthStatDto CalculateGrowthDecimal(decimal current, decimal previous)
         {

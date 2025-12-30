@@ -578,5 +578,43 @@ namespace API.Services.Implements
                 return (0, $"Lỗi hệ thống xử lý : {ex.Message}");
             }
         }
+
+        public async Task<(int StatusCode, PaymentResultDto? dto)> GetPaymentResultByAppTransId(string appTransId)
+        {
+            // 1. Validate Input
+            if (string.IsNullOrEmpty(appTransId))
+            {
+                return (400, null);
+            }
+
+            // 2. Get Payment Data (Tuple: Item1=Receipt, Item2=PaymentDate)
+            var data = await _paymentUow.Receipts.GetReceiptAndDateAsync(appTransId);
+
+            if (data.Item2 == null)
+            {
+                return (404, null);
+            }
+            if (data.Item1 == null)
+            {
+                return (404, null);
+            }
+
+            var receiptEntity = data.Item1;
+            var paymentEntity = data.Item2;
+
+            // 3. Prepare Result DTO
+            var resultDto = new PaymentResultDto
+            {
+                Amount = receiptEntity.Amount,
+                TransId = paymentEntity.TransactionID,
+                PaymentTime = paymentEntity.PaymentDate,
+                Description  = receiptEntity.Content ?? string.Empty,
+                ReceiptId = receiptEntity.ReceiptID,
+                PaymentType = receiptEntity.PaymentType,
+                RelatedId = receiptEntity.RelatedObjectID
+            };
+
+            return (200, resultDto);
+        }
     }
 }

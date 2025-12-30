@@ -64,5 +64,12 @@ namespace API.Controllers
                 return_message = result.ReturnMessage
             });
         }
+
+        [HttpGet("result/{appTransId}")]
+        public async Task<IActionResult> GetPaymentResultByAppTransId([FromRoute] string appTransId)
+        { 
+            var (statusCode, dto) = await _paymentService.GetPaymentResultByAppTransId(appTransId);
+            return StatusCode(statusCode, dto);
+        }
     }
 }
