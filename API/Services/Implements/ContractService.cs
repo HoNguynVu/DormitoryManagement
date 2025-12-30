@@ -116,7 +116,7 @@ namespace API.Services.Implements
                     PaymentType = PaymentConstants.TypeRenewal,
                     Status = "Pending",
                     PrintTime = DateTime.Now,
-                    Content = $"Renewal fee for {monthsToExtend} months for contract {activeContract.ContractID}"
+                    Content = $"Thanh toan phi gia han hop dong {monthsToExtend} thang cho hop dong {activeContract.ContractID}"
                 };
                 _uow.Receipts.Add(newReceipt);
                 await _uow.CommitAsync();

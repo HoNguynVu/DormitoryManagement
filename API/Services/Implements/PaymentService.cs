@@ -321,7 +321,7 @@ namespace API.Services.Implements
                     PaymentType = PaymentConstants.TypeHealthInsurance,
                     Status = PaymentConstants.StatusPending,
                     PrintTime = DateTime.Now,
-                    Content = $"Payment for health insurance form {insuranceId}"
+                    Content = $"Thanh toan phi bao hiem y te nam {DateTime.Now.Year+1} cho sinh vien {form.StudentID}"
                 };
                 var payment = new Payment
                 {
