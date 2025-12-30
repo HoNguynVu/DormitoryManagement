@@ -15,6 +15,7 @@ namespace DataAccess.Interfaces
         Task<Receipt?> GetPendingRequestAsync(string releatedId);
         Task<PagedResult<Receipt>> GetReceiptsByManagerPagedAsync(string managerId, int pageIndex, int pageSize);
 
+        Task<(Receipt?, Payment?)> GetReceiptAndDateAsync(string appTransId);
         Task<GrowthStatDto> GetRevenueGrowthStatsAsync();
     }
 }
