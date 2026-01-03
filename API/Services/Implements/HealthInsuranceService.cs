@@ -194,6 +194,7 @@ namespace API.Services.Implements
                 if (oldhealthprice != null)
                 {
                     oldhealthprice.IsActive = false;
+                    _uow.HealthPrices.Update(oldhealthprice);
                 }
                 var newPrice = new HealthInsurancePrice
                 {
@@ -205,6 +206,7 @@ namespace API.Services.Implements
                 };
 
                 // 3. Lưu vào DB
+                
                 _uow.HealthPrices.Add(newPrice);
                 await _uow.CommitAsync();
 
@@ -282,6 +284,7 @@ namespace API.Services.Implements
                     Price = price.Amount,
                     IsActive = price.IsActive,
                     Year = price.Year,
+                    EffectiveDate = price.EffectiveDate
                 };
                 return (true, "Health insurance price data get successful", 200, result);
             }

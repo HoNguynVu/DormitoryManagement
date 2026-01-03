@@ -12,6 +12,6 @@ namespace BusinessObject.DTOs.HealthInsuranceDTOs
         public decimal Price { get; set; }
         public int Year { get; set; }
         public bool IsActive { get; set; }
-
+        public DateOnly EffectiveDate { get; set; } 
     }
 }

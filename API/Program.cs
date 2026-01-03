@@ -86,6 +86,7 @@ builder.Services.AddScoped<IBuildingService, BuildingService>();
 builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
 builder.Services.AddScoped<IRoomEquipmentService, RoomEquipmentService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IParameterService, ParameterService>();
 
 // 7. Repositories (Nếu UoW đã bao gồm Repo thì có thể không cần dòng này, nhưng giữ lại nếu code cũ cần)
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
