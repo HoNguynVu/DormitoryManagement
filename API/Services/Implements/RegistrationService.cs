@@ -123,7 +123,7 @@ namespace API.Services.Implements
             {
                 return (false, "Room not found.", 404);
             }
-
+            newContract.Room = room;
             var receipt = await _registrationUow.Receipts.GetReceiptByTypeAndRelatedIdAsync(PaymentConstants.TypeRegis, registration.FormID);
             if (receipt == null)
                 {

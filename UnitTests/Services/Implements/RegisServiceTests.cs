@@ -60,10 +60,10 @@ namespace UnitTests.Services.Implements
         }
 
         // ==========================================================
-        // PHẦN 1: TEST CREATE REGISTRATION FORM
+        //  CREATE REGISTRATION FORM
         // ==========================================================
 
-        [Fact]
+        [Fact(DisplayName = "CreateRegistrationForm: Thành công khi tạo đơn mới hợp lệ")]
         public async Task CreateRegistrationForm_ShouldReturnSuccess_WhenValid()
         {
             // Arrange
@@ -92,7 +92,7 @@ namespace UnitTests.Services.Implements
             _mockUow.Verify(u => u.CommitAsync(), Times.Once);
         }
 
-        [Fact]
+        [Fact(DisplayName = "CreateRegistrationForm: Thất bại khi sinh viên đang có hợp đồng Active")]
         public async Task CreateRegistrationForm_ShouldFail_WhenStudentHasActiveContract()
         {
             // Arrange
@@ -113,7 +113,7 @@ namespace UnitTests.Services.Implements
             _mockUow.Verify(u => u.CommitAsync(), Times.Never);
         }
 
-        [Fact]
+        [Fact(DisplayName = "CreateRegistrationForm: Thất bại khi giới tính không phù hợp với phòng")]
         public async Task CreateRegistrationForm_ShouldFail_WhenGenderMismatch()
         {
             // Arrange
@@ -135,7 +135,7 @@ namespace UnitTests.Services.Implements
             _mockUow.Verify(u => u.RollbackAsync(), Times.Once);
         }
 
-        [Fact]
+        [Fact(DisplayName = "CreateRegistrationForm: Thất bại khi phòng đã đầy (Full Capacity)")]
         public async Task CreateRegistrationForm_ShouldFail_WhenRoomIsFull()
         {
             // Arrange
@@ -160,7 +160,11 @@ namespace UnitTests.Services.Implements
             Assert.Equal("Room is already full.", result.Message);
             _mockUow.Verify(u => u.RollbackAsync(), Times.Once);
         }
-        [Fact]
+
+        // ==========================================================
+        // CONFIRM PAYMENT 
+        // ==========================================================
+        [Fact(DisplayName = "ConfirmPayment: Thành công (Tạo hợp đồng, Update hóa đơn & Gửi Email)")]
         public async Task ConfirmPayment_ShouldSuccess_WhenValid_AndCreateContract()
         {
             // Arrange
@@ -168,14 +172,14 @@ namespace UnitTests.Services.Implements
             var regisForm = new RegistrationForm { FormID = "RF-001", StudentID = "S1", RoomID = "R1", Status = "Pending" };
 
             // Setup đối tượng Room lồng nhau phức tạp để tránh NullRef khi map EmailDto
-            var roomType = new RoomType { TypeName = "Deluxe", Price = 500 };
-            var building = new Building { BuildingName = "Block A" };
+            var roomType = new RoomType { TypeName = "Deluxe", Price = 500 , RoomTypeID ="T1" };
+            var building = new Building { BuildingName = "Block A" , BuildingID="BA"};
             var room = new Room
             {
                 RoomID = "R1",
                 RoomName = "101",
-                RoomType = roomType,
                 Building = building,
+                RoomType = roomType,
                 CurrentOccupancy = 0,
                 Capacity = 4
             };
@@ -195,7 +199,7 @@ namespace UnitTests.Services.Implements
             // Assert
             Assert.True(result.Success);
             Assert.Equal(200, result.StatusCode);
-
+         
             // 1. Verify Receipt updated
             Assert.Equal("Success", receipt.Status);
             _mockReceiptRepo.Verify(r => r.Update(receipt), Times.Once);
@@ -216,20 +220,23 @@ namespace UnitTests.Services.Implements
             _mockUow.Verify(u => u.CommitAsync(), Times.Once);
         }
 
-        [Fact]
+        [Fact(DisplayName = "ConfirmPayment: Vẫn thành công dù gửi Email thất bại (Transaction đã Commit)")]
         public async Task ConfirmPayment_ShouldStillSuccess_EvenIfEmailFails()
         {
-            // Test Case: DB Transaction thành công nhưng gửi mail bị lỗi -> Vẫn phải return True (vì tiền đã trừ)
-
-            // Arrange (Setup tương tự case trên)
-            string regisId = "RF-001";
-            var regisForm = new RegistrationForm { FormID = "RF-001", StudentID = "S1", RoomID = "R1" };
+            var roomType = new RoomType { TypeName = "Deluxe", Price = 500, RoomTypeID = "T1" };
+            var building = new Building { BuildingName = "Block A", BuildingID = "BA" };
             var room = new Room
             {
                 RoomID = "R1",
-                RoomType = new RoomType(),
-                Building = new Building()
+                RoomName = "101",
+                Building = building,
+                RoomType = roomType,
+                CurrentOccupancy = 0,
+                Capacity = 4
             };
+            string regisId = "RF-001";
+            var regisForm = new RegistrationForm { FormID = "RF-001", StudentID = "S1", RoomID = "R1" };
+            
             var student = new Student { StudentID = "S1" };
             var receipt = new Receipt { Amount = 1000 };
 
@@ -264,7 +271,7 @@ namespace UnitTests.Services.Implements
                 Times.Once);
         }
 
-        [Fact]
+        [Fact(DisplayName = "ConfirmPayment: Thất bại khi không tìm thấy hóa đơn thanh toán (Receipt)")]
         public async Task ConfirmPayment_ShouldFail_WhenReceiptNotFound()
         {
             // Arrange
