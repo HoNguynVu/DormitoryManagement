@@ -28,7 +28,6 @@
 
   <ItemGroup>
     <Folder Include="Controller\" />
-    <Folder Include="Services\Helpers\" />
   </ItemGroup>
 
   <ItemGroup>
