@@ -132,7 +132,7 @@ namespace UnitTests.Services.Implements
             _mockContractRepo.Setup(r => r.GetActiveAndNearExpiringContractByStudentId(studentId)).ReturnsAsync(contract);
             _mockContractRepo.Setup(r => r.HasPendingRenewalRequestAsync(studentId)).ReturnsAsync(false);
 
-            // Mock: Có 3 vi phạm (Giả sử quy định >= 3 là chặn)
+            // Mock: Có 3 vi phạm 
             _mockViolationRepo.Setup(r => r.CountViolationsByStudentId(studentId)).ReturnsAsync(3);
 
             // Act
