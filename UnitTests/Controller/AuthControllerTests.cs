@@ -5,10 +5,9 @@ using System.Threading.Tasks;
 using API.Controllers;
 using API.Services.Interfaces;
 using BusinessObject.DTOs.AuthDTOs;
-using System.Reflection; // Cần thêm thư viện này để dùng Reflection
 
-namespace API.Tests.Controllers
-{
+namespace UnitTests.Controller
+{ 
     public class AuthControllerTests
     {
         private readonly Mock<IAuthService> _mockAuthService;
