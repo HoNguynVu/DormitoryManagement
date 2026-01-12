@@ -13,7 +13,7 @@ using System;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace API.Tests.Services
+namespace UnitTests.Services.Implements
 {
     public class ContractServiceTests
     {

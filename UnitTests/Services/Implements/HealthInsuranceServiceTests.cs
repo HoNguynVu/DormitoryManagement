@@ -11,9 +11,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
-// Lưu ý: Thay namespace API.Repositories bằng namespace thực tế chứa Interface Repository của bạn
 
-namespace API.Tests.Services
+
+namespace UnitTests.Services.Implements
 {
     public class HealthInsuranceServiceTests
     {
