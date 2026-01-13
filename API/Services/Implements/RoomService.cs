@@ -186,6 +186,10 @@ namespace API.Services.Implements
                 var result = new List<AvailableRoomDto>();
                 foreach (var room in rooms)
                 {
+                    if (room.IsUnderMaintenance || room.IsBeingCleaned || room.RoomStatus == "Inactive")
+                    {
+                        continue;
+                    }
                     var activeCount = activeContractsDict.GetValueOrDefault(room.RoomID, 0);
                     var pending = pendingDict.GetValueOrDefault(room.RoomID, 0);
                     var occupied = Math.Max(room.CurrentOccupancy, activeCount);
