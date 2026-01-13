@@ -9,12 +9,12 @@ using System.Reflection;
 
 namespace UnitTests.Controller
 {
-    public class RegistrationControllerTests
+    public class RegisControllerTests
     {
         private readonly Mock<IRegistrationService> _mockRegistrationService;
         private readonly RegistrationController _controller;
 
-        public RegistrationControllerTests()
+        public RegisControllerTests()
         {
             _mockRegistrationService = new Mock<IRegistrationService>();
             _controller = new RegistrationController(_mockRegistrationService.Object);
