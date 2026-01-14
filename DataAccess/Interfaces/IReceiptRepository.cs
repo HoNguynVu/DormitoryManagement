@@ -17,5 +17,6 @@ namespace DataAccess.Interfaces
 
         Task<(Receipt?, Payment?)> GetReceiptAndDateAsync(string appTransId);
         Task<GrowthStatDto> GetRevenueGrowthStatsAsync();
+        Task<IEnumerable<Receipt>> GetHistoryReceiptsAsync(string paymentType, string releatedId);
     }
 }

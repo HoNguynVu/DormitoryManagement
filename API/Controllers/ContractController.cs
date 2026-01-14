@@ -247,5 +247,20 @@ namespace API.Controllers
             }
             return Ok(new { message = result.Message });
         }
+
+        [HttpGet("history/{accountId}")]
+        public async Task<IActionResult> GetContractHistoriesByStudent(string accountId)
+        {
+            var result = await _contractService.GetContractHistoriesByStudentAsync(accountId);
+            if (!result.Success)
+            {
+                return StatusCode(result.StatusCode, new { message = result.Message });
+            }
+            return Ok(new
+            {
+                message = result.Message,
+                data = result.dto
+            });
+        }
     }
 }

@@ -21,5 +21,6 @@ namespace API.Services.Interfaces
         Task<(bool Success, string Message, int StatusCode, ContractDetailByStudentDto? dto)> GetContractDetailByStudentAsync(string accountId);
         Task<(bool Success, string Message)> RemindBulkExpiringAsync();
         Task<(bool Success, string Message)> RemindSingleStudentAsync(string studentId);
+        Task<(bool Success, string Message, int StatusCode, IEnumerable<ContractHistoryDto> dto)> GetContractHistoriesByStudentAsync(string accountId);
     }
 }
