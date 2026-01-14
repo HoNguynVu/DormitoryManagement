@@ -790,5 +790,29 @@ namespace API.Services.Implements
                 _logger.LogError(ex, $"Lỗi gửi thông báo cho SV {contract.StudentID}");
             }
         }
+        
+        public async Task<(bool Success, string Message, int StatusCode, IEnumerable<ContractHistoryDto> dto)> GetContractHistoriesByStudentAsync(string accountId)
+        {
+            var student = await _uow.Students.GetStudentByAccountIdAsync(accountId);
+            if (student == null)
+            {
+                return (false, "Student not found.", 404, Enumerable.Empty<ContractHistoryDto>());
+            }
+            var activeContract = await _uow.Contracts.GetActiveAndNearExpiringContractByStudentId(student.StudentID);
+            if (activeContract == null)
+            {
+                return (false, "No active contract found for this student.", 404, Enumerable.Empty<ContractHistoryDto>());
+            }
+            var list = await _uow.Receipts.GetHistoryReceiptsAsync(PaymentConstants.TypeRenewal, activeContract.ContractID);
+            var result = list.Select(r => new ContractHistoryDto
+            {
+                ReceiptId = r.ReceiptID,
+                PrintTime = r.PrintTime,
+                Content = r.Content,
+                Amount = r.Amount,
+                Status = r.Status
+            }).ToList();
+            return (true, "Success", 200, result);
+        }
     }
 }

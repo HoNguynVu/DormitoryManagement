@@ -53,7 +53,7 @@ namespace API.Services.Implements
         {
             if (string.IsNullOrWhiteSpace(studentId)) return Enumerable.Empty<StudentContractDto>();
 
-            var contracts = await _contractUow.Contracts.FindAsync(c => c.StudentID == studentId);
+            var contracts = await _contractUow.Contracts.GetContractsByStudentId(studentId);
 
             return contracts.Select(c => new StudentContractDto
             {

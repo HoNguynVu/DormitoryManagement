@@ -46,6 +46,21 @@ namespace API.Controllers
         }
 
         /// <summary>
+        /// Xóa vi phạm (chỉ manager có quyền xóa vi phạm do họ báo cáo)
+        /// Nếu sinh viên đã bị terminate và số vi phạm giảm xuống dưới 3, hợp đồng sẽ được khôi phục
+        /// </summary>
+        [HttpDelete("{violationId}")]
+        public async Task<IActionResult> DeleteViolation(string violationId, [FromQuery] string managerAccountId)
+        {
+            var result = await _violationService.DeleteViolationAsync(violationId, managerAccountId);
+            return StatusCode(result.StatusCode, new
+            {
+                success = result.Success,
+                message = result.Message
+            });
+        }
+
+        /// <summary>
         /// Lấy danh sách vi phạm của 1 sinh viên
         /// </summary>
         [HttpGet("student/{studentId}")]

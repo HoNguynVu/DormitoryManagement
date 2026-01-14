@@ -23,6 +23,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowReactApp", policy =>
         policy
             .WithOrigins("http://localhost:5173") // Địa chỉ React
+            .WithOrigins("https://dormitory-fe-bay.vercel.app")
             .SetIsOriginAllowedToAllowWildcardSubdomains()
             .AllowAnyHeader()
             .AllowAnyMethod()
@@ -187,3 +188,4 @@ app.MapControllers();
 app.MapHub<NotificationHub>("/notificationHub");
 
 app.Run();
+public partial class Program { }

@@ -19,6 +19,8 @@ namespace DataAccess.Repository
         public async Task<IEnumerable<Contract>> GetContractsByStudentId(string studentId)
         {
             return await _dbSet
+                .Include(c => c.Student)
+                .Include(c => c.Room)
                 .Where(c => c.StudentID == studentId)
                 .ToListAsync();
         }

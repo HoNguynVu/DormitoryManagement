@@ -109,5 +109,12 @@ namespace DataAccess.Repository
                 IsIncrease = growth >= 0
             };
         }
+
+        public async Task<IEnumerable<Receipt>> GetHistoryReceiptsAsync(string paymentType, string releatedId)
+        {
+            return await _dbSet
+                .Where(r => r.PaymentType == paymentType && r.RelatedObjectID == releatedId)
+                .ToListAsync();
+        }
     }
 }
