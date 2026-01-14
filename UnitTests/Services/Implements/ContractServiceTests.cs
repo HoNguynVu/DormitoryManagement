@@ -327,7 +327,7 @@ namespace UnitTests.Services.Implements
 
             // 1. Contract status -> Terminated
             Assert.Equal("Terminated", contract.ContractStatus);
-            Assert.Equal(DateOnly.FromDateTime(DateTime.UtcNow), contract.EndDate);
+            Assert.Equal(DateOnly.FromDateTime(DateTime.Now), contract.EndDate);
 
             // 2. Room Occupancy giảm 1 -> 3
             Assert.Equal(3, room.CurrentOccupancy);
