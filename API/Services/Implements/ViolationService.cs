@@ -187,6 +187,116 @@ namespace API.Services.Implements
             return (true, "Resolution updated successfully.", 200);
         }
 
+        public async Task<(bool Success, string Message, int StatusCode)> DeleteViolationAsync(string violationId, string managerAccountId)
+        {
+            await _violationUow.BeginTransactionAsync();
+            try
+            {
+                // 1. Kiểm tra quyền của manager
+                var manager = await _violationUow.BuildingManagers.GetByAccountIdAsync(managerAccountId);
+                if (manager == null)
+                {
+                    await _violationUow.RollbackAsync();
+                    return (false, "Building manager not found.", 404);
+                }
+
+                // 2. Lấy thông tin vi phạm
+                var violation = await _violationUow.Violations.GetByIdAsync(violationId);
+                if (violation == null)
+                {
+                    await _violationUow.RollbackAsync();
+                    return (false, "Violation not found.", 404);
+                }
+
+                // 3. Kiểm tra vi phạm có thuộc quản lý của manager không
+                if (violation.ReportingManagerID != manager.ManagerID)
+                {
+                    await _violationUow.RollbackAsync();
+                    return (false, "You can only delete violations reported by you.", 403);
+                }
+
+                var studentId = violation.StudentID;
+                
+                // 4. Đếm số vi phạm hiện tại của sinh viên (trước khi xóa)
+                var currentViolationCount = await _violationUow.Violations.CountViolationsByStudentId(studentId);
+
+                // 5. Xóa vi phạm
+                _violationUow.Violations.Delete(violation);
+                
+                // 6. Lấy thông tin account của sinh viên
+                var account = await _violationUow.Accounts.GetAccountByStudentId(studentId);
+                if (account == null)
+                {
+                    await _violationUow.RollbackAsync();
+                    return (false, "Student account not found.", 404);
+                }
+
+                // 7. Tạo thông báo cho sinh viên về việc xóa vi phạm
+                var deleteNoti = NotificationServiceHelpers.CreateNew(
+                    accountId: account.UserId,
+                    title: "Vi phạm đã được xóa!",
+                    message: $"Vi phạm: '{violation.ViolationAct}' đã được trưởng tòa xóa. Đây là cơ hội để bạn cải thiện.",
+                    type: "Violation"
+                );
+                _violationUow.Notifications.Add(deleteNoti);
+
+                // 8. Kiểm tra nếu sinh viên đã bị terminate và sau khi xóa sẽ xuống dưới 3 vi phạm
+                bool shouldRestoreContract = currentViolationCount >= MAX_VIOLATIONS_BEFORE_TERMINATION;
+                
+                if (shouldRestoreContract)
+                {
+                    // Số vi phạm sau khi xóa
+                    var newViolationCount = currentViolationCount - 1;
+                    
+                    if (newViolationCount < MAX_VIOLATIONS_BEFORE_TERMINATION)
+                    {
+                        // Tìm hợp đồng bị terminate gần nhất
+                        var terminatedContract = await _violationUow.Contracts
+                            .FirstOrDefaultAsync(c => c.StudentID == studentId && c.ContractStatus == "Terminated");
+                        
+                        if (terminatedContract != null)
+                        {
+                            // Khôi phục hợp đồng
+                            terminatedContract.ContractStatus = "Active";
+                            _violationUow.Contracts.Update(terminatedContract);
+
+                            // Thông báo khôi phục hợp đồng
+                            var restoreNoti = NotificationServiceHelpers.CreateNew(
+                                accountId: account.UserId,
+                                title: "Hợp đồng đã được khôi phục!",
+                                message: $"Do số vi phạm của bạn đã giảm xuống dưới {MAX_VIOLATIONS_BEFORE_TERMINATION}, hợp đồng của bạn đã được khôi phục. Hãy tuân thủ nội quy để tránh vi phạm trong tương lai.",
+                                type: "Contract"
+                            );
+                            _violationUow.Notifications.Add(restoreNoti);
+                        }
+                    }
+                }
+
+                await _violationUow.CommitAsync();
+
+                // 9. Gửi thông báo qua SignalR
+                try
+                {
+                    await _hubContext.Clients.User(account.UserId).SendAsync("ReceiveNotification", deleteNoti);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"SignalR Error: {ex.Message}");
+                }
+
+                string message = shouldRestoreContract && (currentViolationCount - 1) < MAX_VIOLATIONS_BEFORE_TERMINATION
+                    ? "Violation deleted successfully. Student's contract has been restored."
+                    : "Violation deleted successfully.";
+
+                return (true, message, 200);
+            }
+            catch (Exception ex)
+            {
+                await _violationUow.RollbackAsync();
+                return (false, $"Error deleting violation: {ex.Message}", 500);
+            }
+        }
+
         public async Task<(bool Success, string Message, int StatusCode, IEnumerable<ViolationResponse>? Data)> GetViolationsByStudentIdAsync(string studentId)
         {
             try
@@ -277,7 +387,6 @@ namespace API.Services.Implements
                         StudentName = vio.Student?.FullName ?? "N/A",
                         ReportingManagerId = vio.ReportingManagerID,
 
-  
                         RoomId = contract?.RoomID ?? "N/A",
                         RoomName = contract?.Room?.RoomName ?? "N/A",
 
