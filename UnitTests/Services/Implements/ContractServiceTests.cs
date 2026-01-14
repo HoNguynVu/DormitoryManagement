@@ -1,4 +1,5 @@
 ﻿using API.Hubs;
+using API.Services.Helpers;
 using API.Services.Implements;
 using API.Services.Interfaces;
 using API.UnitOfWorks;
@@ -22,6 +23,7 @@ namespace UnitTests.Services.Implements
         // ============================
         private readonly Mock<IContractUow> _mockUow;
         private readonly Mock<IEmailService> _mockEmailService;
+        private readonly Mock<PdfService> _mockPdfService;
         private readonly Mock<IHubContext<NotificationHub>> _mockHubContext;
         private readonly Mock<ILogger<ContractService>> _mockLogger;
 
@@ -47,6 +49,7 @@ namespace UnitTests.Services.Implements
             _mockEmailService = new Mock<IEmailService>();
             _mockHubContext = new Mock<IHubContext<NotificationHub>>();
             _mockLogger = new Mock<ILogger<ContractService>>();
+            _mockPdfService = new Mock<PdfService>();
 
             _mockStudentRepo = new Mock<IStudentRepository>();
             _mockContractRepo = new Mock<IContractRepository>();
@@ -76,7 +79,7 @@ namespace UnitTests.Services.Implements
             _mockHubClients.Setup(c => c.User(It.IsAny<string>())).Returns(_mockClientProxy.Object);
 
             // Inject Service
-            _service = new ContractService(_mockUow.Object, _mockEmailService.Object, _mockHubContext.Object, _mockLogger.Object);
+            _service = new ContractService(_mockUow.Object, _mockEmailService.Object, _mockHubContext.Object, _mockLogger.Object, _mockPdfService.Object);
         }
 
         // ==========================================================
@@ -190,7 +193,10 @@ namespace UnitTests.Services.Implements
             _mockUow.Verify(u => u.Notifications.Add(It.IsAny<Notification>()), Times.Once);
 
             // 3. Kiểm tra có gửi mail không
-            _mockEmailService.Verify(e => e.SendRenewalPaymentEmailAsync(It.IsAny<DormRenewalSuccessDto>()), Times.Once);
+            _mockEmailService.Verify(e => e.SendRenewalPaymentEmailAsync(
+                It.IsAny<DormRenewalSuccessDto>(),
+                It.IsAny<byte[]>() 
+            ), Times.Once);
 
         }
 

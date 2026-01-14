@@ -128,7 +128,7 @@ namespace API.Services.Implements
             await SendEmailAsync(message);
         }
 
-        public async Task SendRenewalPaymentEmailAsync(DormRenewalSuccessDto dto)
+        public async Task SendRenewalPaymentEmailAsync(DormRenewalSuccessDto dto, byte[] attachmentData)
         {
             var culture = new CultureInfo("vi-VN");
             var message = new MimeMessage();
@@ -152,11 +152,15 @@ namespace API.Services.Implements
                         <li>Tổng tiền thanh toán: <span style='color: #d9534f; font-weight: bold; font-size: 16px;'>{dto.TotalAmountPaid.ToString("N0", culture)} VNĐ</span></li>
                     </ul>
                 </div>
-            
+                <p>File hợp đồng gia hạn chi tiết (PDF) đã được đính kèm trong email này.</p>
                 <p>Hợp đồng của bạn đã được cập nhật trên hệ thống.</p>
                 <p>Trân trọng,<br>Ban Quản lý KTX.</p>
             </div>";
 
+            if (attachmentData != null && attachmentData.Length > 0)
+            {
+                bodyBuilder.Attachments.Add($"HopDongGiaHan_{dto.ContractCode}.pdf", attachmentData, ContentType.Parse("application/pdf"));
+            }
             message.Body = bodyBuilder.ToMessageBody();
             await SendEmailAsync(message);
         }

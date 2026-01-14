@@ -1,5 +1,6 @@
 ﻿using API.BackgroundServices; // Thêm namespace này
 using API.Hubs;
+using API.Services.Helpers;
 using API.Services.Implements;
 using API.Services.Interfaces;
 using API.UnitOfWorks;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using QuestPDF.Drawing;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -86,6 +88,7 @@ builder.Services.AddScoped<IBuildingService, BuildingService>();
 builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
 builder.Services.AddScoped<IRoomEquipmentService, RoomEquipmentService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<PdfService>();
 
 // 7. Repositories (Nếu UoW đã bao gồm Repo thì có thể không cần dòng này, nhưng giữ lại nếu code cũ cần)
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
@@ -164,7 +167,6 @@ builder.Services.AddSingleton(VnPaySettings =>
         FrontEndUrl = config["FrontEndUrl"] ?? string.Empty
     };
 });
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
