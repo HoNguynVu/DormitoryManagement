@@ -16,14 +16,16 @@ namespace API.Services.Implements
     {
         private readonly IContractUow _uow;
         private readonly IEmailService _emailService;
+        private readonly PdfService _pdfService;
         private readonly IHubContext<NotificationHub> _hubContext;
         private readonly ILogger<IContractService> _logger;
-        public ContractService(IContractUow contractUow, IEmailService emailService, IHubContext<NotificationHub> hubContext, ILogger<IContractService> logger)
+        public ContractService(IContractUow contractUow, IEmailService emailService, IHubContext<NotificationHub> hubContext, ILogger<IContractService> logger, PdfService pdfService)
         {
             _uow = contractUow;
             _emailService = emailService;
             _hubContext = hubContext;
             _logger = logger;
+            _pdfService = pdfService;
         }
 
         public async Task<(bool Success, string Message, int StatusCode, ContractDto? Data)> GetCurrentContractAsync(string studentId)
@@ -322,7 +324,8 @@ namespace API.Services.Implements
                 };
                 try
                 {
-                    await _emailService.SendRenewalPaymentEmailAsync(emailDto);
+                    byte[] pdfBytes = _pdfService.GenerateExtensionContractPdf(emailDto);
+                    await _emailService.SendRenewalPaymentEmailAsync(emailDto,pdfBytes);
                 }
                 catch (Exception ex)
                 {
